@@ -187,9 +187,34 @@ export async function getChart(genre: number) {
   };
 }
 
-export async function getWorldTopTracks(): Promise<ChartTrack[]> {
-  const json = await get<RawChartTracks>(`/playlist/${WORLD_PLAYLIST}/tracks?limit=50`, 3600);
+export async function getPlaylistTracks(id: number): Promise<ChartTrack[]> {
+  const json = await get<RawChartTracks>(`/playlist/${id}/tracks?limit=50`, 3600);
   return (json?.data ?? []).map(chartTrack);
+}
+
+export const getWorldTopTracks = () => getPlaylistTracks(WORLD_PLAYLIST);
+
+// Compte « Deezer Charts », qui publie une playlist « Top <pays> » par pays.
+const CHARTS_USER = 637006841;
+
+export type CountryChart = { id: number; title: string };
+
+type RawPlaylists = { data: { id: number; title: string; user?: { name: string } }[] };
+
+const isCountryTop = (p: { id: number; title: string }) =>
+  /^Top [^0-9]/i.test(p.title) && p.id !== WORLD_PLAYLIST && !/worldwide|monde/i.test(p.title);
+
+// Les tops par pays, triés par nom. Si le compte Deezer Charts ne répond pas,
+// on les cherche parmi les playlists publiées par Deezer.
+export async function getCountryCharts(): Promise<CountryChart[]> {
+  const own = await get<RawPlaylists>(`/user/${CHARTS_USER}/playlists?limit=200`, 86400);
+  let list = (own?.data ?? []).filter(isCountryTop);
+  if (!list.length) {
+    const found = await get<RawPlaylists>(`/search/playlist?q=${encodeURIComponent("Top")}&limit=100`, 86400);
+    list = (found?.data ?? []).filter((p) => isCountryTop(p) && /deezer/i.test(p.user?.name ?? ""));
+  }
+  const unique = new Map(list.map((p) => [p.id, { id: p.id, title: p.title }]));
+  return [...unique.values()].sort((a, b) => a.title.localeCompare(b.title, "fr"));
 }
 
 export type ArtistHit = { id: number; name: string; picture: string };
