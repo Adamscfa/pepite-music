@@ -17,8 +17,9 @@ async function loadReview(params: PageProps<"/avis/[id]">["params"]) {
 
 export async function generateMetadata({ params }: PageProps<"/avis/[id]">): Promise<Metadata> {
   const review = await loadReview(params);
-  const title = `${review.profile.display_name} a noté ${review.album_title} ${"★".repeat(review.rating)}`;
-  const description = review.body ? review.body.slice(0, 160) : `${review.album_title} de ${review.artist_name}, noté sur Pépite.`;
+  const name = review.track_title ?? review.album_title;
+  const title = `${review.profile.display_name} a noté ${name} ${"★".repeat(review.rating)}`;
+  const description = review.body ? review.body.slice(0, 160) : `${name} de ${review.artist_name}, noté sur Pépite.`;
   return { title, description, openGraph: { title, description }, twitter: { card: "summary_large_image", title, description } };
 }
 

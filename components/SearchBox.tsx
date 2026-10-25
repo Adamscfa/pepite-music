@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 type Results = {
   artists: { id: number; name: string; picture: string }[];
   albums: { id: number; title: string; artist: string; cover: string }[];
+  tracks: { id: number; title: string; artist: string; albumId: number; cover: string }[];
 };
 
 export default function SearchBox() {
@@ -26,7 +27,7 @@ export default function SearchBox() {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
           signal: controller.signal,
         });
-        setResults({ q, data: res.ok ? await res.json() : { artists: [], albums: [] } });
+        setResults({ q, data: res.ok ? await res.json() : { artists: [], albums: [], tracks: [] } });
       } catch {
         // Requête annulée parce qu'une nouvelle lettre a été tapée.
       }
@@ -59,8 +60,8 @@ export default function SearchBox() {
       </svg>
       <input
         type="search"
-        placeholder="Chercher un album ou un artiste"
-        aria-label="Chercher un album ou un artiste"
+        placeholder="Chercher un album, un artiste ou un titre"
+        aria-label="Chercher un album, un artiste ou un titre"
         autoComplete="off"
         value={query}
         onChange={(e) => {
@@ -72,7 +73,7 @@ export default function SearchBox() {
       />
       {open && found && (
         <div className="results">
-          {found.artists.length === 0 && found.albums.length === 0 && (
+          {found.artists.length + found.albums.length + found.tracks.length === 0 && (
             <div className="small" style={{ padding: 8 }}>
               Aucun résultat.
             </div>
@@ -91,6 +92,16 @@ export default function SearchBox() {
               <span>
                 {album.title}
                 <small>{album.artist}</small>
+              </span>
+            </Link>
+          ))}
+          {found.tracks.length > 0 && <div className="results-label">Titres</div>}
+          {found.tracks.map((track) => (
+            <Link key={`t-${track.id}`} href={`/titre/${track.id}`} onClick={close}>
+              <img className="cover s" src={track.cover} alt="" />
+              <span>
+                {track.title}
+                <small>{track.artist}</small>
               </span>
             </Link>
           ))}

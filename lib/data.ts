@@ -21,6 +21,9 @@ export type Review = {
   artist_name: string;
   cover_url: string | null;
   release_year: number | null;
+  // Rempli quand l'avis porte sur une chanson plutôt que sur l'album entier.
+  track_id: number | null;
+  track_title: string | null;
   rating: number;
   body: string;
   updated_at: string;
@@ -94,6 +97,8 @@ async function withSocial(raw: RawReview[] | null): Promise<Review[]> {
     const mine = (likes.data ?? []).filter((l) => l.review_id === r.id);
     return {
       ...r,
+      track_id: r.track_id ?? null,
+      track_title: r.track_title ?? null,
       profile: author(r.profile),
       likes: mine.length,
       liked: Boolean(me && mine.some((l) => l.user_id === me.id)),
@@ -116,6 +121,7 @@ export async function getRecentReviews({ followedBy }: { followedBy?: string } =
   return withSocial(data);
 }
 
+// Avis sur l'album entier (sans ceux qui portent sur une de ses chansons).
 export async function getAlbumReviews(albumId: number): Promise<Review[]> {
   if (!hasSupabaseConfig) return [];
   const supabase = await createClient();
@@ -123,6 +129,18 @@ export async function getAlbumReviews(albumId: number): Promise<Review[]> {
     .from("reviews")
     .select(REVIEW_FIELDS)
     .eq("album_id", albumId)
+    .order("updated_at", { ascending: false })
+    .returns<RawReview[]>();
+  return withSocial((data ?? []).filter((r) => !r.track_id));
+}
+
+export async function getTrackReviews(trackId: number): Promise<Review[]> {
+  if (!hasSupabaseConfig) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reviews")
+    .select(REVIEW_FIELDS)
+    .eq("track_id", trackId)
     .order("updated_at", { ascending: false })
     .returns<RawReview[]>();
   return withSocial(data);

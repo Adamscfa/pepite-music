@@ -137,7 +137,7 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
                 <Cover src={r.cover_url} size="l" />
                 <Stars value={r.rating} />
                 <small>
-                  {r.album_title} · {r.artist_name}
+                  {r.track_title ? `${r.track_title} (titre)` : r.album_title} · {r.artist_name}
                 </small>
               </Link>
             ))}

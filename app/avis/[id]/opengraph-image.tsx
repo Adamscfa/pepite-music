@@ -24,8 +24,8 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           {review ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div style={{ fontSize: 28, color: "#625D78" }}>{`${review.profile.display_name} a noté`}</div>
-              <div style={{ fontSize: 54, fontWeight: 800, color: "#1B1830", lineHeight: 1.1 }}>{review.album_title}</div>
-              <div style={{ fontSize: 30, color: "#625D78" }}>{review.artist_name}</div>
+              <div style={{ fontSize: 54, fontWeight: 800, color: "#1B1830", lineHeight: 1.1 }}>{review.track_title ?? review.album_title}</div>
+              <div style={{ fontSize: 30, color: "#625D78" }}>{review.track_title ? `${review.artist_name} · ${review.album_title}` : review.artist_name}</div>
               <OgStars value={review.rating} />
               {body && <div style={{ fontSize: 28, color: "#1B1830", lineHeight: 1.35 }}>{`« ${body} »`}</div>}
             </div>
