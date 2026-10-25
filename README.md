@@ -35,6 +35,10 @@ Supabase garde les comptes des membres et leurs avis. C'est gratuit pour un peti
    Ce fichier reste sur ton ordinateur : il n'est jamais envoyé sur GitHub.
 5. **Relance** `npm run dev`. Le message en haut du site disparaît : tu peux créer un compte.
 
+### Mise à jour « réseau social »
+
+Les photos de profil, favoris, abonnements, « j'aime », commentaires et listes ont besoin de nouvelles tables. Une fois le code de cette mise à jour en ligne, colle le fichier [`supabase/02-reseau-social.sql`](supabase/02-reseau-social.sql) dans **SQL Editor** et clique sur **Run** (une seule fois).
+
 ### Pour tester plus vite (facultatif)
 
 Par défaut, Supabase envoie un e-mail de confirmation à chaque inscription. Pendant tes tests, tu peux le couper dans **Authentication > Sign In / Providers > Email**, en décochant **Confirm email**.
@@ -45,9 +49,10 @@ Si tu le laisses activé, va dans **Authentication > URL Configuration** et mets
 
 | Dossier | Ce qu'il contient |
 | --- | --- |
-| `app/` | Les pages : `page.tsx` (fil), `album/[id]`, `profil/[username]`, `connexion` |
+| `app/` | Les pages : `page.tsx` (fil), `album/[id]`, `artiste/[id]`, `avis/[id]`, `listes/[id]`, `profil/[username]`, `connexion` |
+| `app/social-actions.ts` | J'aime, commentaires, abonnements, favoris et listes |
 | `app/api/search` | La recherche, qui interroge Deezer depuis le serveur (Deezer bloque les appels directs du navigateur) |
 | `components/` | Les morceaux réutilisés : barre du haut, étoiles, carte d'avis… |
 | `lib/deezer.ts` | Les appels à l'API Deezer |
 | `lib/data.ts` | Les lectures dans Supabase |
-| `supabase/schema.sql` | La structure de la base et ses règles de sécurité |
+| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql` puis `02-reseau-social.sql` |

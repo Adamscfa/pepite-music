@@ -5,10 +5,11 @@
   --ink: #1B1830;
   --muted: #625D78;
   --line: #E1DEEA;
-  --gold: #C98A10;
-  --gold-soft: #FBEFD3;
-  --star: #E0A21B;
-  --plum: #4B2A7B;
+  /* Vert du logo. Les noms "gold" datent de la maquette dorée. */
+  --gold: #2E9E6B;
+  --gold-soft: #DDF2E7;
+  --star: #2E9E6B;
+  --plum: #1F6B4A;
   --danger: #B3261E;
   --display: var(--font-display), "Avenir Next", system-ui, sans-serif;
   --body: var(--font-body), "Segoe UI", system-ui, sans-serif;
@@ -17,7 +18,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #121019; --surface: #1C1928; --ink: #EDEAF6; --muted: #A49FBB; --line: #2E2A40;
-    --gold: #F0B93A; --gold-soft: #3A2E14; --star: #F0B93A; --plum: #B79BEA; --danger: #F2B8B5;
+    --gold: #4CC48E; --gold-soft: #173A2A; --star: #4CC48E; --plum: #2E9E6B; --danger: #F2B8B5;
     color-scheme: dark;
   }
 }
@@ -122,7 +123,7 @@ textarea, .field input { width: 100%; border: 1px solid var(--line); border-radi
 .stats b { font-family: var(--display); font-size: 26px; display: block; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .stats span { font-size: 12px; color: var(--muted); }
 .grid-rated { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
-.grid-rated a { display: grid; gap: 6px; }
+.grid-rated a { display: grid; gap: 6px; align-content: start; }
 .grid-rated small { color: var(--muted); font-size: 12px; }
 section + section { margin-top: 30px; }
 details.edit { margin-top: 22px; }
@@ -149,3 +150,36 @@ details.edit summary { cursor: pointer; color: var(--muted); font-weight: 600; f
 .discover { margin-bottom: 36px; }
 .album-name { font-weight: 600; font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; }
 .grid-rated .album-name + small { margin-top: -4px; }
+
+/* Réseau social : avatars, j'aime, favoris, listes */
+img.avatar { object-fit: cover; }
+.avatar.big, .prof .avatar { width: 84px; height: 84px; font-size: 32px; }
+.cover.round { border-radius: 50%; }
+.author { display: inline-flex; align-items: center; gap: 8px; }
+.results-label { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 6px 6px 2px; }
+.meta { display: flex; gap: 14px; margin-top: 10px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.like { background: none; border: 0; padding: 0; color: var(--muted); font-size: 13px; }
+.like:hover { color: var(--ink); }
+.like[aria-pressed="true"] { color: var(--gold); font-weight: 600; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--muted); font-size: 12px; text-decoration: underline; text-underline-offset: 2px; }
+.link-btn:hover { color: var(--ink); }
+.link-btn.danger { color: var(--danger); }
+.link-under:hover { text-decoration: underline; text-underline-offset: 3px; }
+.album-top a.artist { display: inline-block; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 14px; margin-bottom: 12px; }
+.select { border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; background: var(--bg); max-width: 100%; }
+.box form + form { margin-top: 12px; }
+.tabs a { padding: 6px 14px; border-radius: 999px; color: var(--muted); font-weight: 600; font-size: 14px; }
+.tabs a[aria-current="page"] { background: var(--gold-soft); color: var(--ink); }
+.favs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.fav { display: grid; gap: 4px; align-content: start; }
+.fav a { display: grid; gap: 6px; }
+.fav small { color: var(--muted); font-size: 12px; }
+.fav form { justify-self: start; }
+.fav-empty { aspect-ratio: 1; border: 1px dashed var(--line); border-radius: 6px; display: grid; place-items: center; text-align: center; padding: 10px; font-size: 12px; color: var(--muted); }
+.list-card { display: grid; gap: 6px; }
+.mosaic { display: grid; grid-template-columns: 1fr 1fr; aspect-ratio: 1; border-radius: 6px; overflow: hidden; background: var(--line); gap: 1px; }
+.mosaic img, .mosaic span { width: 100%; height: 100%; object-fit: cover; display: block; background: var(--gold-soft); }
+@media (max-width: 640px) {
+  .favs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

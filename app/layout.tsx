@@ -11,7 +11,14 @@ const mono = JetBrains_Mono({ variable: "--font-mono", subsets: ["latin"], weigh
 // Les pages dépendent du membre connecté : on les génère à chaque visite.
 export const dynamic = "force-dynamic";
 
+// Adresse publique du site, pour les liens dans les aperçus de partage.
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  openGraph: { siteName: "Pépite", locale: "fr_FR", type: "website" },
   title: { default: "Pépite", template: "%s · Pépite" },
   description: "Note et critique les albums que tu écoutes, et découvre ce que la communauté écoute.",
 };

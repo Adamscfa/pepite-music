@@ -22,6 +22,7 @@ export type Album = {
   id: number;
   title: string;
   artist: string;
+  artistId: number;
   cover: string;
   coverSmall: string;
   year: number | null;
@@ -77,7 +78,7 @@ type RawAlbum = {
   cover_medium: string;
   release_date?: string;
   nb_tracks: number;
-  artist: { name: string };
+  artist: { id: number; name: string };
   genres?: { data: { name: string }[] };
   tracks?: { data: { id: number; title: string; duration: number; preview: string }[] };
 };
@@ -90,6 +91,7 @@ export async function getAlbum(id: number): Promise<Album | null> {
     id: a.id,
     title: a.title,
     artist: a.artist.name,
+    artistId: a.artist.id,
     cover: a.cover_xl,
     coverSmall: a.cover_medium,
     year: Number.isFinite(year) && year > 0 ? year : null,
@@ -113,4 +115,44 @@ export async function getTopAlbums(limit = 10): Promise<AlbumHit[]> {
     artist: a.artist.name,
     cover: a.cover_medium,
   }));
+}
+
+export type ArtistHit = { id: number; name: string; picture: string };
+
+type RawArtists = { data: { id: number; name: string; picture_medium: string }[] };
+
+export async function searchArtists(query: string): Promise<ArtistHit[]> {
+  const json = await get<RawArtists>(`/search/artist?q=${encodeURIComponent(query)}&limit=3`, 3600);
+  return (json?.data ?? []).map((a) => ({ id: a.id, name: a.name, picture: a.picture_medium }));
+}
+
+export type Artist = { id: number; name: string; picture: string; fans: number };
+
+export async function getArtist(id: number): Promise<Artist | null> {
+  const a = await get<{ id: number; name: string; picture_xl: string; nb_fan: number }>(`/artist/${id}`, 86400);
+  return a ? { id: a.id, name: a.name, picture: a.picture_xl, fans: a.nb_fan } : null;
+}
+
+export type ArtistAlbum = AlbumHit & { year: number | null; type: string };
+
+type RawArtistAlbums = {
+  data: { id: number; title: string; cover_medium: string; release_date?: string; record_type: string }[];
+};
+
+// Discographie d'un artiste, du plus récent au plus ancien.
+export async function getArtistAlbums(artist: Artist): Promise<ArtistAlbum[]> {
+  const json = await get<RawArtistAlbums>(`/artist/${artist.id}/albums?limit=100`, 86400);
+  return (json?.data ?? [])
+    .map((a) => {
+      const year = a.release_date ? Number(a.release_date.slice(0, 4)) : NaN;
+      return {
+        id: a.id,
+        title: a.title,
+        artist: artist.name,
+        cover: a.cover_medium,
+        year: Number.isFinite(year) && year > 0 ? year : null,
+        type: a.record_type,
+      };
+    })
+    .sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
 }

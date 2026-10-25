@@ -3,16 +3,19 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-type Hit = { id: number; title: string; artist: string; cover: string };
+type Results = {
+  artists: { id: number; name: string; picture: string }[];
+  albums: { id: number; title: string; artist: string; cover: string }[];
+};
 
 export default function SearchBox() {
   const [query, setQuery] = useState("");
   // Les résultats sont rangés avec la recherche qui les a produits.
-  const [results, setResults] = useState<{ q: string; hits: Hit[] } | null>(null);
+  const [results, setResults] = useState<{ q: string; data: Results } | null>(null);
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const q = query.trim();
-  const hits = q.length >= 2 && results?.q === q ? results.hits : null;
+  const found = q.length >= 2 && results?.q === q ? results.data : null;
 
   // On attend que l'utilisateur arrête de taper (300 ms) avant d'interroger Deezer.
   useEffect(() => {
@@ -23,7 +26,7 @@ export default function SearchBox() {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
           signal: controller.signal,
         });
-        setResults({ q, hits: res.ok ? await res.json() : [] });
+        setResults({ q, data: res.ok ? await res.json() : { artists: [], albums: [] } });
       } catch {
         // Requête annulée parce qu'une nouvelle lettre a été tapée.
       }
@@ -42,6 +45,11 @@ export default function SearchBox() {
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
   }, []);
+
+  const close = () => {
+    setOpen(false);
+    setQuery("");
+  };
 
   return (
     <div className="search" ref={box}>
@@ -62,30 +70,30 @@ export default function SearchBox() {
         onFocus={() => setOpen(true)}
         onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
       />
-      {open && hits && (
+      {open && found && (
         <div className="results">
-          {hits.length === 0 ? (
+          {found.artists.length === 0 && found.albums.length === 0 && (
             <div className="small" style={{ padding: 8 }}>
-              Aucun album trouvé.
+              Aucun résultat.
             </div>
-          ) : (
-            hits.map((hit) => (
-              <Link
-                key={hit.id}
-                href={`/album/${hit.id}`}
-                onClick={() => {
-                  setOpen(false);
-                  setQuery("");
-                }}
-              >
-                <img className="cover s" src={hit.cover} alt="" />
-                <span>
-                  {hit.title}
-                  <small>{hit.artist}</small>
-                </span>
-              </Link>
-            ))
           )}
+          {found.artists.length > 0 && <div className="results-label">Artistes</div>}
+          {found.artists.map((artist) => (
+            <Link key={`ar-${artist.id}`} href={`/artiste/${artist.id}`} onClick={close}>
+              <img className="cover s round" src={artist.picture} alt="" />
+              <span>{artist.name}</span>
+            </Link>
+          ))}
+          {found.albums.length > 0 && <div className="results-label">Albums</div>}
+          {found.albums.map((album) => (
+            <Link key={`al-${album.id}`} href={`/album/${album.id}`} onClick={close}>
+              <img className="cover s" src={album.cover} alt="" />
+              <span>
+                {album.title}
+                <small>{album.artist}</small>
+              </span>
+            </Link>
+          ))}
         </div>
       )}
     </div>
