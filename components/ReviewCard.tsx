@@ -1,9 +1,11 @@
 import Link from "next/link";
-import type { Review } from "@/lib/data";
+import { getCurrentProfile, type Review } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
 import AuthorLink from "./AuthorLink";
 import Cover from "./Cover";
 import LikeButton from "./LikeButton";
+import Reactions from "./Reactions";
+import ReportButton from "./ReportButton";
 import Stars from "./Stars";
 
 export default function ReviewCard({ review, canLike }: { review: Review; canLike: boolean }) {
@@ -37,7 +39,7 @@ export default function ReviewCard({ review, canLike }: { review: Review; canLik
           )}
         </div>
         <div style={{ marginTop: 6 }}>
-          <Stars value={review.rating} />
+          <Stars value={review.rating} heart={review.heart} />
         </div>
         {review.body && <p>{review.body}</p>}
         <ReviewMeta review={review} canLike={canLike} />
@@ -46,13 +48,16 @@ export default function ReviewCard({ review, canLike }: { review: Review; canLik
   );
 }
 
-export function ReviewMeta({ review, canLike }: { review: Review; canLike: boolean }) {
+export async function ReviewMeta({ review, canLike }: { review: Review; canLike: boolean }) {
+  const me = await getCurrentProfile();
   return (
     <div className="meta">
       <LikeButton reviewId={review.id} likes={review.likes} liked={review.liked} canLike={canLike} />
       <Link href={`/avis/${review.id}`} className="like">
         💬 {review.comments === 0 ? "Commenter" : `${review.comments} commentaire${review.comments > 1 ? "s" : ""}`}
       </Link>
+      <Reactions reviewId={review.id} reactions={review.reactions} canReact={canLike} />
+      {me && me.id !== review.user_id && <ReportButton reviewId={review.id} />}
     </div>
   );
 }

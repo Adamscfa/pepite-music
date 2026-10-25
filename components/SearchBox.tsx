@@ -54,12 +54,21 @@ export default function SearchBox() {
 
   return (
     <div className="search" ref={box}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        aria-hidden="true"
+      >
         <circle cx="11" cy="11" r="7" />
         <path d="m20 20-3.5-3.5" />
       </svg>
       <input
         type="search"
+        id="recherche"
         placeholder="Chercher un album, un artiste ou un titre"
         aria-label="Chercher un album, un artiste ou un titre"
         autoComplete="off"

@@ -44,6 +44,22 @@ Les photos de profil, favoris, abonnements, « j'aime », commentaires et listes
 
 Pour noter aussi chaque chanson, colle ensuite [`supabase/03-chansons.sql`](supabase/03-chansons.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, juste après la mise en ligne du code).
 
+### Mise à jour « notifications, messages et Pépite de la semaine »
+
+Notifications, réactions en emoji, coup de cœur, signalements, messages privés entre amis et votes de la semaine : colle [`supabase/04-ameliorations.sql`](supabase/04-ameliorations.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, juste après la mise en ligne du code, et après `03-chansons.sql`).
+
+Les avis signalés se trouvent dans **Table Editor > reports**. Un avis signalé par 3 membres est masqué automatiquement (colonne `hidden` de la table `reviews` : remets-la sur `false` pour le réafficher).
+
+### Connexion avec Google (facultatif)
+
+Le bouton « Continuer avec Google » ne marche qu'une fois Google branché dans Supabase :
+
+1. Sur [console.cloud.google.com](https://console.cloud.google.com), crée un projet, puis **APIs et services > Identifiants > Créer des identifiants > ID client OAuth** (type « Application Web »).
+2. Dans **URI de redirection autorisés**, colle l'adresse donnée par Supabase dans **Authentication > Sign In / Providers > Google** (elle finit par `/auth/v1/callback`).
+3. Recopie l'**ID client** et le **Code secret** dans cette page Supabase, active Google et enregistre.
+
+Le pseudo des comptes Google est fabriqué à partir de l'e-mail ; le membre peut changer son nom affiché sur son profil.
+
 ### Pour tester plus vite (facultatif)
 
 Par défaut, Supabase envoie un e-mail de confirmation à chaque inscription. Pendant tes tests, tu peux le couper dans **Authentication > Sign In / Providers > Email**, en décochant **Confirm email**.
@@ -60,4 +76,4 @@ Si tu le laisses activé, va dans **Authentication > URL Configuration** et mets
 | `components/` | Les morceaux réutilisés : barre du haut, étoiles, carte d'avis… |
 | `lib/deezer.ts` | Les appels à l'API Deezer |
 | `lib/data.ts` | Les lectures dans Supabase |
-| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, puis `03-chansons.sql` |
+| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, puis `04-ameliorations.sql` |

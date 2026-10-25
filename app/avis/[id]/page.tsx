@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AuthorLink from "@/components/AuthorLink";
 import ReviewCard from "@/components/ReviewCard";
+import StoryButton from "@/components/StoryButton";
 import { deleteComment } from "@/app/social-actions";
 import { getComments, getCurrentProfile, getReview } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
@@ -20,7 +21,12 @@ export async function generateMetadata({ params }: PageProps<"/avis/[id]">): Pro
   const name = review.track_title ?? review.album_title;
   const title = `${review.profile.display_name} a noté ${name} ${"★".repeat(review.rating)}`;
   const description = review.body ? review.body.slice(0, 160) : `${name} de ${review.artist_name}, noté sur Pépite.`;
-  return { title, description, openGraph: { title, description }, twitter: { card: "summary_large_image", title, description } };
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { card: "summary_large_image", title, description },
+  };
 }
 
 export default async function ReviewPage({ params }: PageProps<"/avis/[id]">) {
@@ -33,6 +39,9 @@ export default async function ReviewPage({ params }: PageProps<"/avis/[id]">) {
         Avis
       </div>
       <ReviewCard review={review} canLike={Boolean(me)} />
+      <div className="row" style={{ justifyContent: "flex-start" }}>
+        <StoryButton reviewId={review.id} />
+      </div>
 
       <section style={{ marginTop: 28 }}>
         <h2 className="section-title">

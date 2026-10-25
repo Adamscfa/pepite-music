@@ -59,10 +59,7 @@ type RawSearch = {
 };
 
 export async function searchAlbums(query: string): Promise<AlbumHit[]> {
-  const json = await get<RawSearch>(
-    `/search/album?q=${encodeURIComponent(query)}&limit=8`,
-    3600,
-  );
+  const json = await get<RawSearch>(`/search/album?q=${encodeURIComponent(query)}&limit=8`, 3600);
   return (json?.data ?? []).map((a) => ({
     id: a.id,
     title: a.title,
@@ -109,6 +106,17 @@ export async function getAlbum(id: number): Promise<Album | null> {
 // Le top albums du moment chez Deezer, pour l'accueil.
 export async function getTopAlbums(limit = 10): Promise<AlbumHit[]> {
   const json = await get<RawSearch>(`/chart/0/albums?limit=${limit}`, 3600);
+  return (json?.data ?? []).map((a) => ({
+    id: a.id,
+    title: a.title,
+    artist: a.artist.name,
+    cover: a.cover_medium,
+  }));
+}
+
+// Les sorties récentes mises en avant par Deezer.
+export async function getNewReleases(limit = 12): Promise<AlbumHit[]> {
+  const json = await get<RawSearch>(`/editorial/0/releases?limit=${limit}`, 3600);
   return (json?.data ?? []).map((a) => ({
     id: a.id,
     title: a.title,

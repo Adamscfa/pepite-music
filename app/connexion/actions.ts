@@ -29,7 +29,9 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
 
 export async function signUp(_prev: AuthState, formData: FormData): Promise<AuthState> {
   if (!hasSupabaseConfig) return { error: NOT_CONFIGURED };
-  const username = String(formData.get("username") ?? "").trim().toLowerCase();
+  const username = String(formData.get("username") ?? "")
+    .trim()
+    .toLowerCase();
   const displayName = String(formData.get("display_name") ?? "").trim() || username;
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
@@ -41,11 +43,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   if (password.length < 6) return { error: "Le mot de passe doit faire au moins 6 caractères." };
 
   const supabase = await createClient();
-  const { data: taken } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("username", username)
-    .maybeSingle();
+  const { data: taken } = await supabase.from("profiles").select("id").eq("username", username).maybeSingle();
   if (taken) return { error: "Ce pseudo est déjà pris." };
 
   const h = await headers();
@@ -70,6 +68,20 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   }
   revalidatePath("/", "layout");
   redirect("/");
+}
+
+// Connexion en un clic : Google renvoie ensuite sur /auth/callback.
+export async function signInWithGoogle() {
+  if (!hasSupabaseConfig) redirect("/connexion");
+  const supabase = await createClient();
+  const h = await headers();
+  const origin = h.get("origin") ?? `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${origin}/auth/callback` },
+  });
+  if (error || !data.url) redirect("/connexion?erreur=google");
+  redirect(data.url);
 }
 
 export async function signOut() {

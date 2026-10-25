@@ -7,6 +7,8 @@ export const metadata: Metadata = { title: "Connexion" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/connexion">) {
   if (await getCurrentProfile()) redirect("/");
-  const { erreur } = await searchParams;
-  return <AuthForm linkError={erreur === "lien"} />;
+  const { erreur, mode } = await searchParams;
+  return (
+    <AuthForm linkError={erreur === "lien"} googleError={erreur === "google"} signUpFirst={mode === "inscription"} />
+  );
 }

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/data";
+import { areFriends, EMOJIS, getCurrentProfile, getProfileByUsername, weekStart } from "@/lib/data";
 import { getAlbum } from "@/lib/deezer";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,6 +29,37 @@ export async function toggleLike(reviewId: number, like: boolean) {
   revalidatePath("/", "layout");
 }
 
+// ---- Réactions en emoji ----
+
+export async function toggleReaction(reviewId: number, emoji: string, on: boolean) {
+  const me = await getCurrentProfile();
+  if (!me || !(EMOJIS as readonly string[]).includes(emoji)) return;
+  const supabase = await createClient();
+  if (on) await supabase.from("review_reactions").insert({ review_id: reviewId, user_id: me.id, emoji });
+  else
+    await supabase.from("review_reactions").delete().eq("review_id", reviewId).eq("user_id", me.id).eq("emoji", emoji);
+  revalidatePath("/", "layout");
+}
+
+// ---- Signalements ----
+
+const REASONS = ["spam", "mechant", "hors-sujet", "autre"];
+
+export async function reportReview(_prev: FormState, formData: FormData): Promise<FormState> {
+  const me = await getCurrentProfile();
+  if (!me) return { error: LOGIN };
+  const reason = String(formData.get("reason"));
+  if (!REASONS.includes(reason)) return { error: "Choisis une raison." };
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("reports")
+    .insert({ review_id: Number(formData.get("review_id")), user_id: me.id, reason });
+  // 23505 : déjà signalé par ce membre, on le remercie quand même.
+  if (error && error.code !== "23505") return { error: FAILED };
+  revalidatePath("/", "layout");
+  return { done: true };
+}
+
 // ---- Commentaires ----
 
 export async function addComment(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -49,7 +80,11 @@ export async function deleteComment(formData: FormData) {
   const me = await getCurrentProfile();
   if (!me) return;
   const supabase = await createClient();
-  await supabase.from("review_comments").delete().eq("id", Number(formData.get("comment_id"))).eq("user_id", me.id);
+  await supabase
+    .from("review_comments")
+    .delete()
+    .eq("id", Number(formData.get("comment_id")))
+    .eq("user_id", me.id);
   revalidatePath("/", "layout");
 }
 
@@ -93,7 +128,11 @@ export async function removeFavorite(formData: FormData) {
   const me = await getCurrentProfile();
   if (!me) return;
   const supabase = await createClient();
-  await supabase.from("favorites").delete().eq("user_id", me.id).eq("position", Number(formData.get("position")));
+  await supabase
+    .from("favorites")
+    .delete()
+    .eq("user_id", me.id)
+    .eq("position", Number(formData.get("position")));
   revalidatePath("/", "layout");
 }
 
@@ -117,7 +156,11 @@ export async function deleteList(formData: FormData) {
   const me = await getCurrentProfile();
   if (!me) return;
   const supabase = await createClient();
-  await supabase.from("lists").delete().eq("id", Number(formData.get("list_id"))).eq("user_id", me.id);
+  await supabase
+    .from("lists")
+    .delete()
+    .eq("id", Number(formData.get("list_id")))
+    .eq("user_id", me.id);
   revalidatePath("/", "layout");
   redirect(`/profil/${me.username}`);
 }
@@ -146,5 +189,74 @@ export async function removeFromList(formData: FormData) {
     .delete()
     .eq("list_id", Number(formData.get("list_id")))
     .eq("album_id", Number(formData.get("album_id")));
+  revalidatePath("/", "layout");
+}
+
+// ---- Messages privés et recommandations ----
+
+export async function sendMessage(_prev: FormState, formData: FormData): Promise<FormState> {
+  const me = await getCurrentProfile();
+  if (!me) return { error: LOGIN };
+  const friend = await getProfileByUsername(String(formData.get("to") ?? ""));
+  if (!friend || friend.id === me.id) return { error: "Choisis un ami." };
+  if (!(await areFriends(me.id, friend.id))) {
+    return { error: "Vous devez être amis : l'un de vous doit être abonné à l'autre." };
+  }
+  const body = String(formData.get("body") ?? "").trim();
+  if (body.length > 1000) return { error: "Ton message est trop long (1000 caractères max)." };
+  const albumId = Number(formData.get("album_id")) || null;
+  const album = albumId ? await albumRef(albumId) : null;
+  if (albumId && !album) return { error: FAILED };
+  if (!body && !album) return { error: "Écris quelque chose avant d'envoyer." };
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("messages")
+    .insert({ sender_id: me.id, recipient_id: friend.id, body, ...(album ?? {}) });
+  if (error) return { error: FAILED };
+  revalidatePath("/", "layout");
+  return { done: true };
+}
+
+export async function markThreadRead(friendId: string) {
+  const me = await getCurrentProfile();
+  if (!me) return;
+  const supabase = await createClient();
+  await supabase
+    .from("messages")
+    .update({ read_at: new Date().toISOString() })
+    .eq("recipient_id", me.id)
+    .eq("sender_id", friendId)
+    .is("read_at", null);
+  revalidatePath("/", "layout");
+}
+
+// ---- Notifications ----
+
+export async function markNotificationsRead() {
+  const me = await getCurrentProfile();
+  if (!me) return;
+  const supabase = await createClient();
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("user_id", me.id)
+    .is("read_at", null);
+  revalidatePath("/", "layout");
+}
+
+// ---- Pépite de la semaine ----
+
+export async function voteWeekly(formData: FormData) {
+  const me = await getCurrentProfile();
+  if (!me) return;
+  const supabase = await createClient();
+  if (formData.get("remove") === "1") {
+    await supabase.from("weekly_votes").delete().eq("user_id", me.id).eq("week", weekStart());
+  } else {
+    const album = await albumRef(Number(formData.get("album_id")));
+    if (!album) return;
+    // La semaine est remplie par la base (lundi en cours).
+    await supabase.from("weekly_votes").upsert({ user_id: me.id, ...album }, { onConflict: "user_id,week" });
+  }
   revalidatePath("/", "layout");
 }

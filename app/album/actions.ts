@@ -5,7 +5,8 @@ import { getAlbum, getTrack } from "@/lib/deezer";
 import { getCurrentProfile } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 
-export type ReviewState = { error?: string; saved?: boolean };
+// "at" change à chaque publication pour rejouer la petite animation.
+export type ReviewState = { error?: string; saved?: boolean; at?: number };
 
 // Copie de l'album (ou de la chanson) relue chez Deezer plutôt que reçue du navigateur.
 async function snapshot(albumId: number, trackId: number | null) {
@@ -43,6 +44,7 @@ export async function saveReview(_prev: ReviewState, formData: FormData): Promis
   const trackId = Number(formData.get("track_id")) || null;
   const rating = Number(formData.get("rating"));
   const body = String(formData.get("body") ?? "").trim();
+  const heart = formData.get("heart") === "1";
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) return { error: "Choisis une note de 1 à 5 étoiles." };
   if (body.length > 2000) return { error: "Ton avis est trop long (2000 caractères max)." };
 
@@ -53,13 +55,13 @@ export async function saveReview(_prev: ReviewState, formData: FormData): Promis
   const { error } = await supabase
     .from("reviews")
     .upsert(
-      { user_id: me.id, ...item, rating, body, updated_at: new Date().toISOString() },
+      { user_id: me.id, ...item, rating, body, heart, updated_at: new Date().toISOString() },
       { onConflict: "user_id,album_id,track_id" },
     );
   if (error) return { error: "L'enregistrement a échoué. Réessaie dans un instant." };
 
   revalidatePath("/", "layout");
-  return { saved: true };
+  return { saved: true, at: Date.now() };
 }
 
 export async function deleteReview(formData: FormData) {
@@ -67,7 +69,11 @@ export async function deleteReview(formData: FormData) {
   if (!me) return;
   const trackId = Number(formData.get("track_id")) || null;
   const supabase = await createClient();
-  const query = supabase.from("reviews").delete().eq("user_id", me.id).eq("album_id", Number(formData.get("album_id")));
+  const query = supabase
+    .from("reviews")
+    .delete()
+    .eq("user_id", me.id)
+    .eq("album_id", Number(formData.get("album_id")));
   await (trackId ? query.eq("track_id", trackId) : query.is("track_id", null));
   revalidatePath("/", "layout");
 }
