@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Figtree, JetBrains_Mono } from "next/font/google";
+import { cookies } from "next/headers";
+import { Bricolage_Grotesque, Figtree, JetBrains_Mono, Unbounded } from "next/font/google";
 import Header from "@/components/Header";
+import PlayerProvider from "@/components/Player";
 import SetupNotice from "@/components/SetupNotice";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({ variable: "--font-display", subsets: ["latin"], weight: ["500", "700", "800"] });
 const body = Figtree({ variable: "--font-body", subsets: ["latin"], weight: ["400", "500", "600"] });
+// Police des grands titres et du logo.
+const title = Unbounded({ variable: "--font-title", subsets: ["latin"], weight: ["600", "800"] });
 const mono = JetBrains_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["500"] });
 
 // Les pages dépendent du membre connecté : on les génère à chaque visite.
@@ -23,15 +27,23 @@ export const metadata: Metadata = {
   description: "Note et critique les albums que tu écoutes, et découvre ce que la communauté écoute.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Thème choisi avec le bouton ☀/☾ ; sans choix, on suit le réglage du téléphone.
+  const theme = (await cookies()).get("theme")?.value;
   return (
-    <html lang="fr" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+    <html
+      lang="fr"
+      className={`${display.variable} ${body.variable} ${mono.variable} ${title.variable}`}
+      data-theme={theme === "light" || theme === "dark" ? theme : undefined}
+    >
       <body>
-        <Header />
-        <main>
-          <SetupNotice />
-          {children}
-        </main>
+        <PlayerProvider>
+          <Header />
+          <main>
+            <SetupNotice />
+            {children}
+          </main>
+        </PlayerProvider>
       </body>
     </html>
   );

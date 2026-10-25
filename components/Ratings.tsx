@@ -75,6 +75,7 @@ export function RatePanel({
       trackId={trackId}
       initialRating={mine?.rating ?? 0}
       initialBody={mine?.body ?? ""}
+      initialHeart={mine?.heart ?? false}
     />
   );
 }
@@ -91,7 +92,7 @@ export function MemberReviews({ reviews, canLike }: { reviews: Review[]; canLike
             <div className="mini" key={r.id}>
               <div className="who">
                 <AuthorLink user={r.profile} />
-                <Stars value={r.rating} /> · {timeAgo(r.updated_at)}
+                <Stars value={r.rating} heart={r.heart} /> · {timeAgo(r.updated_at)}
               </div>
               {r.body && <p>{r.body}</p>}
               <ReviewMeta review={r} canLike={canLike} />
