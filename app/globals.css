@@ -144,3 +144,8 @@ details.edit summary { cursor: pointer; color: var(--muted); font-weight: 600; f
   .review { grid-template-columns: 64px 1fr; gap: 12px; }
   .review .cover.m { width: 64px; }
 }
+
+/* Albums du moment (accueil) */
+.discover { margin-bottom: 36px; }
+.album-name { font-weight: 600; font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; }
+.grid-rated .album-name + small { margin-top: -4px; }

@@ -35,11 +35,20 @@ type DeezerError = { error?: { message?: string } };
 async function get<T>(path: string, revalidate: number): Promise<T | null> {
   try {
     const res = await fetch(`${API}${path}`, { next: { revalidate } });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`Deezer ${path} : réponse ${res.status}`);
+      return null;
+    }
     const json = (await res.json()) as T & DeezerError;
     // Deezer répond 200 même en cas d'erreur, avec un champ "error".
-    return json.error ? null : json;
-  } catch {
+    if (json.error) {
+      console.error(`Deezer ${path} : ${JSON.stringify(json.error)}`);
+      return null;
+    }
+    return json;
+  } catch (error) {
+    // Visible dans Vercel > Logs.
+    console.error(`Deezer ${path} : appel impossible`, error);
     return null;
   }
 }
@@ -93,4 +102,15 @@ export async function getAlbum(id: number): Promise<Album | null> {
       preview: t.preview,
     })),
   };
+}
+
+// Le top albums du moment chez Deezer, pour l'accueil.
+export async function getTopAlbums(limit = 10): Promise<AlbumHit[]> {
+  const json = await get<RawSearch>(`/chart/0/albums?limit=${limit}`, 3600);
+  return (json?.data ?? []).map((a) => ({
+    id: a.id,
+    title: a.title,
+    artist: a.artist.name,
+    cover: a.cover_medium,
+  }));
 }
