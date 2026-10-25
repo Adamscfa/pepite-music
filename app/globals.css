@@ -35,7 +35,7 @@ h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-he
 .top { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); padding-inline: 16px; }
 .top-in { max-width: 860px; margin: 0 auto; display: flex; align-items: center; gap: 16px; padding-block: 10px; flex-wrap: wrap; }
 .logo { font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
-.nugget { width: 18px; height: 18px; background: var(--gold); clip-path: polygon(30% 0, 80% 8%, 100% 52%, 72% 100%, 18% 90%, 0 40%); }
+.logo-img { display: block; border-radius: 50%; }
 .nav { display: flex; gap: 4px; align-items: center; }
 .nav a, .nav button { background: none; border: 0; padding: 6px 12px; border-radius: 999px; color: var(--muted); font-weight: 600; }
 .nav a[aria-current="page"] { background: var(--gold-soft); color: var(--ink); }

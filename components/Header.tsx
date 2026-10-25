@@ -10,7 +10,7 @@ export default async function Header() {
     <header className="top">
       <div className="top-in">
         <Link href="/" className="logo">
-          <span className="nugget" aria-hidden="true" />
+          <img src="/logo.png" alt="" width={36} height={36} className="logo-img" />
           Pépite
         </Link>
         <SearchBox />
