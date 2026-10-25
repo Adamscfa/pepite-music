@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import AlbumTile from "@/components/AlbumTile";
 import Carousel from "@/components/Carousel";
-import { CHART_GENRES, getChart, getWorldTopTracks } from "@/lib/deezer";
+import { CHART_GENRES, getChart, getCountryCharts, getPlaylistTracks, getWorldTopTracks } from "@/lib/deezer";
+import CountryPicker from "./CountryPicker";
 import ChartTracks from "./ChartTracks";
 
 export const metadata: Metadata = {
@@ -11,21 +12,24 @@ export const metadata: Metadata = {
 };
 
 export default async function ChartsPage({ searchParams }: PageProps<"/classements">) {
-  const { genre: rawGenre, zone } = await searchParams;
+  const { genre: rawGenre, zone, id } = await searchParams;
+  const countries = await getCountryCharts();
+  // Seuls les tops de la liste Deezer sont acceptés, pas n'importe quelle playlist.
+  const country = zone === "pays" ? (countries.find((c) => String(c.id) === id) ?? null) : null;
   const world = zone === "monde";
   const genre = CHART_GENRES.find((g) => String(g.id) === rawGenre) ?? CHART_GENRES[0];
-  const [chart, worldTracks] = await Promise.all([
-    world ? null : getChart(genre.id),
-    world ? getWorldTopTracks() : null,
+  const onlyTracks = world || Boolean(country);
+  const [chart, playlistTracks] = await Promise.all([
+    onlyTracks ? null : getChart(genre.id),
+    country ? getPlaylistTracks(country.id) : world ? getWorldTopTracks() : null,
   ]);
-  const tracks = worldTracks ?? chart?.tracks ?? [];
+  const tracks = playlistTracks ?? chart?.tracks ?? [];
+  const heading = country ? country.title : world ? "Top Monde" : genre.id ? `Top ${genre.name} France` : "Top France";
 
   return (
     <>
       <div className="eyebrow">Classements Deezer · mis à jour chaque jour</div>
-      <h1 style={{ fontSize: 30, marginBottom: 14 }}>
-        {world ? "Top Monde" : genre.id ? `Top ${genre.name} France` : "Top France"}
-      </h1>
+      <h1 style={{ fontSize: 30, marginBottom: 14 }}>{heading}</h1>
 
       <div className="genres" role="navigation" aria-label="Choisir un classement">
         {CHART_GENRES.map((g) => (
@@ -33,7 +37,7 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
             key={g.id}
             href={g.id ? `/classements?genre=${g.id}` : "/classements"}
             className="chip"
-            aria-current={!world && g.id === genre.id ? "page" : undefined}
+            aria-current={!onlyTracks && g.id === genre.id ? "page" : undefined}
           >
             {g.name}
           </Link>
@@ -41,6 +45,7 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
         <Link href="/classements?zone=monde" className="chip" aria-current={world ? "page" : undefined}>
           🌍 Monde
         </Link>
+        {countries.length > 0 && <CountryPicker countries={countries} current={country?.id ?? null} />}
       </div>
 
       {chart && chart.albums.length > 0 && (
