@@ -16,7 +16,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", background: "#F3F2F7", padding: 60, gap: 56 }}>
-        {album && <img src={album.cover} width={480} height={480} style={{ borderRadius: 16, alignSelf: "center" }} alt="" />}
+        {album?.cover && <img src={album.cover} width={480} height={480} style={{ borderRadius: 16, alignSelf: "center" }} alt="" />}
         <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between" }}>
           <OgBrand logo={logo} />
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>

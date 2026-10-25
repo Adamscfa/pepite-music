@@ -156,3 +156,59 @@ export async function getArtistAlbums(artist: Artist): Promise<ArtistAlbum[]> {
     })
     .sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
 }
+
+export type TrackHit = { id: number; title: string; artist: string; albumId: number; cover: string };
+
+type RawTracks = {
+  data: { id: number; title: string; artist: { name: string }; album: { id: number; cover_medium: string } }[];
+};
+
+export async function searchTracks(query: string): Promise<TrackHit[]> {
+  const json = await get<RawTracks>(`/search/track?q=${encodeURIComponent(query)}&limit=5`, 3600);
+  return (json?.data ?? []).map((t) => ({
+    id: t.id,
+    title: t.title,
+    artist: t.artist.name,
+    albumId: t.album.id,
+    cover: t.album.cover_medium,
+  }));
+}
+
+export type TrackDetail = Track & {
+  artist: string;
+  artistId: number;
+  albumId: number;
+  albumTitle: string;
+  cover: string;
+  coverSmall: string;
+  year: number | null;
+};
+
+type RawTrack = {
+  id: number;
+  title: string;
+  duration: number;
+  preview: string;
+  release_date?: string;
+  artist: { id: number; name: string };
+  album: { id: number; title: string; cover_xl: string; cover_medium: string };
+};
+
+export async function getTrack(id: number): Promise<TrackDetail | null> {
+  const t = await get<RawTrack>(`/track/${id}`, 86400);
+  if (!t) return null;
+  const year = t.release_date ? Number(t.release_date.slice(0, 4)) : NaN;
+  return {
+    id: t.id,
+    title: t.title,
+    duration: t.duration,
+    preview: t.preview,
+    artist: t.artist.name,
+    artistId: t.artist.id,
+    albumId: t.album.id,
+    albumTitle: t.album.title,
+    cover: t.album.cover_xl,
+    coverSmall: t.album.cover_medium,
+    year: Number.isFinite(year) && year > 0 ? year : null,
+  };
+}

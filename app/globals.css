@@ -183,3 +183,4 @@ img.avatar { object-fit: cover; }
 @media (max-width: 640px) {
   .favs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+.tracks li.highlight { background: var(--gold-soft); border-radius: 8px; margin-inline: -8px; padding-inline: 8px; font-weight: 600; }
