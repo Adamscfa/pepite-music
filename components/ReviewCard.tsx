@@ -1,13 +1,13 @@
 import Link from "next/link";
 import type { Review } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
-import Avatar from "./Avatar";
+import AuthorLink from "./AuthorLink";
 import Cover from "./Cover";
+import LikeButton from "./LikeButton";
 import Stars from "./Stars";
 
-export default function ReviewCard({ review }: { review: Review }) {
+export default function ReviewCard({ review, canLike }: { review: Review; canLike: boolean }) {
   const album = `/album/${review.album_id}`;
-  const { username, display_name } = review.profile;
   return (
     <article className="review">
       <Link href={album} aria-label={review.album_title}>
@@ -15,10 +15,7 @@ export default function ReviewCard({ review }: { review: Review }) {
       </Link>
       <div>
         <div className="who">
-          <Link href={`/profil/${username}`} className="link" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <Avatar username={username} name={display_name} />
-            <b>{display_name}</b>
-          </Link>
+          <AuthorLink user={review.profile} />
           a noté · {timeAgo(review.updated_at)}
         </div>
         <Link href={album} className="link">
@@ -32,7 +29,19 @@ export default function ReviewCard({ review }: { review: Review }) {
           <Stars value={review.rating} />
         </div>
         {review.body && <p>{review.body}</p>}
+        <ReviewMeta review={review} canLike={canLike} />
       </div>
     </article>
+  );
+}
+
+export function ReviewMeta({ review, canLike }: { review: Review; canLike: boolean }) {
+  return (
+    <div className="meta">
+      <LikeButton reviewId={review.id} likes={review.likes} liked={review.liked} canLike={canLike} />
+      <Link href={`/avis/${review.id}`} className="like">
+        💬 {review.comments === 0 ? "Commenter" : `${review.comments} commentaire${review.comments > 1 ? "s" : ""}`}
+      </Link>
+    </div>
   );
 }

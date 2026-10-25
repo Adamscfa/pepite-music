@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Avatar from "@/components/Avatar";
+import AuthorLink from "@/components/AuthorLink";
 import Cover from "@/components/Cover";
+import { ReviewMeta } from "@/components/ReviewCard";
 import Stars from "@/components/Stars";
-import { getAlbumReviews, getCurrentProfile } from "@/lib/data";
+import { getAlbumReviews, getCurrentProfile, getUserLists } from "@/lib/data";
 import { getAlbum } from "@/lib/deezer";
 import { formatScore, timeAgo } from "@/lib/format";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
+import AlbumActions from "../AlbumActions";
 import RatingForm from "../RatingForm";
 import TrackList from "../TrackList";
 
@@ -27,11 +29,12 @@ export async function generateMetadata({ params }: PageProps<"/album/[id]">): Pr
 export default async function AlbumPage({ params }: PageProps<"/album/[id]">) {
   const album = await loadAlbum(params);
   const [reviews, me] = await Promise.all([getAlbumReviews(album.id), getCurrentProfile()]);
+  const myLists = me ? await getUserLists(me.id) : [];
 
   const average = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
   const counts = [5, 4, 3, 2, 1].map((n) => [n, reviews.filter((r) => r.rating === n).length]);
   const max = Math.max(1, ...counts.map(([, c]) => c));
-  const mine = me ? reviews.find((r) => r.profile.username === me.username) : undefined;
+  const mine = me ? reviews.find((r) => r.user_id === me.id) : undefined;
 
   return (
     <>
@@ -40,7 +43,9 @@ export default async function AlbumPage({ params }: PageProps<"/album/[id]">) {
         <div>
           <div className="eyebrow">Album{album.genre ? ` · ${album.genre}` : ""}</div>
           <h1>{album.title}</h1>
-          <div className="artist">{album.artist}</div>
+          <Link href={`/artiste/${album.artistId}`} className="artist link-under">
+            {album.artist}
+          </Link>
           <div className="facts">
             {album.year ? `${album.year} · ` : ""}
             {album.trackCount} titre{album.trackCount > 1 ? "s" : ""}
@@ -71,12 +76,15 @@ export default async function AlbumPage({ params }: PageProps<"/album/[id]">) {
       <div className="cols">
         <div>
           {me ? (
-            <RatingForm
-              key={mine?.id ?? "new"}
-              albumId={album.id}
-              initialRating={mine?.rating ?? 0}
-              initialBody={mine?.body ?? ""}
-            />
+            <>
+              <RatingForm
+                key={mine?.id ?? "new"}
+                albumId={album.id}
+                initialRating={mine?.rating ?? 0}
+                initialBody={mine?.body ?? ""}
+              />
+              <AlbumActions albumId={album.id} lists={myLists.map((l) => ({ id: l.id, title: l.title }))} />
+            </>
           ) : (
             <div className="box rate">
               <h2>Ta note</h2>
@@ -102,13 +110,11 @@ export default async function AlbumPage({ params }: PageProps<"/album/[id]">) {
                 reviews.map((r) => (
                   <div className="mini" key={r.id}>
                     <div className="who">
-                      <Link href={`/profil/${r.profile.username}`} className="link" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                        <Avatar username={r.profile.username} name={r.profile.display_name} />
-                        <b>{r.profile.display_name}</b>
-                      </Link>
+                      <AuthorLink user={r.profile} />
                       <Stars value={r.rating} /> · {timeAgo(r.updated_at)}
                     </div>
                     {r.body && <p>{r.body}</p>}
+                    <ReviewMeta review={r} canLike={Boolean(me)} />
                   </div>
                 ))
               ) : (
