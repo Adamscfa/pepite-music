@@ -125,6 +125,73 @@ export async function getNewReleases(limit = 12): Promise<AlbumHit[]> {
   }));
 }
 
+// ---- Classements ----
+
+// Genres Deezer proposés sur la page Classements (0 = tous les genres).
+export const CHART_GENRES = [
+  { id: 0, name: "Tout" },
+  { id: 116, name: "Rap" },
+  { id: 132, name: "Pop" },
+  { id: 152, name: "Rock" },
+  { id: 106, name: "Électro" },
+  { id: 165, name: "R&B" },
+  { id: 113, name: "Dance" },
+  { id: 129, name: "Jazz" },
+];
+
+// Playlist officielle « Top Monde » de Deezer.
+const WORLD_PLAYLIST = 3155776842;
+
+export type ChartTrack = TrackHit & { duration: number; preview: string; albumTitle: string; artistId: number };
+
+type RawChartTracks = {
+  data: {
+    id: number;
+    title: string;
+    duration: number;
+    preview: string;
+    artist: { id: number; name: string };
+    album: { id: number; title: string; cover_medium: string };
+  }[];
+};
+
+const chartTrack = (t: RawChartTracks["data"][number]): ChartTrack => ({
+  id: t.id,
+  title: t.title,
+  duration: t.duration,
+  preview: t.preview,
+  artist: t.artist.name,
+  artistId: t.artist.id,
+  albumId: t.album.id,
+  albumTitle: t.album.title,
+  cover: t.album.cover_medium,
+});
+
+// Top titres, albums et artistes d'un genre. Deezer classe selon le pays du serveur
+// (Paris sur Vercel), donc ce sont les tops France.
+export async function getChart(genre: number) {
+  const [tracks, albums, artists] = await Promise.all([
+    get<RawChartTracks>(`/chart/${genre}/tracks?limit=50`, 3600),
+    get<RawSearch>(`/chart/${genre}/albums?limit=20`, 3600),
+    get<RawArtists>(`/chart/${genre}/artists?limit=20`, 3600),
+  ]);
+  return {
+    tracks: (tracks?.data ?? []).map(chartTrack),
+    albums: (albums?.data ?? []).map((a) => ({
+      id: a.id,
+      title: a.title,
+      artist: a.artist.name,
+      cover: a.cover_medium,
+    })),
+    artists: (artists?.data ?? []).map((a) => ({ id: a.id, name: a.name, picture: a.picture_medium })),
+  };
+}
+
+export async function getWorldTopTracks(): Promise<ChartTrack[]> {
+  const json = await get<RawChartTracks>(`/playlist/${WORLD_PLAYLIST}/tracks?limit=50`, 3600);
+  return (json?.data ?? []).map(chartTrack);
+}
+
 export type ArtistHit = { id: number; name: string; picture: string };
 
 type RawArtists = { data: { id: number; name: string; picture_medium: string }[] };

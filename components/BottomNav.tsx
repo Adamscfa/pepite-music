@@ -32,6 +32,9 @@ export default function BottomNav({
       >
         <span aria-hidden="true">⌕</span>Recherche
       </button>
+      <Link href="/classements" aria-current={current("/classements")}>
+        <span aria-hidden="true">♛</span>Tops
+      </Link>
       {username && (
         <>
           <Link href="/messages" aria-current={current("/messages")}>
