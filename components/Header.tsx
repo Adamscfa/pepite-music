@@ -27,6 +27,9 @@ export default async function Header() {
             <NavLink href="/" match="/">
               Fil
             </NavLink>
+            <NavLink href="/classements" match="/classements">
+              Classements
+            </NavLink>
             {me ? (
               <>
                 <NavLink href="/messages" match="/messages">

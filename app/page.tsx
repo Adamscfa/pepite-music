@@ -64,7 +64,11 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
       )}
 
       {topAlbums.length > 0 && (
-        <Carousel eyebrow="À découvrir" title="Les albums du moment">
+        <Carousel
+          eyebrow="Classement Deezer"
+          title="Les albums du moment"
+          more={{ href: "/classements", label: "Tous les classements →" }}
+        >
           {topAlbums.map((a) => (
             <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} />
           ))}
