@@ -81,9 +81,8 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     la semaine) et le jeudi (rappel de vote).
 16. Faire venir du monde (1er novembre 2026) : **lien d'invitation** personnel
     (`/invite/<pseudo>`, abonnement mutuel dès l'inscription, compteur et
-    encart « Invite tes amis » sur son profil) et **images verticales à poster**
-    (`/partager` : Pépite de la semaine, top 5 de la semaine). Fichier
-    `11-invitations.sql`.
+    encart « Invite tes amis » sur son profil). Fichier `11-invitations.sql`.
+    (Les images à poster `/partager` ont été retirées à la demande.)
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
