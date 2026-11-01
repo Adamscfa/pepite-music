@@ -713,3 +713,7 @@ main { grid-column: 2; width: 100%; max-width: 1240px; margin: 0 auto; padding: 
   .hero-art img:nth-child(1), .hero-art img:nth-child(5) { display: none; }
 }
 .sidebar { border-right: 1px solid var(--line); }
+
+/* Étiquette « Démo » des membres de démonstration */
+.demo-badge { display: inline-block; vertical-align: 2px; margin-left: 4px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); font: 600 10px/1.5 var(--body); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+h1 .demo-badge { font-size: 12px; vertical-align: 8px; }

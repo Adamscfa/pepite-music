@@ -4,6 +4,7 @@ import { timeAgo } from "@/lib/format";
 import Avatar from "./Avatar";
 import CommentForm from "./CommentForm";
 import Cover from "./Cover";
+import DemoBadge from "./DemoBadge";
 import Icon from "./Icon";
 import LikeButton from "./LikeButton";
 import Reactions from "./Reactions";
@@ -34,7 +35,9 @@ export default async function ReviewCard({
         <Link href={`/profil/${review.profile.username}`} className="post-author">
           <Avatar user={review.profile} />
           <span>
-            <b>{review.profile.display_name}</b>
+            <b>
+              {review.profile.display_name} <DemoBadge show={review.profile.is_demo} />
+            </b>
             <small>
               {timeAgo(review.updated_at)} · {review.track_id ? "a noté un titre" : "a noté un album"}
             </small>
@@ -92,6 +95,7 @@ export default async function ReviewCard({
                   <Link href={`/profil/${c.profile.username}`} className="link-under">
                     <b>{c.profile.display_name}</b>
                   </Link>
+                  <DemoBadge show={c.profile.is_demo} />
                   <span>{timeAgo(c.created_at)}</span>
                 </div>
                 <p className="comment-body">{c.body}</p>

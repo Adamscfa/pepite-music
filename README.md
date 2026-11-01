@@ -54,6 +54,12 @@ Notifications, réactions en emoji, coup de cœur, signalements, messages privé
 
 Pour pouvoir répondre à un commentaire et aimer un commentaire : colle [`supabase/05-reponses-commentaires.sql`](supabase/05-reponses-commentaires.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, après `04-ameliorations.sql`). Sans lui, les commentaires simples marchent toujours, mais pas les réponses.
 
+### Membres de démonstration (facultatif)
+
+Pour que le site ne soit pas vide au lancement : colle [`supabase/06-comptes-demo.sql`](supabase/06-comptes-demo.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, après le fichier 05). Il crée 8 membres imaginaires avec des avis sur de vrais albums, des commentaires, des réponses, des « j'aime » et des abonnements. Ils sont marqués **Démo** sur le site, et personne ne peut se connecter à leurs comptes.
+
+Quand de vrais membres sont arrivés, colle [`supabase/demo-supprimer.sql`](supabase/demo-supprimer.sql) dans **SQL Editor** et clique sur **Run** pour tout effacer.
+
 Les avis signalés se trouvent dans **Table Editor > reports**. Un avis signalé par 3 membres est masqué automatiquement (colonne `hidden` de la table `reviews` : remets-la sur `false` pour le réafficher).
 
 ### Connexion avec Google (facultatif)
@@ -82,4 +88,4 @@ Si tu le laisses activé, va dans **Authentication > URL Configuration** et mets
 | `components/` | Les morceaux réutilisés : barre du haut, étoiles, carte d'avis… |
 | `lib/deezer.ts` | Les appels à l'API Deezer |
 | `lib/data.ts` | Les lectures dans Supabase |
-| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, `04-ameliorations.sql`, puis `05-reponses-commentaires.sql` |
+| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, `04-ameliorations.sql`, `05-reponses-commentaires.sql`, puis (facultatif) `06-comptes-demo.sql` ; `demo-supprimer.sql` efface les membres de démo |

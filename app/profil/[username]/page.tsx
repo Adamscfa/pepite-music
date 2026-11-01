@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
+import DemoBadge from "@/components/DemoBadge";
 import ListCard from "@/components/ListCard";
 import Stars from "@/components/Stars";
 import { removeFavorite, toggleFollow } from "@/app/social-actions";
@@ -55,8 +56,13 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
         <Avatar user={profile} big />
         <div style={{ minWidth: 0, flex: 1 }}>
           <div className="eyebrow">@{profile.username}</div>
-          <h1>{profile.display_name}</h1>
+          <h1>
+            {profile.display_name} <DemoBadge show={profile.is_demo} />
+          </h1>
           {profile.bio ? <p>{profile.bio}</p> : isMe && <p>Ajoute une bio et une photo pour te présenter.</p>}
+          {profile.is_demo && (
+            <p className="small">Membre de démonstration : ce compte et ses avis sont imaginaires.</p>
+          )}
         </div>
         {me && !isMe && (
           <div className="prof-actions">
