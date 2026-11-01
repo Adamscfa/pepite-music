@@ -36,8 +36,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 7. Page Classements : tops Deezer France et Monde, par genre (n°7)
 8. Classements : choisir le top d'un autre pays (n°8)
 
-9. Nouvelle interface (1er novembre 2026) : barre latérale bleu nuit, couleurs
-   violettes, grande barre de recherche, bandeau d'accueil qui défile, cartes
+9. Nouvelle interface (1er novembre 2026) : barre latérale vert très sombre,
+   couleurs vertes d'origine gardées (vert du logo, vert néon en mode sombre),
+   grande barre de recherche, bandeau d'accueil qui défile, cartes
    d'avis avec les derniers commentaires, colonne de droite (albums tendance,
    top contributeurs). Nouvelle page **Explorer** (nouveaux artistes, albums
    tendance, genres, titres et albums les plus commentés). **Réponses aux
@@ -76,7 +77,6 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Confirmer quels fichiers SQL ont été exécutés (tableau ci-dessus)
 - [ ] Exécuter `05-reponses-commentaires.sql` dans Supabase (après la fusion de la nouvelle interface)
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
-- [ ] Logo : il est vert alors que le site est passé au violet. Le garder, ou en faire une version violette ?
 - [ ] (idées à ajouter ici)
 
 ## Reprendre le projet depuis un autre compte
