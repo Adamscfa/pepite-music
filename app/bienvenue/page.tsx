@@ -8,6 +8,7 @@ import { getCurrentProfile, getSuggestedMembers } from "@/lib/data";
 import { getChart, getGenres, getTopAlbums, type AlbumHit } from "@/lib/deezer";
 import { finishOnboarding, saveGenres } from "./actions";
 import RateStep from "./RateStep";
+import { sharpImage } from "@/lib/images";
 
 export const metadata: Metadata = { title: "Bienvenue" };
 
@@ -46,7 +47,7 @@ async function GenresStep({ chosen }: { chosen: number[] }) {
         {genres.map((g) => (
           <label key={g.id} className="genre-card pickable">
             <input type="checkbox" name="genre" value={g.id} defaultChecked={chosen.includes(g.id)} />
-            <img src={g.picture} alt="" loading="lazy" />
+            <img {...sharpImage(g.picture, "(max-width: 760px) 50vw, 200px")} alt="" loading="lazy" />
             <span>{g.name}</span>
           </label>
         ))}

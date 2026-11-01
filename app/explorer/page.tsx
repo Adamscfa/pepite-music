@@ -17,6 +17,7 @@ import {
 } from "@/lib/deezer";
 import { formatScore } from "@/lib/format";
 import { getForYou } from "@/lib/recommend";
+import { sharpImage } from "@/lib/images";
 
 export const metadata: Metadata = {
   title: "Explorer",
@@ -137,7 +138,7 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
           <div className="carousel-track artists-row">
             {fresh.map((a) => (
               <Link key={a.id} href={`/artiste/${a.id}`} className="artist-tile">
-                <img src={a.picture} alt="" className="cover round" loading="lazy" />
+                <img {...sharpImage(a.picture, "120px")} alt="" className="cover round" loading="lazy" />
                 <span className="album-name">{a.name}</span>
                 <small className="small">{a.album}</small>
               </Link>
@@ -153,7 +154,7 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
           <div className="genre-grid">
             {genres.map((g) => (
               <Link key={g.id} href={`/explorer?genre=${g.id}`} className="genre-card">
-                <img src={g.picture} alt="" loading="lazy" />
+                <img {...sharpImage(g.picture, "(max-width: 760px) 50vw, 200px")} alt="" loading="lazy" />
                 <span>{g.name}</span>
               </Link>
             ))}
@@ -282,7 +283,7 @@ async function GenreView({ id }: { id: number }) {
           <div className="carousel-track artists-row">
             {chart.artists.map((a) => (
               <Link key={a.id} href={`/artiste/${a.id}`} className="artist-tile">
-                <img src={a.picture} alt="" className="cover round" loading="lazy" />
+                <img {...sharpImage(a.picture, "120px")} alt="" className="cover round" loading="lazy" />
                 <span className="album-name">{a.name}</span>
               </Link>
             ))}

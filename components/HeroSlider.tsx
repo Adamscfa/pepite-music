@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Icon from "./Icon";
+import { sharpImage } from "@/lib/images";
 
 export type Slide = { title: string; text: string; cta: { href: string; label: string }; covers: string[] };
 
@@ -29,7 +30,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
     >
       <div className="hero-art" aria-hidden="true" key={`art-${index}`}>
         {slide.covers.slice(0, 5).map((src, i) => (
-          <img key={src} src={src} alt="" style={{ "--i": i } as React.CSSProperties} />
+          <img key={src} {...sharpImage(src, "140px")} alt="" style={{ "--i": i } as React.CSSProperties} />
         ))}
       </div>
       <div className="hero-text" key={`text-${index}`}>

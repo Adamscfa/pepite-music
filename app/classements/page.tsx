@@ -5,6 +5,7 @@ import Carousel from "@/components/Carousel";
 import { CHART_GENRES, getChart, getCountryCharts, getPlaylistTracks, getWorldTopTracks } from "@/lib/deezer";
 import CountryPicker from "./CountryPicker";
 import ChartTracks from "./ChartTracks";
+import { sharpImage } from "@/lib/images";
 
 export const metadata: Metadata = {
   title: "Classements",
@@ -63,7 +64,7 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
           <div className="carousel-track artists-row">
             {chart.artists.map((a, i) => (
               <Link key={a.id} href={`/artiste/${a.id}`} className="artist-tile">
-                <img src={a.picture} alt="" className="cover round" />
+                <img {...sharpImage(a.picture, "120px")} alt="" className="cover round" loading="lazy" />
                 <span className="album-name">
                   {i + 1}. {a.name}
                 </span>

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { quickRate } from "@/app/album/actions";
+import { sharpImage } from "@/lib/images";
 
 // Pochette + 5 étoiles : un toucher suffit pour noter.
 export default function QuickRate({
@@ -24,7 +25,7 @@ export default function QuickRate({
 
   return (
     <div className={rating ? "quick-rate rated" : "quick-rate"}>
-      <img src={cover} alt={`Pochette de ${title}`} className="cover l" loading="lazy" />
+      <img {...sharpImage(cover, "(max-width: 760px) 50vw, 200px")} alt={`Pochette de ${title}`} className="cover l" loading="lazy" />
       <span className="album-name">{title}</span>
       <small>{artist}</small>
       <div className="picker small-picker" onMouseLeave={() => setHover(0)} aria-label={`Noter ${title}`}>
