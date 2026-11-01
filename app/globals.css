@@ -1186,3 +1186,34 @@ main:has(.chat) { padding-top: 0; }
   .rail::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
   .rail:hover::-webkit-scrollbar-thumb { background: var(--muted); }
 }
+
+/* =====================================================================
+   Téléphone : albums tendance et top contributeurs en rangées à faire glisser
+   (sur ordinateur, ils restent dans la colonne de droite)
+   ===================================================================== */
+.mobile-strips { display: none; }
+@media (max-width: 760px) {
+  .mobile-strips { display: grid; gap: 14px; }
+  .mobile-strips > section + section { margin-top: 0; }
+  .strip { display: grid; gap: 10px; }
+  .strip-head { display: flex; justify-content: space-between; align-items: center; }
+  .strip-head h2 { display: flex; align-items: center; gap: 8px; font-size: 18px; }
+  .strip-track { display: grid; grid-auto-flow: column; grid-auto-columns: 132px; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -12px; padding: 2px 12px 6px; scroll-padding-inline: 12px; scrollbar-width: none; }
+  .strip-track::-webkit-scrollbar { display: none; }
+  .strip-track > * { scroll-snap-align: start; }
+  .strip-album { display: grid; gap: 3px; align-content: start; min-width: 0; }
+  .strip-cover { position: relative; display: block; }
+  .strip-cover .cover.l { width: 100%; border-radius: 10px; }
+  .strip-rank { position: absolute; left: 6px; bottom: 6px; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 999px; display: grid; place-items: center; background: rgb(0 0 0 / .72); color: #fff; font: 800 13px/1 var(--display); }
+  .strip-album b, .strip-person b { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .strip-album small, .strip-person small { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .strip-stat { display: inline-flex; align-items: center; gap: 3px; color: var(--gold) !important; font-weight: 600; }
+  .strip-track.people { grid-auto-columns: 82px; padding-top: 14px; }
+  .strip-person { display: grid; justify-items: center; gap: 3px; text-align: center; min-width: 0; }
+  .strip-person .ring { position: relative; padding: 3px; border-radius: 50%; border: 2px solid var(--line); }
+  .strip-person .ring.first { border-color: #F5A524; }
+  .strip-person .avatar { width: 62px; height: 62px; font-size: 22px; }
+  .strip-person b, .strip-person small { max-width: 82px; }
+  .strip-person .demo-badge { display: none; }
+  .strip-crown { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); color: #F5A524; font-size: 18px; line-height: 1; text-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import HeroSlider, { type Slide } from "@/components/HeroSlider";
 import Icon from "@/components/Icon";
 import LoadMore from "@/components/LoadMore";
+import MobileHighlights from "@/components/MobileHighlights";
 import ReviewCard from "@/components/ReviewCard";
 import RightRail from "@/components/RightRail";
 import { getCurrentProfile, getRecentReviews } from "@/lib/data";
@@ -58,6 +59,7 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
           </Link>
         )}
         {slides.length > 0 && <HeroSlider slides={slides} />}
+        <MobileHighlights albums={topAlbums} />
 
         <div className="feed-head">
           <h2 className="section-title" style={{ margin: 0 }}>
