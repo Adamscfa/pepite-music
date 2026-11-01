@@ -1152,3 +1152,19 @@ main:has(.chat) { padding-top: 0; }
   .post-body { grid-template-columns: 220px minmax(0, 1fr); gap: 22px; }
   .post-text h3 { font-size: 24px; }
 }
+
+/* =====================================================================
+   Barre d'actions simplifiée (j'aime, commentaires, partager) et étoiles plus grandes
+   ===================================================================== */
+.post-actions .action.share { margin-left: auto; }
+.stars { font-size: 18px; letter-spacing: 2px; }
+.post-text .stars { font-size: 24px; letter-spacing: 3px; margin-top: 2px; }
+.mini .stars, .who .stars { font-size: 17px; }
+@media (min-width: 761px) {
+  .post-text .stars { font-size: 28px; }
+}
+@media (max-width: 760px) {
+  .post-actions { grid-template-columns: repeat(3, 1fr); }
+  .post-actions .action.share { margin-left: 0; }
+  .post-text .stars { font-size: 26px; }
+}
