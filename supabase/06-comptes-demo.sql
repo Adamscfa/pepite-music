@@ -288,47 +288,48 @@ begin
   end loop;
 
   -- « J'aime » et réactions entre membres de démo (un peu au hasard).
+  -- (Noms de tables longs pour ne pas les confondre avec les variables r, u et c ci-dessus.)
   insert into public.review_likes (review_id, user_id)
-  select r.id, u.id from public.reviews r
-  join public.profiles a on a.id = r.user_id and a.is_demo
-  cross join public.profiles u
-  where u.is_demo and u.id <> r.user_id and random() < 0.5
+  select rv.id, fan.id from public.reviews rv
+  join public.profiles author on author.id = rv.user_id and author.is_demo
+  cross join public.profiles fan
+  where fan.is_demo and fan.id <> rv.user_id and random() < 0.5
   on conflict do nothing;
 
   insert into public.review_reactions (review_id, user_id, emoji)
-  select r.id, u.id, emojis[1 + floor(random() * 4)::int] from public.reviews r
-  join public.profiles a on a.id = r.user_id and a.is_demo
-  cross join public.profiles u
-  where u.is_demo and u.id <> r.user_id and random() < 0.18
+  select rv.id, fan.id, emojis[1 + floor(random() * 4)::int] from public.reviews rv
+  join public.profiles author on author.id = rv.user_id and author.is_demo
+  cross join public.profiles fan
+  where fan.is_demo and fan.id <> rv.user_id and random() < 0.18
   on conflict do nothing;
 
   insert into public.comment_likes (comment_id, user_id)
-  select c.id, u.id from public.review_comments c
-  join public.profiles a on a.id = c.user_id and a.is_demo
-  cross join public.profiles u
-  where u.is_demo and u.id <> c.user_id and random() < 0.4
+  select cm.id, fan.id from public.review_comments cm
+  join public.profiles author on author.id = cm.user_id and author.is_demo
+  cross join public.profiles fan
+  where fan.is_demo and fan.id <> cm.user_id and random() < 0.4
   on conflict do nothing;
 
   -- Abonnements entre eux.
   insert into public.follows (follower_id, following_id)
-  select f.id, t.id from public.profiles f cross join public.profiles t
-  where f.is_demo and t.is_demo and f.id <> t.id and random() < 0.5
+  select follower.id, followed.id from public.profiles follower cross join public.profiles followed
+  where follower.is_demo and followed.is_demo and follower.id <> followed.id and random() < 0.5
   on conflict do nothing;
 
   -- Votes pour la Pépite de la semaine en cours.
   insert into public.weekly_votes (user_id, album_id, album_title, artist_name, cover_url)
-  select p.id, r.album_id, r.album_title, r.artist_name, r.cover_url
+  select voter.id, rv.album_id, rv.album_title, rv.artist_name, rv.cover_url
   from (values ('awa.kone', 'damini-moussa'), ('koffi225', 'damini-moussa'), ('moussa.beats', 'damini-moussa'),
-               ('marie.sound', 'sos-marie'), ('lea.playlist', 'sos-marie')) v(username, review_key)
-  join public.profiles p on p.username = v.username
-  join demo_review_ids d on d.key = v.review_key
-  join public.reviews r on r.id = d.id
+               ('marie.sound', 'sos-marie'), ('lea.playlist', 'sos-marie')) vote(username, review_key)
+  join public.profiles voter on voter.username = vote.username
+  join demo_review_ids ids on ids.key = vote.review_key
+  join public.reviews rv on rv.id = ids.id
   on conflict do nothing;
 
   -- Les notifications créées entre membres de démo ne servent à personne.
-  delete from public.notifications n
-  using public.profiles p
-  where p.id = n.user_id and p.is_demo;
+  delete from public.notifications notif
+  using public.profiles owner
+  where owner.id = notif.user_id and owner.is_demo;
 
   raise notice 'Membres de démo créés : % avis.', (select count(*) from demo_review_ids);
 end;
