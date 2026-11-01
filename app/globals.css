@@ -1117,3 +1117,38 @@ main:has(.chat) { padding-top: 0; }
   .prof-actions > form, .prof-actions > a.btn { flex: 1; }
   .prof-actions > details { flex: none; }
 }
+
+/* =====================================================================
+   Ordinateur : pochettes plus grandes
+   ===================================================================== */
+@media (min-width: 761px) {
+  /* Fil : grande pochette à gauche de l'avis */
+  .post-body { grid-template-columns: 300px minmax(0, 1fr); gap: 28px; }
+  .post-text h3 { font-size: 30px; }
+  .post-text .artist { font-size: 17px; }
+  .post-text .stars { font-size: 20px; }
+  .post-text p { font-size: 17px; }
+
+  /* Rangées d'albums et d'artistes */
+  .carousel-track { grid-auto-columns: 190px; gap: 18px; }
+  .artists-row { grid-auto-columns: 160px; }
+  .artist-tile .cover { width: 150px; }
+  .genre-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+
+  /* Page d'un album ou d'un titre */
+  .album-top { grid-template-columns: minmax(0, 340px) 1fr; gap: 36px; }
+
+  /* Notes du profil, classements, listes */
+  .grid-rated { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 18px; }
+  .chart li { grid-template-columns: 30px 64px 1fr auto 36px; gap: 14px; }
+  .chart .cover.s { width: 64px; border-radius: 8px; }
+  .rank-item .cover.s, .rank-item .avatar { width: 64px; height: 64px; }
+  .more-card { grid-template-columns: 100px minmax(0, 1fr); }
+  .more-card .cover.m { width: 100px; }
+  .quick-grid, .genre-pick { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+}
+/* Écrans moyens (petit ordinateur, tablette) : un peu moins grand pour garder de la place au texte */
+@media (min-width: 761px) and (max-width: 1000px) {
+  .post-body { grid-template-columns: 220px minmax(0, 1fr); gap: 22px; }
+  .post-text h3 { font-size: 24px; }
+}
