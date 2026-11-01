@@ -116,7 +116,7 @@ async function withSocial(raw: RawReview[] | null): Promise<Review[]> {
     supabase.from("review_likes").select("review_id, user_id").in("review_id", ids),
     supabase
       .from("review_comments")
-      .select("*, profile:profiles!inner(*)")
+      .select("*, profile:profiles!review_comments_user_id_fkey!inner(*)")
       .in("review_id", ids)
       .order("created_at", { ascending: false })
       .returns<RawComment[]>(),
@@ -232,7 +232,7 @@ export async function getComments(reviewId: number): Promise<Comment[]> {
     getCurrentProfile(),
     supabase
       .from("review_comments")
-      .select("*, profile:profiles!inner(*)")
+      .select("*, profile:profiles!review_comments_user_id_fkey!inner(*)")
       .eq("review_id", reviewId)
       .order("created_at", { ascending: true })
       .returns<RawComment[]>(),
