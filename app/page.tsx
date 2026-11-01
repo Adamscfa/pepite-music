@@ -3,20 +3,31 @@ import AlbumTile from "@/components/AlbumTile";
 import Carousel from "@/components/Carousel";
 import Cover from "@/components/Cover";
 import ReviewCard from "@/components/ReviewCard";
-import { getCurrentProfile, getRecentReviews, getTopRatedAlbums, getWeeklyPepite } from "@/lib/data";
-import { getNewReleases, getTopAlbums } from "@/lib/deezer";
+import TrackTile from "@/components/TrackTile";
+import { getCurrentProfile, getRecentReviews, getTopRatedAlbums, getTopRatedTracks, getWeeklyPepite } from "@/lib/data";
+import { CHART_GENRES, getGenreAlbums, getNewReleases, getTopAlbums, getTopTracks } from "@/lib/deezer";
 import { formatScore } from "@/lib/format";
+import GenreShelf from "./GenreShelf";
+
+// Les genres proposés dans « Explorer par genre », dans cet ordre.
+const HOME_GENRES = ["Rap", "Afro", "R&B", "Pop", "Électro", "Rock"]
+  .map((name) => CHART_GENRES.find((g) => g.name === name))
+  .filter((g) => g !== undefined);
 
 export default async function FeedPage({ searchParams }: PageProps<"/">) {
   const me = await getCurrentProfile();
   const followingOnly = Boolean(me) && (await searchParams).fil === "abonnements";
-  const [reviews, topAlbums, newReleases, topRated, weekly] = await Promise.all([
+  const [reviews, topAlbums, newReleases, topRated, weekly, topTracks, topRatedTracks, genreRows] = await Promise.all([
     getRecentReviews({ followedBy: followingOnly ? me!.id : undefined }),
     getTopAlbums(12),
     getNewReleases(12),
     getTopRatedAlbums(12),
     getWeeklyPepite(me?.id),
+    getTopTracks(20),
+    getTopRatedTracks(12),
+    Promise.all(HOME_GENRES.map(async (g) => ({ id: g.id, name: g.name, albums: await getGenreAlbums(g.id, 12) }))),
   ]);
+  const genres = genreRows.filter((g) => g.albums.length > 0);
   const pepite = weekly.current[0] ?? weekly.lastWinner;
 
   return (
@@ -75,6 +86,26 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
         </Carousel>
       )}
 
+      {topTracks.length > 0 && (
+        <Carousel
+          eyebrow="Classement Deezer · ▶ pour écouter"
+          title="Les titres du moment"
+          more={{ href: "/classements", label: "Top 50 →" }}
+        >
+          {topTracks.map((t, i) => (
+            <TrackTile
+              key={t.id}
+              id={t.id}
+              title={t.title}
+              artist={t.artist}
+              cover={t.cover}
+              preview={t.preview}
+              badge={`#${i + 1}`}
+            />
+          ))}
+        </Carousel>
+      )}
+
       {newReleases.length > 0 && (
         <Carousel eyebrow="Tout juste sortis" title="Nouveautés de la semaine">
           {newReleases.map((a) => (
@@ -82,6 +113,8 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
           ))}
         </Carousel>
       )}
+
+      {genres.length > 0 && <GenreShelf genres={genres} />}
 
       {topRated.length > 0 && (
         <Carousel eyebrow="Classement des membres" title="Les mieux notés sur Pépite">
@@ -95,6 +128,26 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
               subtitle={
                 <>
                   ★ {formatScore(a.average)} · {a.count} note{a.count > 1 ? "s" : ""}
+                </>
+              }
+            />
+          ))}
+        </Carousel>
+      )}
+
+      {topRatedTracks.length > 0 && (
+        <Carousel eyebrow="Classement des membres" title="Les titres les mieux notés">
+          {topRatedTracks.map((t, i) => (
+            <TrackTile
+              key={t.track_id}
+              id={t.track_id}
+              title={t.track_title}
+              artist={t.artist_name}
+              cover={t.cover_url}
+              badge={`#${i + 1}`}
+              subtitle={
+                <>
+                  {t.artist_name} · ★ {formatScore(t.average)}
                 </>
               }
             />

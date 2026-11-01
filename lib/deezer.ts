@@ -131,6 +131,7 @@ export async function getNewReleases(limit = 12): Promise<AlbumHit[]> {
 export const CHART_GENRES = [
   { id: 0, name: "Tout" },
   { id: 116, name: "Rap" },
+  { id: 2, name: "Afro" },
   { id: 132, name: "Pop" },
   { id: 152, name: "Rock" },
   { id: 106, name: "Électro" },
@@ -185,6 +186,23 @@ export async function getChart(genre: number) {
     })),
     artists: (artists?.data ?? []).map((a) => ({ id: a.id, name: a.name, picture: a.picture_medium })),
   };
+}
+
+// Le top titres du moment (France), pour l'accueil.
+export async function getTopTracks(limit = 20): Promise<ChartTrack[]> {
+  const json = await get<RawChartTracks>(`/chart/0/tracks?limit=${limit}`, 3600);
+  return (json?.data ?? []).map(chartTrack);
+}
+
+// Le top albums d'un genre, pour les rangées « Explorer par genre » de l'accueil.
+export async function getGenreAlbums(genre: number, limit = 12): Promise<AlbumHit[]> {
+  const json = await get<RawSearch>(`/chart/${genre}/albums?limit=${limit}`, 3600);
+  return (json?.data ?? []).map((a) => ({
+    id: a.id,
+    title: a.title,
+    artist: a.artist.name,
+    cover: a.cover_medium,
+  }));
 }
 
 export async function getPlaylistTracks(id: number): Promise<ChartTrack[]> {

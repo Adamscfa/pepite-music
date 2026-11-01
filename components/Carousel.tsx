@@ -8,11 +8,14 @@ export default function Carousel({
   eyebrow,
   title,
   more,
+  toolbar,
   children,
 }: {
   eyebrow: string;
   title: string;
   more?: { href: string; label: string };
+  // Affiché entre le titre et la rangée, par exemple des boutons de genre.
+  toolbar?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const track = useRef<HTMLDivElement>(null);
@@ -42,6 +45,7 @@ export default function Carousel({
           </button>
         </div>
       </div>
+      {toolbar}
       <div className="carousel-track" ref={track}>
         {children}
       </div>

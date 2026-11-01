@@ -282,6 +282,46 @@ export async function getTopRatedAlbums(limit = 12): Promise<RankedAlbum[]> {
   return [...byAlbum.values()].sort((a, b) => score(b) - score(a)).slice(0, limit);
 }
 
+export type RankedTrack = {
+  track_id: number;
+  track_title: string;
+  album_id: number;
+  artist_name: string;
+  cover_url: string | null;
+  average: number;
+  count: number;
+};
+
+// Les chansons les mieux notées par les membres, avec la même moyenne pondérée.
+export async function getTopRatedTracks(limit = 12): Promise<RankedTrack[]> {
+  if (!hasSupabaseConfig) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reviews")
+    .select("*")
+    .not("track_id", "is", null)
+    .order("updated_at", { ascending: false })
+    .limit(2000);
+  const byTrack = new Map<number, RankedTrack>();
+  for (const r of (data ?? []) as RawReview[]) {
+    if (r.hidden || r.track_id == null) continue;
+    const t = byTrack.get(r.track_id) ?? {
+      track_id: r.track_id,
+      track_title: r.track_title ?? r.album_title,
+      album_id: r.album_id,
+      artist_name: r.artist_name,
+      cover_url: r.cover_url,
+      average: 0,
+      count: 0,
+    };
+    t.average = (t.average * t.count + r.rating) / (t.count + 1);
+    t.count += 1;
+    byTrack.set(r.track_id, t);
+  }
+  const score = (t: RankedTrack) => (t.average * t.count + 3 * 2) / (t.count + 2);
+  return [...byTrack.values()].sort((a, b) => score(b) - score(a)).slice(0, limit);
+}
+
 // ---- Notifications ----
 
 export type Notification = {
