@@ -11,6 +11,7 @@ import {
   type ChartTrack,
   type CountryChart,
 } from "./deezer";
+import { inCountry } from "./country-names";
 
 // Classements et tendances « de chez toi » :
 // 1. le choix fait sur la page Classements (cookie « top_pays », posé par proxy.ts) ;
@@ -21,47 +22,13 @@ export type TrendScope =
   | { kind: "monde" }
   | { kind: "france" };
 
-const norm = (s: string) =>
-  s
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[’'`-]/g, " ")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
+const countryName = (chart: CountryChart) => chart.name ?? chart.title.replace(/^top\s+/i, "");
 
-// Autres noms possibles d'un pays dans les titres Deezer.
-const ALIASES: Record<string, string[]> = {
-  CI: ["ivory coast", "cote d ivoire", "cote divoire"],
-  CD: ["rdc", "congo", "dr congo", "drc"],
-  US: ["usa", "etats unis", "united states"],
-  GB: ["uk", "royaume uni", "united kingdom"],
-  AE: ["emirats arabes unis", "uae"],
-};
-
-const countryName = (chart: CountryChart) => chart.title.replace(/^top\s+/i, "");
-
-// Le « Top <pays> » de Deezer qui correspond à un code pays (CI, SN, CM…), s'il existe.
+// Le « Top <pays> » de Deezer pour un code pays (CI, SN, CM…), s'il existe.
+// S'il y en a plusieurs (« Top Bulgarie » et « Top Bulgarie 2025 »), le plus simple.
 function chartForCode(code: string, countries: CountryChart[]): CountryChart | null {
-  const names = ["fr", "en"]
-    .map((lang) => {
-      try {
-        return new Intl.DisplayNames([lang], { type: "region" }).of(code.toUpperCase()) ?? "";
-      } catch {
-        return "";
-      }
-    })
-    .filter(Boolean)
-    .map(norm)
-    .concat(ALIASES[code.toUpperCase()] ?? []);
-  if (!names.length) return null;
-  // Titre exact « Top <pays> », ou suivi d'une précision (« Top Congo (RDC) »), jamais un autre pays
-  // qui commence pareil (Niger ≠ Nigeria).
-  return (
-    countries.find((c) => names.some((n) => norm(c.title) === `top ${n}`)) ??
-    countries.find((c) => names.some((n) => norm(c.title).startsWith(`top ${n} `))) ??
-    null
-  );
+  const found = countries.filter((c) => c.code === code.toUpperCase());
+  return found.sort((a, b) => a.title.length - b.title.length)[0] ?? null;
 }
 
 export const getTrendScope = cache(async (): Promise<TrendScope> => {
@@ -103,7 +70,7 @@ export async function getTrends(limit = 10): Promise<Trends> {
     const tracks = scope.kind === "monde" ? await getWorldTopTracks() : await getPlaylistTracks(scope.chart.id);
     if (tracks.length) {
       return {
-        label: scope.kind === "monde" ? "dans le monde" : `en ${scope.name}`,
+        label: scope.kind === "monde" ? "dans le monde" : inCountry(scope.name),
         tracks: tracks.slice(0, limit),
         albums: albumsFromTracks(tracks, limit),
       };

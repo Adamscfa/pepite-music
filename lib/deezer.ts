@@ -1,4 +1,5 @@
 import "server-only";
+import { frenchChartTitle } from "./country-names";
 
 // API publique de Deezer : pas de clé, mais pas de CORS non plus,
 // donc on l'appelle uniquement côté serveur.
@@ -237,7 +238,8 @@ export async function getPlaylistChart(id: number) {
 // Compte « Deezer Charts », qui publie une playlist « Top <pays> » par pays.
 const CHARTS_USER = 637006841;
 
-export type CountryChart = { id: number; title: string };
+// code (CI, SN…) et name (« Côte d'Ivoire ») : seulement pour un vrai top de pays.
+export type CountryChart = { id: number; title: string; code: string | null; name: string | null };
 
 type RawPlaylists = { data: { id: number; title: string; user?: { name: string } }[] };
 
@@ -253,7 +255,7 @@ export async function getCountryCharts(): Promise<CountryChart[]> {
     const found = await get<RawPlaylists>(`/search/playlist?q=${encodeURIComponent("Top")}&limit=100`, 86400);
     list = (found?.data ?? []).filter((p) => isCountryTop(p) && /deezer/i.test(p.user?.name ?? ""));
   }
-  const unique = new Map(list.map((p) => [p.id, { id: p.id, title: p.title }]));
+  const unique = new Map(list.map((p) => [p.id, { id: p.id, ...frenchChartTitle(p.title) }]));
   return [...unique.values()].sort((a, b) => a.title.localeCompare(b.title, "fr"));
 }
 
