@@ -7,7 +7,7 @@ export const ogSize = { width: 1200, height: 630 };
 export const GREEN = "#2E9E6B";
 
 export async function logoDataUri() {
-  const data = await readFile(join(process.cwd(), "public/logo.png"));
+  const data = await readFile(join(process.cwd(), "public/logo-mark.png"));
   return `data:image/png;base64,${data.toString("base64")}`;
 }
 
@@ -39,7 +39,7 @@ export function OgStars({
 export function OgBrand({ logo }: { logo: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 30, fontWeight: 700, color: "#1B1830" }}>
-      <img src={logo} width={52} height={52} alt="" />
+      <img src={logo} width={66} height={46} alt="" />
       Pépite
     </div>
   );

@@ -44,7 +44,7 @@ export default async function Header() {
     <>
       <aside className="sidebar">
         <Link href="/" className="side-logo">
-          <img src="/logo.png" alt="" width={48} height={48} />
+          <img src="/logo-mark.png" alt="" width={58} height={40} className="logo-mark" />
           <span>
             Pépite
             <small>Écoute · Note · Partage</small>
@@ -100,7 +100,8 @@ export default async function Header() {
 
       <header className="top">
         <Link href="/" className="top-logo" aria-label="Pépite, accueil">
-          <img src="/logo.png" alt="" width={34} height={34} />
+          <img src="/logo-mark.png" alt="" width={38} height={26} className="logo-mark" />
+          <span className="top-word">Pépite</span>
         </Link>
         <SearchBox />
         <div className="top-actions">
