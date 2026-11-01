@@ -14,7 +14,7 @@ export default function StudioSlides({ slides, caption }: { slides: Slide[]; cap
   async function files() {
     return Promise.all(
       slides.map(async (s) => {
-        const blob = await (await fetch(s.src)).blob();
+        const blob = await (await fetch(s.src, { cache: "force-cache" })).blob();
         return new File([blob], `${s.name}.png`, { type: "image/png" });
       }),
     );
@@ -71,10 +71,10 @@ export default function StudioSlides({ slides, caption }: { slides: Slide[]; cap
       </div>
 
       <div className="studio-slides">
-        {slides.map((s) => (
+        {slides.map((s, i) => (
           <figure key={s.src}>
             <a href={s.src} download={`${s.name}.png`} title="Télécharger cette image">
-              <img src={s.src} alt={s.label} loading="lazy" width={1080} height={1920} />
+              <img src={s.src} alt={s.label} loading={i < 6 ? "eager" : "lazy"} width={1080} height={1920} />
             </a>
             <figcaption>{s.label}</figcaption>
           </figure>

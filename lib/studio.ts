@@ -4,7 +4,9 @@ import {
   getChart,
   getCountryCharts,
   getNewReleases,
-  getPlaylistChart,
+  getPlaylistTracks,
+  type AlbumHit,
+  type ChartTrack,
   WORLD_PLAYLIST,
   type CountryChart,
 } from "./deezer";
@@ -25,6 +27,20 @@ export const THEMES: { id: StudioTheme; label: string }[] = [
   { id: "sorties", label: "Sorties de la semaine" },
   { id: "hasard", label: "Au hasard" },
 ];
+
+// Titres d'un top et albums dont ils viennent, sans chercher les photos des artistes
+// (inutiles ici, et c'est ce qui prenait le plus de temps).
+async function lightChart(id: number) {
+  const tracks = await getPlaylistTracks(id);
+  const seen = new Set<number>();
+  const albums: AlbumHit[] = [];
+  for (const t of tracks) {
+    if (seen.has(t.albumId)) continue;
+    seen.add(t.albumId);
+    albums.push({ id: t.albumId, title: t.albumTitle, artist: t.artist, cover: t.cover });
+  }
+  return { tracks, albums };
+}
 
 // Mélange qui donne toujours le même résultat pour une même « graine »
 // (pour que l'aperçu et les images téléchargées correspondent).
@@ -69,19 +85,20 @@ export async function getStudio(opts: {
   let heading = "";
   let tags: string[] = [];
 
-  const fromChart = (chart: Awaited<ReturnType<typeof getPlaylistChart>>): StudioItem[] =>
+  type Chart = { tracks: ChartTrack[]; albums: AlbumHit[] };
+  const fromChart = (chart: Chart): StudioItem[] =>
     asAlbums
       ? chart.albums.map((a) => ({ kind: "album" as const, id: a.id, title: a.title, artist: a.artist }))
       : chart.tracks.map((t) => ({ kind: "titre" as const, id: t.id, title: t.title, artist: t.artist }));
 
   if (opts.theme === "pays") {
-    const chart = country ? await getPlaylistChart(country.id) : await getChart(0);
+    const chart = country ? await lightChart(country.id) : await getChart(0);
     const where = country?.name ? inCountry(country.name) : "en France";
     items = fromChart(chart);
     heading = `Top ${opts.count} des ${word} ${where} cette semaine`;
     tags = [country?.name ? tag(country.name) : "#france", "#top" + opts.count];
   } else if (opts.theme === "monde") {
-    items = fromChart(await getPlaylistChart(WORLD_PLAYLIST));
+    items = fromChart(await lightChart(WORLD_PLAYLIST));
     heading = `Top ${opts.count} des ${word} dans le monde cette semaine`;
     tags = ["#topmonde", "#top" + opts.count];
   } else if (opts.theme === "notes") {
@@ -101,8 +118,8 @@ export async function getStudio(opts: {
     // Au hasard : un mélange du top du pays, du Top Monde et des sorties.
     const scope = await getTrendScope();
     const [local, world, fresh] = await Promise.all([
-      scope.kind === "pays" ? getPlaylistChart(scope.chart.id) : getChart(0),
-      getPlaylistChart(WORLD_PLAYLIST),
+      scope.kind === "pays" ? lightChart(scope.chart.id) : getChart(0),
+      lightChart(WORLD_PLAYLIST),
       getNewReleases(20),
     ]);
     const pool = [
