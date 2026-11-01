@@ -90,3 +90,40 @@ export async function signOut() {
   revalidatePath("/", "layout");
   redirect("/");
 }
+
+// ---- Mot de passe oublié ----
+
+// Envoie un e-mail avec un lien pour choisir un nouveau mot de passe.
+// Même réponse que l'adresse existe ou non : on ne révèle pas qui est inscrit.
+export async function requestPasswordReset(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  if (!hasSupabaseConfig) return { error: NOT_CONFIGURED };
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email.includes("@")) return { error: "Entre ton adresse e-mail." };
+  const supabase = await createClient();
+  const h = await headers();
+  const origin = h.get("origin") ?? `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/connexion/nouveau-mot-de-passe`,
+  });
+  if (error?.code === "over_email_send_rate_limit") {
+    return { error: "Trop d'e-mails envoyés pour l'instant. Réessaie dans quelques minutes." };
+  }
+  return { message: "Si un compte existe avec cette adresse, tu vas recevoir un e-mail avec un lien. Pense à regarder dans les spams." };
+}
+
+// Enregistre le nouveau mot de passe (après le lien reçu par e-mail).
+export async function updatePassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  if (!hasSupabaseConfig) return { error: NOT_CONFIGURED };
+  const password = String(formData.get("password") ?? "");
+  if (password.length < 6) return { error: "Le mot de passe doit faire au moins 6 caractères." };
+  if (password !== String(formData.get("confirm") ?? "")) return { error: "Les deux mots de passe ne sont pas identiques." };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    if (error.code === "same_password") return { error: "C'est déjà ton mot de passe actuel. Choisis-en un autre." };
+    if (error.code === "weak_password") return { error: "Ce mot de passe est trop faible." };
+    return { error: "Le lien a expiré. Redemande un e-mail depuis « Mot de passe oublié »." };
+  }
+  revalidatePath("/", "layout");
+  redirect("/");
+}

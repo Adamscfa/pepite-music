@@ -1,6 +1,7 @@
 import Link from "next/link";
 import HeroSlider, { type Slide } from "@/components/HeroSlider";
 import Icon from "@/components/Icon";
+import LoadMore from "@/components/LoadMore";
 import ReviewCard from "@/components/ReviewCard";
 import RightRail from "@/components/RightRail";
 import { getCurrentProfile, getRecentReviews } from "@/lib/data";
@@ -8,9 +9,13 @@ import { getNewReleases, getTopAlbums } from "@/lib/deezer";
 
 export default async function FeedPage({ searchParams }: PageProps<"/">) {
   const me = await getCurrentProfile();
-  const followingOnly = Boolean(me) && (await searchParams).fil === "abonnements";
+  const params = await searchParams;
+  const followingOnly = Boolean(me) && params.fil === "abonnements";
+  // Le fil se charge par paquets de 15 avis (plus léger sur une connexion 4G).
+  const PAGE = 15;
+  const shown = Math.min(150, Math.max(PAGE, Number(params.n) || PAGE));
   const [reviews, topAlbums, newReleases] = await Promise.all([
-    getRecentReviews({ followedBy: followingOnly ? me!.id : undefined }),
+    getRecentReviews({ followedBy: followingOnly ? me!.id : undefined, limit: shown }),
     getTopAlbums(10),
     getNewReleases(6),
   ]);
@@ -75,6 +80,9 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
             {reviews.map((review) => (
               <ReviewCard key={review.id} review={review} canLike={Boolean(me)} withComments />
             ))}
+            {reviews.length >= shown - 5 && shown < 150 && (
+              <LoadMore href={`/?${followingOnly ? "fil=abonnements&" : ""}n=${shown + PAGE}`} />
+            )}
           </div>
         ) : (
           <div className="empty">

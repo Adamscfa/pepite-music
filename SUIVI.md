@@ -74,6 +74,11 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     bouton « Publier » au centre, cartes d'avis compactes, bandeau plus
     court, pas de zoom automatique sur iPhone, thème dans le menu du compte.
     Nouvelle icône de lecture des extraits (cercle au trait + triangle).
+15. Lancement (1er novembre 2026) : mot de passe oublié, e-mails en français
+    (`supabase/emails/`), pages Confidentialité / Conditions / Contact,
+    suppression de compte, bloquer un membre, limite anti-spam, fil chargé par
+    15 avis avec « Voir plus », notifications automatiques le lundi (Pépite de
+    la semaine) et le jeudi (rappel de vote).
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -93,7 +98,8 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `06-comptes-demo.sql` | Membres de démonstration (facultatif) | à vérifier |
 | `07-temps-reel.sql` | Messages et notifications en direct | à vérifier |
 | `08-grande-mise-a-jour.sql` | Premier pas, notifications téléphone, mentions, modération, erreurs | à vérifier |
-| `09-corriger-demo.sql` | Retire « Démo » des vrais membres (sans risque, rejouable) | non (à faire) |
+| `09-corriger-demo.sql` | Retire « Démo » des vrais membres (sans risque, rejouable) | à vérifier |
+| `10-lancement.sql` | Contact, suppression de compte, blocage, anti-spam, annonces | non (à faire) |
 
 Remplacer « à vérifier » par « oui » une fois confirmé. Pour vérifier, dans
 Supabase, **Table Editor** :
@@ -106,6 +112,7 @@ Supabase, **Table Editor** :
 - fichier 07 : dans Database > Publications > supabase_realtime, les tables
   `messages` et `notifications` sont cochées
 - fichier 08 : les tables `push_subscriptions` et `errors` existent
+- fichier 10 : les tables `blocks`, `contact_messages` et `announcements` existent
 
 Les clés Supabase (URL du projet et clé publishable) ne sont **jamais** dans ce
 dépôt. Elles sont dans les réglages du projet Vercel (Environment Variables) et
@@ -119,6 +126,10 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Exécuter `07-temps-reel.sql` (si ce n'est pas fait), puis `08-grande-mise-a-jour.sql`
 - [ ] Ajouter les clés `NEXT_PUBLIC_VAPID_PUBLIC_KEY` et `VAPID_PRIVATE_KEY` dans Vercel, puis redéployer
 - [ ] Se mettre administrateur (`is_admin` dans la table `profiles`)
+- [ ] Exécuter `10-lancement.sql`
+- [ ] Brancher Brevo pour les e-mails et coller les modèles en français (README)
+- [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
+- [ ] Faire relire les pages Confidentialité et Conditions, et vérifier la déclaration auprès de l'ARTCI
 - [ ] Quand assez de vrais membres sont inscrits : exécuter `demo-supprimer.sql`
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
 - [ ] (idées à ajouter ici)

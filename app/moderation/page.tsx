@@ -7,7 +7,7 @@ import Stars from "@/components/Stars";
 import { getCurrentProfile, type Profile } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
-import { clearErrors, deleteReviewAsAdmin, dismissReports, setReviewHidden } from "./actions";
+import { clearErrors, deleteContactMessage, deleteReviewAsAdmin, dismissReports, setReviewHidden } from "./actions";
 
 export const metadata: Metadata = { title: "Modération" };
 
@@ -37,6 +37,16 @@ type Report = {
   } | null;
 };
 
+type ContactRow = { id: number; name: string; email: string; topic: string; body: string; created_at: string; user_id: string | null };
+
+const TOPICS: Record<string, string> = {
+  question: "Question",
+  bug: "Problème",
+  donnees: "Mes données",
+  signalement: "Signalement",
+  autre: "Autre",
+};
+
 type ErrorRow = { id: number; message: string; digest: string | null; path: string | null; created_at: string };
 
 // Page réservée aux administrateurs : avis signalés et erreurs du site.
@@ -45,7 +55,7 @@ export default async function ModerationPage() {
   const me = await getCurrentProfile();
   if (!me?.is_admin) notFound();
   const supabase = await createClient();
-  const [{ data: reports }, { data: errors }] = await Promise.all([
+  const [{ data: reports }, { data: errors }, { data: contacts }] = await Promise.all([
     supabase
       .from("reports")
       .select(
@@ -55,6 +65,12 @@ export default async function ModerationPage() {
       .limit(200)
       .returns<Report[]>(),
     supabase.from("errors").select("*").order("created_at", { ascending: false }).limit(50).returns<ErrorRow[]>(),
+    supabase
+      .from("contact_messages")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100)
+      .returns<ContactRow[]>(),
   ]);
 
   // Un bloc par avis signalé, avec toutes les raisons données.
@@ -117,6 +133,40 @@ export default async function ModerationPage() {
             );
           })}
         </div>
+      </section>
+
+      <section style={{ marginTop: 34 }}>
+        <h2 className="section-title">Messages de contact ({contacts?.length ?? 0})</h2>
+        {contacts?.length ? (
+          <div className="feed">
+            {contacts.map((c) => (
+              <article key={c.id} className="box mod-card">
+                <div className="mod-head">
+                  <div>
+                    <span className="kind">{TOPICS[c.topic] ?? c.topic}</span>{" "}
+                    <b>{c.name || "Sans nom"}</b>
+                    {c.email && (
+                      <>
+                        {" · "}
+                        <a href={`mailto:${c.email}`} className="link-under">
+                          {c.email}
+                        </a>
+                      </>
+                    )}
+                    <div className="small">{timeAgo(c.created_at)}</div>
+                  </div>
+                </div>
+                <p className="mod-body">{c.body}</p>
+                <form action={deleteContactMessage}>
+                  <input type="hidden" name="id" value={c.id} />
+                  <button className="btn ghost">Traité, effacer</button>
+                </form>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="empty">Aucun message pour l&apos;instant.</div>
+        )}
       </section>
 
       <section style={{ marginTop: 34 }}>

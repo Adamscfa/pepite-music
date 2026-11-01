@@ -54,6 +54,35 @@ function authorization(endpoint: string): string {
   return `vapid t=${head}.${body}.${signature}, k=${PUBLIC_KEY}`;
 }
 
+// Envoie un « réveil » à ces appareils. Ceux qui n'existent plus sont signalés à forget().
+export async function wakeUp(endpoints: string[], forget: (endpoint: string) => Promise<unknown>) {
+  if (!hasPush) return { sent: 0, gone: 0 };
+  let sent = 0;
+  let gone = 0;
+  // Par petits groupes, pour ne pas tout lancer d'un coup.
+  for (let i = 0; i < endpoints.length; i += 20) {
+    await Promise.all(
+      endpoints.slice(i, i + 20).map(async (endpoint) => {
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { TTL: "86400", Urgency: "high", Authorization: authorization(endpoint), "Content-Length": "0" },
+          });
+          // 404 / 410 : l'appareil s'est désabonné, on l'oublie.
+          if (res.status === 404 || res.status === 410) {
+            gone += 1;
+            await forget(endpoint);
+          } else if (res.ok) sent += 1;
+          else console.error(`Notification refusée (${res.status}) : ${await res.text()}`);
+        } catch (error) {
+          console.error("Notification impossible à envoyer", error);
+        }
+      }),
+    );
+  }
+  return { sent, gone };
+}
+
 // Réveille les appareils de ces membres. La base ne donne leurs adresses que si
 // le membre connecté vient de leur envoyer un message ou une notification.
 export async function pushTo(supabase: Supabase, userIds: (string | null | undefined)[]) {
@@ -61,21 +90,7 @@ export async function pushTo(supabase: Supabase, userIds: (string | null | undef
   const targets = [...new Set(userIds.filter((id): id is string => Boolean(id)))];
   for (const target of targets) {
     const { data } = await supabase.rpc("push_targets", { target });
-    for (const { endpoint } of (data ?? []) as { endpoint: string }[]) {
-      try {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { TTL: "86400", Urgency: "high", Authorization: authorization(endpoint), "Content-Length": "0" },
-        });
-        // 404 / 410 : l'appareil s'est désabonné, on l'oublie.
-        if (res.status === 404 || res.status === 410) {
-          await supabase.rpc("forget_push", { old_endpoint: endpoint });
-        } else if (!res.ok) {
-          console.error(`Notification refusée (${res.status}) : ${await res.text()}`);
-        }
-      } catch (error) {
-        console.error("Notification impossible à envoyer", error);
-      }
-    }
+    const endpoints = ((data ?? []) as { endpoint: string }[]).map((d) => d.endpoint);
+    await wakeUp(endpoints, (endpoint) => supabase.rpc("forget_push", { old_endpoint: endpoint }));
   }
 }

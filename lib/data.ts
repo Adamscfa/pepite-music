@@ -104,10 +104,20 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
   return profile ? { ...profile, avatar_url: profile.avatar_url ?? null } : null;
 });
 
+// Les membres que le membre connecté a bloqués (fichier 10) : on cache leurs contenus.
+export const getBlockedIds = cache(async (): Promise<Set<string>> => {
+  const me = await getCurrentProfile();
+  if (!me) return new Set();
+  const supabase = await createClient();
+  const { data } = await supabase.from("blocks").select("blocked_id").eq("blocker_id", me.id);
+  return new Set((data ?? []).map((b) => b.blocked_id as string));
+});
+
 // Ajoute à chaque avis ses « j'aime », commentaires et réactions, et retire les avis masqués.
 // Requêtes séparées : si ces tables n'existent pas encore, les avis s'affichent quand même.
 async function withSocial(raw: RawReview[] | null): Promise<Review[]> {
-  const reviews = (raw ?? []).filter((r) => !r.hidden);
+  const blocked = await getBlockedIds();
+  const reviews = (raw ?? []).filter((r) => !r.hidden && !blocked.has(r.user_id));
   if (!reviews.length) return [];
   const supabase = await createClient();
   const ids = reviews.map((r) => r.id);
@@ -135,7 +145,7 @@ async function withSocial(raw: RawReview[] | null): Promise<Review[]> {
       liked: Boolean(me && mine.some((l) => l.user_id === me.id)),
       comments: (comments.data ?? []).filter((c) => c.review_id === r.id).length,
       preview: (comments.data ?? [])
-        .filter((c) => c.review_id === r.id && !c.parent_id)
+        .filter((c) => c.review_id === r.id && !c.parent_id && !blocked.has(c.user_id))
         .slice(0, 2)
         .reverse()
         .map((c) => toComment(c, [], me?.id)),
@@ -147,10 +157,11 @@ async function withSocial(raw: RawReview[] | null): Promise<Review[]> {
   });
 }
 
-export async function getRecentReviews({ followedBy }: { followedBy?: string } = {}): Promise<Review[]> {
+// Le fil, du plus récent au plus ancien. « limit » grandit quand on fait défiler (accueil).
+export async function getRecentReviews({ followedBy, limit = 15 }: { followedBy?: string; limit?: number } = {}): Promise<Review[]> {
   if (!hasSupabaseConfig) return [];
   const supabase = await createClient();
-  let query = supabase.from("reviews").select(REVIEW_FIELDS).order("updated_at", { ascending: false }).limit(50);
+  let query = supabase.from("reviews").select(REVIEW_FIELDS).order("updated_at", { ascending: false }).limit(limit);
   if (followedBy) {
     const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", followedBy);
     const ids = (follows ?? []).map((f) => f.following_id);
@@ -248,7 +259,8 @@ export async function getComments(reviewId: number): Promise<Comment[]> {
           raw.map((c) => c.id),
         )
     : { data: [] };
-  return raw.map((c) => toComment(c, likes ?? [], me?.id));
+  const blocked = await getBlockedIds();
+  return raw.filter((c) => !blocked.has(c.user_id)).map((c) => toComment(c, likes ?? [], me?.id));
 }
 
 export const getProfileByUsername = cache(async (username: string): Promise<Profile | null> => {
@@ -367,7 +379,10 @@ export async function getNotifications(userId: string): Promise<Notification[]> 
     .order("created_at", { ascending: false })
     .limit(60)
     .returns<(Omit<Notification, "actor"> & { actor: Profile })[]>();
-  return (data ?? []).map((n) => ({ ...n, actor: author(n.actor) }));
+  const blocked = await getBlockedIds();
+  return (data ?? [])
+    .filter((n) => !blocked.has((n as unknown as { actor_id: string }).actor_id))
+    .map((n) => ({ ...n, actor: author(n.actor) }));
 }
 
 // Nombre de notifications et de messages pas encore lus, pour les pastilles du menu.
@@ -445,6 +460,7 @@ export async function getConversations(userId: string): Promise<Conversation[]> 
     if (m.recipient_id === userId && !m.read_at) c.unread += 1;
     byFriend.set(other, c);
   }
+  for (const id of await getBlockedIds()) byFriend.delete(id);
   if (!byFriend.size) return [];
   const { data: profiles } = await supabase
     .from("profiles")
@@ -518,7 +534,7 @@ export function weekStart(offsetWeeks = 0): string {
   return d.toISOString().slice(0, 10);
 }
 
-function tally(rows: (AlbumRef & { created_at: string })[]): WeeklyAlbum[] {
+export function tally(rows: (AlbumRef & { created_at: string })[]): WeeklyAlbum[] {
   const byAlbum = new Map<number, WeeklyAlbum & { first: string }>();
   for (const r of rows) {
     const a = byAlbum.get(r.album_id) ?? { ...r, votes: 0, first: r.created_at };
@@ -644,6 +660,7 @@ export async function getSuggestedMembers(me: Profile, limit = 8) {
     supabase.from("follows").select("following_id").eq("follower_id", me.id),
   ]);
   const followed = new Set((follows ?? []).map((f) => f.following_id as string));
+  const blocked = await getBlockedIds();
   const { data: profiles } = await supabase
     .from("profiles")
     .select("*")
@@ -656,7 +673,7 @@ export async function getSuggestedMembers(me: Profile, limit = 8) {
   const members = [];
   for (const c of top) {
     const profile = byName.get(c.username);
-    if (!profile || profile.id === me.id || followed.has(profile.id)) continue;
+    if (!profile || profile.id === me.id || followed.has(profile.id) || blocked.has(profile.id)) continue;
     members.push({
       id: profile.id,
       username: c.username,
@@ -669,4 +686,13 @@ export async function getSuggestedMembers(me: Profile, limit = 8) {
     });
   }
   return members.sort((a, b) => b.shared - a.shared || b.count - a.count).slice(0, limit);
+}
+
+// Membres bloqués, pour la page Réglages > Membres bloqués.
+export async function getBlockedMembers(): Promise<(Author & { id: string })[]> {
+  const ids = [...(await getBlockedIds())];
+  if (!ids.length) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("profiles").select("*").in("id", ids);
+  return ((data ?? []) as Profile[]).map((p) => ({ id: p.id, ...author(p) }));
 }

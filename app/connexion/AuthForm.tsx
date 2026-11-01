@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 
@@ -71,9 +72,14 @@ export default function AuthForm({
             Mot de passe
             <input name="password" type="password" required autoComplete="current-password" />
           </label>
-          <button className="btn" disabled={inPending}>
-            {inPending ? "Connexion…" : "Se connecter"}
-          </button>
+          <div className="row">
+            <button className="btn" disabled={inPending}>
+              {inPending ? "Connexion…" : "Se connecter"}
+            </button>
+            <Link href="/connexion/oubli" className="link-btn">
+              Mot de passe oublié ?
+            </Link>
+          </div>
           {inState.error && <p className="error">{inState.error}</p>}
         </form>
       ) : (
@@ -102,6 +108,10 @@ export default function AuthForm({
             Mot de passe
             <input name="password" type="password" required minLength={6} autoComplete="new-password" />
           </label>
+          <p className="small legal-note">
+            En créant ton compte, tu acceptes les <Link href="/conditions">conditions d&apos;utilisation</Link> et
+            la <Link href="/confidentialite">politique de confidentialité</Link>.
+          </p>
           <button className="btn" disabled={upPending}>
             {upPending ? "Création…" : "Créer mon compte"}
           </button>
