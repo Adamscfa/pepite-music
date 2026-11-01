@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import type { ReactNode } from "react";
+import { Fragment, isValidElement, type ReactElement, type ReactNode } from "react";
 import { getCurrentProfile } from "@/lib/data";
 import { getAlbum, getTrack } from "@/lib/deezer";
 import { deezerAt } from "@/lib/images";
@@ -44,7 +44,14 @@ export async function GET(request: Request) {
       Pépite
     </div>
   );
-  const frame = (children: ReactNode, justify = "space-between") => (
+  // Le moteur d'images ne comprend pas les <>…</> : il les met en ligne au lieu de les
+  // empiler. On sort donc leur contenu pour le poser directement dans la colonne.
+  const frame = (content: ReactNode, justify = "space-between") => {
+    const children =
+      isValidElement(content) && content.type === Fragment
+        ? (content as ReactElement<{ children: ReactNode }>).props.children
+        : content;
+    return (
     <div
       style={{
         width: "100%",
@@ -60,7 +67,8 @@ export async function GET(request: Request) {
     >
       {children}
     </div>
-  );
+    );
+  };
 
   if (slide === "intro") {
     const ids = (q.get("c") ?? "")
