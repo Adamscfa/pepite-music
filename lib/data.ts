@@ -349,12 +349,16 @@ export type Notification = {
   review: { album_title: string; track_title: string | null } | null;
 };
 
+// Les messages ont déjà leur pastille et leur page : on ne les répète pas dans les notifications.
+const MESSAGE_KINDS = "(message,recommend)";
+
 export async function getNotifications(userId: string): Promise<Notification[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("notifications")
     .select("*, actor:profiles!notifications_actor_id_fkey!inner(*), review:reviews(album_title, track_title)")
     .eq("user_id", userId)
+    .not("kind", "in", MESSAGE_KINDS)
     .order("created_at", { ascending: false })
     .limit(60)
     .returns<(Omit<Notification, "actor"> & { actor: Profile })[]>();
@@ -369,6 +373,7 @@ export const getUnreadCounts = cache(async (userId: string) => {
       .from("notifications")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId)
+      .not("kind", "in", MESSAGE_KINDS)
       .is("read_at", null),
     supabase
       .from("messages")

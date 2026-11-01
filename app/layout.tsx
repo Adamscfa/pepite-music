@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { JetBrains_Mono, Noto_Color_Emoji, Plus_Jakarta_Sans } from "next/font/google";
 import Header from "@/components/Header";
 import PlayerProvider from "@/components/Player";
 import SetupNotice from "@/components/SetupNotice";
@@ -8,6 +8,8 @@ import "./globals.css";
 
 // Une seule police ronde et nette pour tout le site (titres et texte), comme sur la maquette.
 const sans = Plus_Jakarta_Sans({ variable: "--font-sans", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
+// Emojis en couleur, identiques sur tous les appareils (Windows les dessine autrement sinon).
+const emoji = Noto_Color_Emoji({ variable: "--font-emoji", subsets: ["emoji"], weight: "400", preload: false });
 const mono = JetBrains_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["500"] });
 
 // Les pages dépendent du membre connecté : on les génère à chaque visite.
@@ -31,7 +33,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${sans.variable} ${mono.variable}`}
+      className={`${sans.variable} ${mono.variable} ${emoji.variable}`}
       data-theme={theme === "light" || theme === "dark" ? theme : undefined}
     >
       <body>

@@ -50,6 +50,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 11. Messages et notifications en direct (1er novembre 2026) : un nouveau
     message apparaît tout seul dans la conversation ouverte, et les pastilles
     du menu se mettent à jour sans rafraîchir. Fichier `07-temps-reel.sql`.
+12. Messages façon WhatsApp (1er novembre 2026) : coches « envoyé » et
+    « lu » (bleues), heure sur chaque message, emojis en grand et en couleur,
+    barre d'écriture collée en bas (Entrée pour envoyer). Les messages ne sont
+    plus répétés dans les notifications.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.

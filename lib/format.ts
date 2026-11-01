@@ -32,3 +32,13 @@ export function avatarColor(username: string): string {
   for (const c of username) hash = (hash * 31 + c.charCodeAt(0)) >>> 0;
   return AVATAR_COLORS[hash % AVATAR_COLORS.length];
 }
+
+// Un message fait seulement d'emojis : renvoie leur nombre (0 sinon), pour les afficher en grand.
+const EMOJI_ONLY = /^(?:\p{Extended_Pictographic}|\p{Emoji_Modifier}|\p{Regional_Indicator}|‍|️|⃣|\s)+$/u;
+
+export function emojiCount(text: string): number {
+  const t = text.trim();
+  if (!t || !EMOJI_ONLY.test(t)) return 0;
+  const graphemes = new Intl.Segmenter("fr", { granularity: "grapheme" }).segment(t.replace(/\s+/g, ""));
+  return [...graphemes].length;
+}
