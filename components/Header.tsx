@@ -63,6 +63,7 @@ export default async function Header() {
               <Item href="/messages" match="/messages" icon="mail" label="Messages" count={unread.messages} />
               <Item href={profile} match={profile} icon="user" label="Profil" />
               {me.is_admin && <Item href="/moderation" match="/moderation" icon="shield" label="Modération" />}
+              {me.is_admin && <Item href="/studio" match="/studio" icon="sparkle" label="Studio TikTok" />}
             </>
           ) : (
             <Item href="/connexion" match="/connexion" icon="user" label="Connexion" />
@@ -130,6 +131,7 @@ export default async function Header() {
                   <Link href={`${profile}#inviter`}>Inviter des amis</Link>
                   <Link href="/classements">Classements</Link>
                   {me.is_admin && <Link href="/moderation">Modération</Link>}
+                  {me.is_admin && <Link href="/studio">Studio TikTok</Link>}
                   <Link href="/contact">Contact</Link>
                   <div className="me-pop-theme">
                     <ThemeToggle initial={theme} withLabel />

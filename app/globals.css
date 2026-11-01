@@ -1304,3 +1304,21 @@ main:has(.chat) { padding-top: 0; }
   .invite-link code { flex-basis: 100%; }
   .invite-link .btn { flex: 1; justify-content: center; }
 }
+
+/* Studio TikTok (admins) */
+.studio h1 { margin-bottom: 6px; }
+.studio-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin: 18px 0 24px; }
+.studio-form label { display: grid; gap: 5px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.studio-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.studio-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.studio-caption { display: grid; gap: 8px; margin-bottom: 20px; justify-items: start; }
+.studio-caption textarea { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; resize: vertical; }
+.studio-slides { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+.studio-slides figure { margin: 0; display: grid; gap: 6px; }
+.studio-slides img { width: 100%; height: auto; aspect-ratio: 9 / 16; border-radius: 12px; background: var(--line); display: block; }
+.studio-slides figcaption { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 760px) {
+  .studio-slides { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .studio-form label { flex: 1 1 140px; }
+  .studio-form .select { width: 100%; }
+}

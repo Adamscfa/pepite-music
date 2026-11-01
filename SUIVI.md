@@ -99,6 +99,14 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     on les tire désormais des titres du genre.
 19. Noms des pays en français (1er novembre 2026) : « Top Côte d'Ivoire »,
     « Top Sénégal », « en Côte d'Ivoire », « au Sénégal »… (`lib/country-names.ts`).
+20. Studio TikTok (1er novembre 2026), page `/studio`, réservée aux admins (lien
+    dans le menu) : choisir un thème (top d'un pays, Top Monde, mieux notés sur
+    Pépite, sorties, au hasard), albums ou titres, 5 ou 10. Pépite prépare un
+    carrousel d'images verticales 1080 × 1920 (couverture, une image par album
+    avec son rang, image de fin « Lien en bio ») et le texte avec hashtags.
+    Bouton pour tout enregistrer (menu de partage sur téléphone). La
+    publication sur TikTok se fait à la main (carrousel photo, programmation
+    dans TikTok Studio) : TikTok limite et contrôle la publication automatique.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
