@@ -55,7 +55,7 @@ function authorization(endpoint: string): string {
 }
 
 // Envoie un « réveil » à ces appareils. Ceux qui n'existent plus sont signalés à forget().
-export async function wakeUp(endpoints: string[], forget: (endpoint: string) => Promise<unknown>) {
+export async function wakeUp(endpoints: string[], forget: (endpoint: string) => PromiseLike<unknown>) {
   if (!hasPush) return { sent: 0, gone: 0 };
   let sent = 0;
   let gone = 0;
