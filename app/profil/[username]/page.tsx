@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import AppPanel from "@/components/AppPanel";
 import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
 import DemoBadge from "@/components/DemoBadge";
@@ -60,6 +61,9 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
             {profile.display_name} <DemoBadge show={profile.is_demo} />
           </h1>
           {profile.bio ? <p>{profile.bio}</p> : isMe && <p>Ajoute une bio et une photo pour te présenter.</p>}
+          <Link href={`/profil/${profile.username}/annee`} className="year-link">
+            🎁 {isMe ? "Mon" : "Son"} année {new Date().getFullYear()} en musique →
+          </Link>
           {profile.is_demo && (
             <p className="small">Membre de démonstration : ce compte et ses avis sont imaginaires.</p>
           )}
@@ -170,6 +174,11 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
 
       {isMe && (
         <EditProfile displayName={profile.display_name} bio={profile.bio} hasAvatar={Boolean(profile.avatar_url)} />
+      )}
+      {isMe && (
+        <div style={{ marginTop: 20 }}>
+          <AppPanel variant="card" loggedIn />
+        </div>
       )}
 
       <section style={{ marginTop: 30 }} id="favoris">

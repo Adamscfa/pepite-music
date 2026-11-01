@@ -8,6 +8,7 @@ import { timeAgo } from "@/lib/format";
 import Avatar from "./Avatar";
 import CommentForm from "./CommentForm";
 import DemoBadge from "./DemoBadge";
+import MentionText from "./MentionText";
 import Icon from "./Icon";
 
 type Sort = "top" | "recent" | "old";
@@ -80,7 +81,7 @@ export default function CommentThread({
 
       <div className="thread-new">
         {me ? (
-          <CommentForm reviewId={reviewId} me={me} placeholder="Ajouter un commentaire…" />
+          <CommentForm reviewId={reviewId} me={me} placeholder="Ajouter un commentaire… (@pseudo pour mentionner)" />
         ) : (
           <p className="small">
             <Link href="/connexion" className="link-btn">
@@ -132,7 +133,9 @@ function CommentItem({ comment: c, depth, ctx }: { comment: Comment; depth: numb
           <DemoBadge show={c.profile.is_demo} />
           <span>{timeAgo(c.created_at)}</span>
         </div>
-        <p className="comment-body">{c.body}</p>
+        <p className="comment-body">
+          <MentionText text={c.body} />
+        </p>
         <div className="comment-actions">
           <CommentLike comment={c} canLike={Boolean(ctx.me)} />
           {ctx.me && (

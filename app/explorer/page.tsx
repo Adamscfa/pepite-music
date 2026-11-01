@@ -5,9 +5,18 @@ import AlbumTile from "@/components/AlbumTile";
 import Carousel from "@/components/Carousel";
 import Cover from "@/components/Cover";
 import Icon from "@/components/Icon";
-import { getMostDiscussed, getTopRatedAlbums, type Discussed } from "@/lib/data";
-import { getChart, getFreshArtists, getGenres, getNewReleases, getTopAlbums } from "@/lib/deezer";
+import { getCurrentProfile, getMostDiscussed, getTopRatedAlbums, type Discussed } from "@/lib/data";
+import {
+  getChart,
+  getFreshArtists,
+  getGenres,
+  getLocalScene,
+  getNewReleases,
+  getTopAlbums,
+  LOCAL_SCENES,
+} from "@/lib/deezer";
 import { formatScore } from "@/lib/format";
+import { getForYou } from "@/lib/recommend";
 
 export const metadata: Metadata = {
   title: "Explorer",
@@ -15,26 +24,40 @@ export const metadata: Metadata = {
 };
 
 export default async function ExplorePage({ searchParams }: PageProps<"/explorer">) {
-  const { genre: rawGenre } = await searchParams;
+  const { genre: rawGenre, scene: rawScene } = await searchParams;
   const genres = await getGenres();
   const genre = genres.find((g) => String(g.id) === rawGenre) ?? null;
+  const scene = LOCAL_SCENES.find((s) => s.slug === rawScene) ?? null;
 
   return (
     <>
       <header className="explore-head">
         <div className="eyebrow">Explorer</div>
-        <h1>{genre ? genre.name : "Trouve ta prochaine pépite"}</h1>
+        <h1>{scene ? scene.name : genre ? genre.name : "Trouve ta prochaine pépite"}</h1>
         <p>
-          {genre
-            ? `Les albums, artistes et titres ${genre.name} les plus écoutés en ce moment.`
-            : "Nouveaux artistes, albums tendance, genres musicaux et titres dont tout le monde parle."}
+          {scene
+            ? "Les sons d'ici qui tournent en ce moment. Touche ▶ pour écouter un extrait."
+            : genre
+              ? `Les albums, artistes et titres ${genre.name} les plus écoutés en ce moment.`
+              : "Nouveaux artistes, albums tendance, genres musicaux et titres dont tout le monde parle."}
         </p>
       </header>
 
       <nav className="genres" aria-label="Choisir un genre">
-        <Link href="/explorer" className="chip" aria-current={genre ? undefined : "page"}>
+        <Link href="/explorer" className="chip" aria-current={genre || scene ? undefined : "page"}>
           Tout
         </Link>
+        {LOCAL_SCENES.map((s) => (
+          <Link
+            key={s.slug}
+            href={`/explorer?scene=${s.slug}`}
+            className="chip local"
+            aria-current={scene?.slug === s.slug ? "page" : undefined}
+          >
+            {s.slug === "cote-divoire" ? "🇨🇮 " : ""}
+            {s.name}
+          </Link>
+        ))}
         {genres.map((g) => (
           <Link
             key={g.id}
@@ -47,13 +70,16 @@ export default async function ExplorePage({ searchParams }: PageProps<"/explorer
         ))}
       </nav>
 
-      {genre ? <GenreView id={genre.id} /> : <Overview genres={genres} />}
+      {scene ? <SceneView slug={scene.slug} /> : genre ? <GenreView id={genre.id} /> : <Overview genres={genres} />}
     </>
   );
 }
 
 async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenres>> }) {
-  const [trending, fresh, releases, topRated, tracks, albums] = await Promise.all([
+  const me = await getCurrentProfile();
+  const [forYou, local, trending, fresh, releases, topRated, tracks, albums] = await Promise.all([
+    me ? getForYou(me) : Promise.resolve([]),
+    getLocalScene("cote-divoire"),
     getTopAlbums(15),
     getFreshArtists(14),
     getNewReleases(15),
@@ -64,6 +90,38 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
 
   return (
     <>
+      {forYou.length > 0 && (
+        <Carousel eyebrow="Recommandé d'après tes notes" title="Pour toi">
+          {forYou.map((a) => (
+            <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={`${a.artist} · ${a.because}`} cover={a.cover} />
+          ))}
+        </Carousel>
+      )}
+
+      {local && local.tracks.length > 0 && (
+        <section className="carousel local-box">
+          <div className="feed-head">
+            <div>
+              <div className="eyebrow">🇨🇮 Made in Côte d&apos;Ivoire</div>
+              <h2 className="section-title" style={{ margin: 0 }}>
+                Ce qui tourne ici
+              </h2>
+            </div>
+            <Link href="/explorer?scene=cote-divoire" className="more-link">
+              Tout le top →
+            </Link>
+          </div>
+          <div className="genres" style={{ marginBottom: 12 }}>
+            {LOCAL_SCENES.slice(1).map((s) => (
+              <Link key={s.slug} href={`/explorer?scene=${s.slug}`} className="chip">
+                {s.name}
+              </Link>
+            ))}
+          </div>
+          <ChartTracks tracks={local.tracks.slice(0, 8)} />
+        </section>
+      )}
+
       {trending.length > 0 && (
         <Carousel eyebrow="Classement Deezer" title="Albums tendance" more={{ href: "/classements", label: "Classements →" }}>
           {trending.map((a, i) => (
@@ -178,6 +236,32 @@ function Discussion({ title, items, tracks }: { title: string; items: Discussed[
         </p>
       )}
     </section>
+  );
+}
+
+async function SceneView({ slug }: { slug: string }) {
+  const scene = await getLocalScene(slug);
+  const tracks = scene?.tracks ?? [];
+  // Les albums d'où viennent ces titres, sans doublon.
+  const albums = tracks.filter((t, i) => tracks.findIndex((x) => x.albumId === t.albumId) === i).slice(0, 15);
+  return (
+    <>
+      {albums.length > 0 && (
+        <Carousel eyebrow="D'où viennent ces sons" title="Albums">
+          {albums.map((t) => (
+            <AlbumTile key={t.albumId} id={t.albumId} title={t.albumTitle} subtitle={t.artist} cover={t.cover} />
+          ))}
+        </Carousel>
+      )}
+      <section>
+        <h2 className="section-title">Titres</h2>
+        {tracks.length ? (
+          <ChartTracks tracks={tracks.slice(0, 30)} />
+        ) : (
+          <div className="empty">Rien à afficher pour l&apos;instant. Réessaie dans un moment.</div>
+        )}
+      </section>
+    </>
   );
 }
 

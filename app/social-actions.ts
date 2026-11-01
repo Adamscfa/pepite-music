@@ -1,14 +1,35 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { areFriends, EMOJIS, getCurrentProfile, getProfileByUsername, weekStart } from "@/lib/data";
 import { getAlbum } from "@/lib/deezer";
+import { pushTo } from "@/lib/push";
 import { createClient } from "@/lib/supabase/server";
 
 export type FormState = { error?: string; done?: boolean };
 
 const LOGIN = "Connecte-toi d'abord.";
+
+type Supabase = Awaited<ReturnType<typeof createClient>>;
+
+// Auteur d'un avis, pour lui envoyer une notification sur son téléphone.
+async function reviewOwner(supabase: Supabase, reviewId: number) {
+  const { data } = await supabase.from("reviews").select("user_id").eq("id", reviewId).maybeSingle();
+  return (data?.user_id as string | undefined) ?? null;
+}
+
+// Notifications sur le téléphone, envoyées après la réponse pour ne rien ralentir.
+function notifyLater(supabase: Supabase, users: () => Promise<(string | null | undefined)[]>) {
+  after(async () => {
+    try {
+      await pushTo(supabase, await users());
+    } catch (error) {
+      console.error("Notifications sur le téléphone : échec", error);
+    }
+  });
+}
 const FAILED = "Ça n'a pas marché. Réessaie dans un instant.";
 
 // Copie des infos d'un album, relues chez Deezer plutôt que reçues du navigateur.
@@ -24,8 +45,10 @@ export async function toggleLike(reviewId: number, like: boolean) {
   const me = await getCurrentProfile();
   if (!me) return;
   const supabase = await createClient();
-  if (like) await supabase.from("review_likes").insert({ review_id: reviewId, user_id: me.id });
-  else await supabase.from("review_likes").delete().eq("review_id", reviewId).eq("user_id", me.id);
+  if (like) {
+    await supabase.from("review_likes").insert({ review_id: reviewId, user_id: me.id });
+    notifyLater(supabase, async () => [await reviewOwner(supabase, reviewId)]);
+  } else await supabase.from("review_likes").delete().eq("review_id", reviewId).eq("user_id", me.id);
   revalidatePath("/", "layout");
 }
 
@@ -35,8 +58,10 @@ export async function toggleReaction(reviewId: number, emoji: string, on: boolea
   const me = await getCurrentProfile();
   if (!me || !(EMOJIS as readonly string[]).includes(emoji)) return;
   const supabase = await createClient();
-  if (on) await supabase.from("review_reactions").insert({ review_id: reviewId, user_id: me.id, emoji });
-  else
+  if (on) {
+    await supabase.from("review_reactions").insert({ review_id: reviewId, user_id: me.id, emoji });
+    notifyLater(supabase, async () => [await reviewOwner(supabase, reviewId)]);
+  } else
     await supabase.from("review_reactions").delete().eq("review_id", reviewId).eq("user_id", me.id).eq("emoji", emoji);
   revalidatePath("/", "layout");
 }
@@ -79,6 +104,22 @@ export async function addComment(_prev: FormState, formData: FormData): Promise<
     if (parentId) return { error: "Les réponses ne sont pas encore activées (fichier 05 à exécuter dans Supabase)." };
     return { error: FAILED };
   }
+  // Prévenir l'auteur de l'avis, celui à qui on répond, et les @pseudos mentionnés.
+  notifyLater(supabase, async () => {
+    const names = [...new Set([...body.matchAll(/@([a-z0-9_.]{3,20})/gi)].map((m) => m[1].toLowerCase()))].slice(0, 5);
+    const [owner, parent, mentioned] = await Promise.all([
+      reviewOwner(supabase, reviewId),
+      parentId
+        ? supabase.from("review_comments").select("user_id").eq("id", parentId).maybeSingle()
+        : Promise.resolve({ data: null }),
+      names.length ? supabase.from("profiles").select("id").in("username", names) : Promise.resolve({ data: [] }),
+    ]);
+    return [
+      owner,
+      (parent.data as { user_id?: string } | null)?.user_id,
+      ...((mentioned.data ?? []) as { id: string }[]).map((p) => p.id),
+    ];
+  });
   revalidatePath("/", "layout");
   return { done: true };
 }
@@ -114,6 +155,7 @@ export async function toggleFollow(formData: FormData) {
   const supabase = await createClient();
   if (formData.get("follow") === "1") {
     await supabase.from("follows").insert({ follower_id: me.id, following_id: target });
+    notifyLater(supabase, async () => [target]);
   } else {
     await supabase.from("follows").delete().eq("follower_id", me.id).eq("following_id", target);
   }
@@ -229,6 +271,7 @@ export async function sendMessage(_prev: FormState, formData: FormData): Promise
     .from("messages")
     .insert({ sender_id: me.id, recipient_id: friend.id, body, ...(album ?? {}) });
   if (error) return { error: FAILED };
+  notifyLater(supabase, async () => [friend.id]);
   revalidatePath("/", "layout");
   return { done: true };
 }

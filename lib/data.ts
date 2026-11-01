@@ -11,6 +11,10 @@ export type Profile = {
   avatar_url: string | null;
   // Membre de démonstration (fichier 06-comptes-demo.sql), affiché avec l'étiquette « Démo ».
   is_demo?: boolean;
+  // Genres Deezer choisis au premier pas, et premier pas terminé (fichier 08).
+  favorite_genres?: number[];
+  onboarded?: boolean;
+  is_admin?: boolean;
 };
 
 export type Author = Pick<Profile, "username" | "display_name" | "avatar_url" | "is_demo">;
@@ -30,6 +34,7 @@ export type Review = {
   body: string;
   // Coup de cœur : le membre adore vraiment.
   heart: boolean;
+  created_at?: string;
   updated_at: string;
   profile: Author;
   likes: number;
@@ -340,7 +345,7 @@ export async function getTopRatedAlbums(limit = 12): Promise<RankedAlbum[]> {
 
 export type Notification = {
   id: number;
-  kind: "like" | "comment" | "reply" | "follow" | "reaction" | "message" | "recommend";
+  kind: "like" | "comment" | "reply" | "mention" | "follow" | "reaction" | "message" | "recommend";
   review_id: number | null;
   emoji: string | null;
   read_at: string | null;
@@ -628,4 +633,40 @@ export async function getReviewCounts(albumIds: number[]): Promise<Map<number, n
   const { data } = await supabase.from("reviews").select("album_id").in("album_id", albumIds);
   for (const r of data ?? []) counts.set(r.album_id, (counts.get(r.album_id) ?? 0) + 1);
   return counts;
+}
+
+// Membres à suivre pour un nouveau venu : les plus actifs, en priorité ceux qui aiment les mêmes genres.
+export async function getSuggestedMembers(me: Profile, limit = 8) {
+  if (!hasSupabaseConfig) return [];
+  const supabase = await createClient();
+  const [top, { data: follows }] = await Promise.all([
+    getTopContributors(40),
+    supabase.from("follows").select("following_id").eq("follower_id", me.id),
+  ]);
+  const followed = new Set((follows ?? []).map((f) => f.following_id as string));
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("*")
+    .in(
+      "username",
+      top.map((c) => c.username),
+    );
+  const byName = new Map(((profiles ?? []) as Profile[]).map((p) => [p.username, p]));
+  const mine = new Set(me.favorite_genres ?? []);
+  const members = [];
+  for (const c of top) {
+    const profile = byName.get(c.username);
+    if (!profile || profile.id === me.id || followed.has(profile.id)) continue;
+    members.push({
+      id: profile.id,
+      username: c.username,
+      display_name: c.display_name,
+      avatar_url: c.avatar_url,
+      is_demo: c.is_demo,
+      bio: profile.bio,
+      count: c.count,
+      shared: (profile.favorite_genres ?? []).filter((g) => mine.has(g)).length,
+    });
+  }
+  return members.sort((a, b) => b.shared - a.shared || b.count - a.count).slice(0, limit);
 }

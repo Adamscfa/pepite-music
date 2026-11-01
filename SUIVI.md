@@ -54,6 +54,22 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     « lu » (bleues), heure sur chaque message, emojis en grand et en couleur,
     barre d'écriture collée en bas (Entrée pour envoyer). Les messages ne sont
     plus répétés dans les notifications.
+13. Grande mise à jour (1er novembre 2026) :
+    - **Appli installable** (icône sur l'écran d'accueil) et **notifications
+      sur le téléphone** (messages, j'aime, commentaires, réponses, mentions,
+      abonnements). Clés VAPID à mettre dans Vercel.
+    - **Premier pas** des nouveaux membres (`/bienvenue`) : genres préférés,
+      3 albums à noter, membres à suivre.
+    - **Partage sur WhatsApp** sur chaque avis.
+    - **Musique d'ici** dans Explorer : Top Côte d'Ivoire, coupé-décalé,
+      zouglou, rap ivoirien, afrobeats.
+    - **Pour toi** : recommandations d'après tes notes.
+    - **Ton année en musique** (`/profil/<pseudo>/annee`).
+    - Messages : « en train d'écrire… », « Vu à », jours, recommander un
+      album depuis la conversation.
+    - **Mentions @pseudo** dans les commentaires (avec notification).
+    - **Modération** (`/moderation`, pour les administrateurs) et **suivi des
+      erreurs** du site.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -71,7 +87,8 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `04-ameliorations.sql` | Notifications, messages, Pépite de la semaine | oui |
 | `05-reponses-commentaires.sql` | Réponses aux commentaires, j'aime sur commentaires | oui |
 | `06-comptes-demo.sql` | Membres de démonstration (facultatif) | à vérifier |
-| `07-temps-reel.sql` | Messages et notifications en direct | non (à faire) |
+| `07-temps-reel.sql` | Messages et notifications en direct | à vérifier |
+| `08-grande-mise-a-jour.sql` | Premier pas, notifications téléphone, mentions, modération, erreurs | non (à faire) |
 
 Remplacer « à vérifier » par « oui » une fois confirmé. Pour vérifier, dans
 Supabase, **Table Editor** :
@@ -83,6 +100,7 @@ Supabase, **Table Editor** :
 - fichier 06 : des membres marqués « Démo » apparaissent sur l'accueil
 - fichier 07 : dans Database > Publications > supabase_realtime, les tables
   `messages` et `notifications` sont cochées
+- fichier 08 : les tables `push_subscriptions` et `errors` existent
 
 Les clés Supabase (URL du projet et clé publishable) ne sont **jamais** dans ce
 dépôt. Elles sont dans les réglages du projet Vercel (Environment Variables) et
@@ -93,7 +111,9 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Fichiers SQL 01 à 05 exécutés (vérifiés le 1er novembre 2026)
 - [x] Nouvelle interface en ligne (pull request n°11)
 - [ ] Confirmer que `06-comptes-demo.sql` a bien marché (membres « Démo » sur l'accueil)
-- [ ] Exécuter `07-temps-reel.sql` après la fusion de la pull request « messages en direct »
+- [ ] Exécuter `07-temps-reel.sql` (si ce n'est pas fait), puis `08-grande-mise-a-jour.sql`
+- [ ] Ajouter les clés `NEXT_PUBLIC_VAPID_PUBLIC_KEY` et `VAPID_PRIVATE_KEY` dans Vercel, puis redéployer
+- [ ] Se mettre administrateur (`is_admin` dans la table `profiles`)
 - [ ] Quand assez de vrais membres sont inscrits : exécuter `demo-supprimer.sql`
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
 - [ ] (idées à ajouter ici)
