@@ -134,6 +134,15 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
 - [ ] (idées à ajouter ici)
 
+## Idées mises de côté
+
+- **Lecteur YouTube intégré** (écouter les titres en entier sur Pépite) : écarté
+  le 1er novembre 2026. Gain faible (Pépite sert à noter, pas à écouter ; les
+  extraits de 30 s et le bouton YouTube suffisent), coût réel (beaucoup de data
+  en 4G, vidéo obligatoirement visible, pas d'écoute écran éteint, clé Google
+  limitée à ~100 recherches par jour). À revoir seulement si les membres le
+  demandent.
+
 ## Reprendre le projet depuis un autre compte
 
 1. Sur claude.ai, relier un compte GitHub qui a accès à ce dépôt
