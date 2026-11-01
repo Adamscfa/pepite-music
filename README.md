@@ -8,6 +8,8 @@ Un réseau social pour noter et critiquer des albums (un peu comme Letterboxd, m
 - **Page titre** : chaque chanson se note et se critique aussi
 - **Profil** : tes stats, tes notes récentes, ta bio
 
+Pour savoir où en est le projet et quoi faire ensuite, voir [`SUIVI.md`](SUIVI.md).
+
 Fait avec [Next.js](https://nextjs.org) (le site), [Supabase](https://supabase.com) (comptes et base de données) et l'[API Deezer](https://developers.deezer.com/api) (les albums, sans clé).
 
 ## Lancer le site sur ton ordinateur
