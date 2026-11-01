@@ -93,6 +93,8 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 18. Classement d'un pays ou du Monde affiché comme celui de la France
     (1er novembre 2026) : top albums, top artistes et top titres, tirés du
     « Top <pays> » de Deezer (`getPlaylistChart` dans `lib/deezer.ts`).
+    Un artiste sans photo chez Deezer (image grise) prend la pochette de son
+    titre classé. Le « Top UK » de Deezer est vide pour l'instant.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
