@@ -2,67 +2,138 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { signOut } from "@/app/connexion/actions";
 import { getCurrentProfile, getUnreadCounts } from "@/lib/data";
+import Avatar from "./Avatar";
 import BottomNav from "./BottomNav";
+import Icon, { type IconName } from "./Icon";
 import NavLink from "./NavLink";
+import PublishButton from "./PublishButton";
 import SearchBox from "./SearchBox";
 import ThemeToggle, { type Theme } from "./ThemeToggle";
 
 const Badge = ({ n }: { n: number }) => (n > 0 ? <i className="dot">{n > 99 ? "99+" : n}</i> : null);
 
+// Raccourcis vers des genres de la page Explorer (numéros de genre Deezer).
+const TRENDS = [
+  { tag: "Afro", genre: 2 },
+  { tag: "Rap", genre: 116 },
+  { tag: "RnB", genre: 165 },
+  { tag: "Pop", genre: 132 },
+  { tag: "Électro", genre: 106 },
+];
+
+function Item({ href, match, icon, label, count = 0 }: { href: string; match: string; icon: IconName; label: string; count?: number }) {
+  return (
+    <NavLink href={href} match={match}>
+      <Icon name={icon} size={21} />
+      <span>{label}</span>
+      {count > 0 && <i className="side-count">{count > 99 ? "99+" : count}</i>}
+    </NavLink>
+  );
+}
+
+// Barre latérale (ordinateur), barre du haut, et menu du bas (téléphone).
 export default async function Header() {
   const me = await getCurrentProfile();
   const unread = me ? await getUnreadCounts(me.id) : { notifications: 0, messages: 0 };
   const theme = ((await cookies()).get("theme")?.value ?? "auto") as Theme;
+  const profile = me ? `/profil/${me.username}` : "/connexion";
 
   return (
     <>
-      <header className="top">
-        <div className="top-in">
-          <Link href="/" className="logo">
-            <img src="/logo.png" alt="" width={36} height={36} className="logo-img" />
+      <aside className="sidebar">
+        <Link href="/" className="side-logo">
+          <img src="/logo.png" alt="" width={48} height={48} />
+          <span>
             Pépite
-          </Link>
-          <SearchBox />
-          <nav className="nav">
-            <NavLink href="/" match="/">
-              Fil
-            </NavLink>
-            <NavLink href="/classements" match="/classements">
-              Classements
-            </NavLink>
-            {me ? (
-              <>
-                <NavLink href="/messages" match="/messages">
-                  <span
-                    className="icon-link"
-                    aria-label={`Messages${unread.messages ? `, ${unread.messages} non lus` : ""}`}
-                  >
-                    ✉<Badge n={unread.messages} />
-                  </span>
-                </NavLink>
-                <NavLink href="/notifications" match="/notifications">
-                  <span
-                    className="icon-link"
-                    aria-label={`Notifications${unread.notifications ? `, ${unread.notifications} non lues` : ""}`}
-                  >
-                    🔔
-                    <Badge n={unread.notifications} />
-                  </span>
-                </NavLink>
-                <NavLink href={`/profil/${me.username}`} match={`/profil/${me.username}`}>
-                  Mon profil
-                </NavLink>
-                <form action={signOut}>
-                  <button type="submit">Déconnexion</button>
-                </form>
-              </>
-            ) : (
-              <NavLink href="/connexion" match="/connexion">
+            <small>Écoute · Note · Partage</small>
+          </span>
+        </Link>
+
+        <nav className="side-nav" aria-label="Menu principal">
+          <Item href="/" match="/" icon="home" label="Accueil" />
+          <Item href="/explorer" match="/explorer" icon="explore" label="Explorer" />
+          <Item href="/classements" match="/classements" icon="chart" label="Classements" />
+          {me ? (
+            <>
+              <Item href={`${profile}#notes`} match="/mes-albums" icon="disc" label="Mes albums" />
+              <Item href={`${profile}#favoris`} match="/mes-favoris" icon="heart" label="Mes favoris" />
+              <Item href="/notifications" match="/notifications" icon="bell" label="Notifications" count={unread.notifications} />
+              <Item href="/messages" match="/messages" icon="mail" label="Messages" count={unread.messages} />
+              <Item href={profile} match={profile} icon="user" label="Profil" />
+            </>
+          ) : (
+            <Item href="/connexion" match="/connexion" icon="user" label="Connexion" />
+          )}
+        </nav>
+
+        <PublishButton loggedIn={Boolean(me)} />
+
+        <div className="side-trends">
+          <h2>Tendances</h2>
+          {TRENDS.map((t) => (
+            <Link key={t.tag} href={`/explorer?genre=${t.genre}`}>
+              # {t.tag}
+            </Link>
+          ))}
+        </div>
+
+        <div className="side-bottom">
+          <ThemeToggle initial={theme} withLabel />
+          {me && (
+            <form action={signOut}>
+              <button type="submit" className="side-logout">
+                <Icon name="logout" size={18} /> Déconnexion
+              </button>
+            </form>
+          )}
+        </div>
+      </aside>
+
+      <header className="top">
+        <Link href="/" className="top-logo" aria-label="Pépite, accueil">
+          <img src="/logo.png" alt="" width={34} height={34} />
+        </Link>
+        <SearchBox />
+        <div className="top-actions">
+          {me ? (
+            <>
+              <Link
+                href="/notifications"
+                className="top-icon"
+                aria-label={`Notifications${unread.notifications ? `, ${unread.notifications} non lues` : ""}`}
+              >
+                <Icon name="bell" size={24} />
+                <Badge n={unread.notifications} />
+              </Link>
+              <details className="me-menu">
+                <summary aria-label="Mon compte">
+                  <Avatar user={me} />
+                  <Icon name="chevron" size={16} />
+                </summary>
+                <div className="me-pop">
+                  <b>{me.display_name}</b>
+                  <small>@{me.username}</small>
+                  <Link href={profile}>Mon profil</Link>
+                  <Link href="/messages">Messages{unread.messages ? ` (${unread.messages})` : ""}</Link>
+                  <form action={signOut}>
+                    <button type="submit">Déconnexion</button>
+                  </form>
+                </div>
+              </details>
+            </>
+          ) : (
+            <>
+              <Link href="/connexion" className="btn ghost top-login">
                 Connexion
-              </NavLink>
-            )}
-          </nav>
-          <ThemeToggle initial={theme} />
+              </Link>
+              <Link href="/connexion?mode=inscription" className="btn violet">
+                S&apos;inscrire
+              </Link>
+            </>
+          )}
+          <span className="mobile-only">
+            <ThemeToggle initial={theme} />
+          </span>
         </div>
       </header>
       <BottomNav username={me?.username ?? null} notifications={unread.notifications} messages={unread.messages} />

@@ -36,6 +36,14 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 7. Page Classements : tops Deezer France et Monde, par genre (n°7)
 8. Classements : choisir le top d'un autre pays (n°8)
 
+9. Nouvelle interface (1er novembre 2026) : barre latérale vert très sombre,
+   couleurs vertes d'origine gardées (vert du logo, vert néon en mode sombre),
+   grande barre de recherche, bandeau d'accueil qui défile, cartes
+   d'avis avec les derniers commentaires, colonne de droite (albums tendance,
+   top contributeurs). Nouvelle page **Explorer** (nouveaux artistes, albums
+   tendance, genres, titres et albums les plus commentés). **Réponses aux
+   commentaires** et « j'aime » sur les commentaires, avec tri Top / récents.
+
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
 
@@ -50,6 +58,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `02-reseau-social.sql` | Abonnements, j'aime, commentaires, listes | à vérifier |
 | `03-chansons.sql` | Notes des chansons | à vérifier |
 | `04-ameliorations.sql` | Notifications, messages, Pépite de la semaine | à vérifier |
+| `05-reponses-commentaires.sql` | Réponses aux commentaires, j'aime sur commentaires | non (à faire) |
 
 Remplacer « à vérifier » par « oui » une fois confirmé. Pour vérifier, dans
 Supabase, **Table Editor** :
@@ -57,6 +66,7 @@ Supabase, **Table Editor** :
 - fichier 02 : la table `follows` existe
 - fichier 03 : la table `reviews` a une colonne `track_id`
 - fichier 04 : la table `notifications` existe
+- fichier 05 : la table `comment_likes` existe
 
 Les clés Supabase (URL du projet et clé publishable) ne sont **jamais** dans ce
 dépôt. Elles sont dans les réglages du projet Vercel (Environment Variables) et
@@ -65,6 +75,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 ## Prochaines étapes
 
 - [ ] Confirmer quels fichiers SQL ont été exécutés (tableau ci-dessus)
+- [ ] Exécuter `05-reponses-commentaires.sql` dans Supabase (après la fusion de la nouvelle interface)
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
 - [ ] (idées à ajouter ici)
 

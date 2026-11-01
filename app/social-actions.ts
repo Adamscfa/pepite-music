@@ -69,9 +69,16 @@ export async function addComment(_prev: FormState, formData: FormData): Promise<
   const body = String(formData.get("body") ?? "").trim();
   if (!body) return { error: "Écris quelque chose avant d'envoyer." };
   if (body.length > 500) return { error: "Ton commentaire est trop long (500 caractères max)." };
+  const parentId = Number(formData.get("parent_id")) || null;
   const supabase = await createClient();
-  const { error } = await supabase.from("review_comments").insert({ review_id: reviewId, user_id: me.id, body });
-  if (error) return { error: FAILED };
+  // parent_id n'est envoyé que pour une réponse : sans le fichier 05, les commentaires simples marchent toujours.
+  const { error } = await supabase
+    .from("review_comments")
+    .insert({ review_id: reviewId, user_id: me.id, body, ...(parentId ? { parent_id: parentId } : {}) });
+  if (error) {
+    if (parentId) return { error: "Les réponses ne sont pas encore activées (fichier 05 à exécuter dans Supabase)." };
+    return { error: FAILED };
+  }
   revalidatePath("/", "layout");
   return { done: true };
 }
@@ -85,6 +92,15 @@ export async function deleteComment(formData: FormData) {
     .delete()
     .eq("id", Number(formData.get("comment_id")))
     .eq("user_id", me.id);
+  revalidatePath("/", "layout");
+}
+
+export async function toggleCommentLike(commentId: number, like: boolean) {
+  const me = await getCurrentProfile();
+  if (!me) return;
+  const supabase = await createClient();
+  if (like) await supabase.from("comment_likes").insert({ comment_id: commentId, user_id: me.id });
+  else await supabase.from("comment_likes").delete().eq("comment_id", commentId).eq("user_id", me.id);
   revalidatePath("/", "layout");
 }
 

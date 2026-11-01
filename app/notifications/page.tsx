@@ -17,6 +17,8 @@ function describe(n: Notification): { text: string; href: string } {
       return { text: `a aimé ton avis sur ${what}`, href: review };
     case "comment":
       return { text: `a commenté ton avis sur ${what}`, href: review };
+    case "reply":
+      return { text: `a répondu à ton commentaire sur ${n.review ? what : "un avis"}`, href: `${review}#commentaires` };
     case "reaction":
       return { text: `a réagi ${n.emoji ?? ""} à ton avis sur ${what}`, href: review };
     case "follow":

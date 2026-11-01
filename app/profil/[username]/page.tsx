@@ -166,7 +166,7 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
         <EditProfile displayName={profile.display_name} bio={profile.bio} hasAvatar={Boolean(profile.avatar_url)} />
       )}
 
-      <section style={{ marginTop: 30 }}>
+      <section style={{ marginTop: 30 }} id="favoris">
         <h2 className="section-title">Albums favoris</h2>
         <div className="favs">
           {[1, 2, 3, 4].map((position) => {
@@ -213,7 +213,7 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
         )}
       </section>
 
-      <section>
+      <section id="notes">
         <h2 className="section-title">{isMe ? "Mes notes récentes" : "Notes récentes"}</h2>
         {reviews.length ? (
           <div className="grid-rated">

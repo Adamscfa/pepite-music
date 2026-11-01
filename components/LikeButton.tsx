@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useOptimistic, useTransition } from "react";
 import { toggleLike } from "@/app/social-actions";
+import Icon from "./Icon";
 
 // Le cœur change tout de suite, la base suit en arrière-plan.
 export default function LikeButton({
@@ -21,15 +22,15 @@ export default function LikeButton({
 
   if (!canLike) {
     return (
-      <Link href="/connexion" className="like" title="Connecte-toi pour aimer">
-        ♥ {likes}
+      <Link href="/connexion" className="action" title="Connecte-toi pour aimer">
+        <Icon name="thumb" size={20} /> {likes}
       </Link>
     );
   }
   return (
     <button
       type="button"
-      className="like"
+      className="action like-action"
       aria-pressed={state.liked}
       aria-label={state.liked ? "Je n'aime plus" : "J'aime"}
       onClick={() =>
@@ -40,7 +41,7 @@ export default function LikeButton({
         })
       }
     >
-      ♥ {state.likes}
+      <Icon name="thumb" size={20} filled={state.liked} /> {state.likes}
     </button>
   );
 }

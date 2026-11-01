@@ -1,113 +1,52 @@
 import Link from "next/link";
-import AlbumTile from "@/components/AlbumTile";
-import Carousel from "@/components/Carousel";
-import Cover from "@/components/Cover";
+import HeroSlider, { type Slide } from "@/components/HeroSlider";
 import ReviewCard from "@/components/ReviewCard";
-import { getCurrentProfile, getRecentReviews, getTopRatedAlbums, getWeeklyPepite } from "@/lib/data";
+import RightRail from "@/components/RightRail";
+import { getCurrentProfile, getRecentReviews } from "@/lib/data";
 import { getNewReleases, getTopAlbums } from "@/lib/deezer";
-import { formatScore } from "@/lib/format";
 
 export default async function FeedPage({ searchParams }: PageProps<"/">) {
   const me = await getCurrentProfile();
   const followingOnly = Boolean(me) && (await searchParams).fil === "abonnements";
-  const [reviews, topAlbums, newReleases, topRated, weekly] = await Promise.all([
+  const [reviews, topAlbums, newReleases] = await Promise.all([
     getRecentReviews({ followedBy: followingOnly ? me!.id : undefined }),
-    getTopAlbums(12),
-    getNewReleases(12),
-    getTopRatedAlbums(12),
-    getWeeklyPepite(me?.id),
+    getTopAlbums(10),
+    getNewReleases(6),
   ]);
-  const pepite = weekly.current[0] ?? weekly.lastWinner;
+
+  const slides: Slide[] = [
+    {
+      title: "Bienvenue sur Pépite !",
+      text: "Découvre, note et commente tes albums et titres préférés, et vois ce que la communauté écoute.",
+      cta: me
+        ? { href: "/explorer", label: "Explorer maintenant" }
+        : { href: "/connexion?mode=inscription", label: "Créer mon compte" },
+      covers: topAlbums.slice(0, 5).map((a) => a.cover),
+    },
+    {
+      title: "Les sorties de la semaine",
+      text: "Les albums qui viennent d'arriver. Sois parmi les premiers à donner ton avis.",
+      cta: { href: "/explorer#nouveautes", label: "Voir les nouveautés" },
+      covers: newReleases.slice(0, 5).map((a) => a.cover),
+    },
+    {
+      title: "Les tops du moment",
+      text: "Ce qui s'écoute le plus en France et dans le monde, genre par genre.",
+      cta: { href: "/classements", label: "Voir les classements" },
+      covers: topAlbums.slice(5, 10).map((a) => a.cover),
+    },
+    // Le premier bandeau reste toujours ; les autres seulement si Deezer a répondu.
+  ].filter((s, i) => i === 0 || s.covers.length > 0);
 
   return (
-    <>
-      {!me && (
-        <section className="welcome">
-          <div className="welcome-covers" aria-hidden="true">
-            {topAlbums.slice(0, 6).map((a, i) => (
-              <img key={a.id} src={a.cover} alt="" style={{ "--i": i } as React.CSSProperties} />
-            ))}
-          </div>
-          <div className="welcome-text">
-            <div className="eyebrow">Bienvenue sur Pépite</div>
-            <h1>Ton carnet de musique, à partager.</h1>
-            <p>
-              Note les albums et les titres que tu écoutes, de 1 à 5 étoiles. Écris ce que tu en as pensé et garde tes
-              coups de cœur. Suis tes amis pour découvrir ce qu&apos;ils écoutent.
-            </p>
-            <div className="row" style={{ justifyContent: "flex-start" }}>
-              <Link href="/connexion?mode=inscription" className="btn big-btn">
-                Créer mon compte
-              </Link>
-              <Link href="/connexion" className="btn ghost">
-                J&apos;ai déjà un compte
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
+    <div className="with-rail">
+      <div className="feed-col">
+        {slides.length > 0 && <HeroSlider slides={slides} />}
 
-      {pepite && (
-        <Link href={`/album/${pepite.album_id}`} className="pepite-week">
-          <Cover src={pepite.cover_url} size="m" />
-          <div>
-            <div className="eyebrow">
-              💎 {weekly.current[0] ? "Pépite de la semaine (vote en cours)" : "Pépite de la semaine dernière"}
-            </div>
-            <h2>{pepite.album_title}</h2>
-            <div className="small">
-              {pepite.artist_name} · {pepite.votes} vote{pepite.votes > 1 ? "s" : ""}
-            </div>
-          </div>
-          <span className="small pepite-cta">Vote depuis la page d&apos;un album →</span>
-        </Link>
-      )}
-
-      {topAlbums.length > 0 && (
-        <Carousel
-          eyebrow="Classement Deezer"
-          title="Les albums du moment"
-          more={{ href: "/classements", label: "Tous les classements →" }}
-        >
-          {topAlbums.map((a) => (
-            <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} />
-          ))}
-        </Carousel>
-      )}
-
-      {newReleases.length > 0 && (
-        <Carousel eyebrow="Tout juste sortis" title="Nouveautés de la semaine">
-          {newReleases.map((a) => (
-            <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} badge="Nouveau" />
-          ))}
-        </Carousel>
-      )}
-
-      {topRated.length > 0 && (
-        <Carousel eyebrow="Classement des membres" title="Les mieux notés sur Pépite">
-          {topRated.map((a, i) => (
-            <AlbumTile
-              key={a.album_id}
-              id={a.album_id}
-              title={a.album_title}
-              cover={a.cover_url}
-              badge={`#${i + 1}`}
-              subtitle={
-                <>
-                  ★ {formatScore(a.average)} · {a.count} note{a.count > 1 ? "s" : ""}
-                </>
-              }
-            />
-          ))}
-        </Carousel>
-      )}
-
-      <section style={{ marginTop: 36 }}>
         <div className="feed-head">
-          <div>
-            <div className="eyebrow">Fil d&apos;actualité</div>
-            <h1>{followingOnly ? "Ce que tes abonnements écoutent" : "Ce que la communauté écoute"}</h1>
-          </div>
+          <h2 className="section-title" style={{ margin: 0 }}>
+            {followingOnly ? "Ce que tes abonnements écoutent" : "Ce que la communauté écoute"}
+          </h2>
           {me && (
             <div className="tabs" style={{ margin: 0 }}>
               <Link href="/" aria-current={followingOnly ? undefined : "page"}>
@@ -119,20 +58,22 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
             </div>
           )}
         </div>
+
         {reviews.length ? (
           <div className="feed">
             {reviews.map((review) => (
-              <ReviewCard key={review.id} review={review} canLike={Boolean(me)} />
+              <ReviewCard key={review.id} review={review} canLike={Boolean(me)} withComments />
             ))}
           </div>
         ) : (
           <div className="empty">
             {followingOnly
               ? "Rien pour l'instant. Abonne-toi à des membres depuis leur profil pour voir leurs avis ici."
-              : "Aucun avis pour l'instant. Choisis un album plus haut ou cherche-le en haut de la page, et donne la première note !"}
+              : "Aucun avis pour l'instant. Cherche un album en haut de la page, ou va dans Explorer, et donne la première note !"}
           </div>
         )}
-      </section>
-    </>
+      </div>
+      <RightRail />
+    </div>
   );
 }

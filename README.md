@@ -50,6 +50,10 @@ Pour noter aussi chaque chanson, colle ensuite [`supabase/03-chansons.sql`](supa
 
 Notifications, réactions en emoji, coup de cœur, signalements, messages privés entre amis et votes de la semaine : colle [`supabase/04-ameliorations.sql`](supabase/04-ameliorations.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, juste après la mise en ligne du code, et après `03-chansons.sql`).
 
+### Réponses aux commentaires
+
+Pour pouvoir répondre à un commentaire et aimer un commentaire : colle [`supabase/05-reponses-commentaires.sql`](supabase/05-reponses-commentaires.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, après `04-ameliorations.sql`). Sans lui, les commentaires simples marchent toujours, mais pas les réponses.
+
 Les avis signalés se trouvent dans **Table Editor > reports**. Un avis signalé par 3 membres est masqué automatiquement (colonne `hidden` de la table `reviews` : remets-la sur `false` pour le réafficher).
 
 ### Connexion avec Google (facultatif)
@@ -78,4 +82,4 @@ Si tu le laisses activé, va dans **Authentication > URL Configuration** et mets
 | `components/` | Les morceaux réutilisés : barre du haut, étoiles, carte d'avis… |
 | `lib/deezer.ts` | Les appels à l'API Deezer |
 | `lib/data.ts` | Les lectures dans Supabase |
-| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, puis `04-ameliorations.sql` |
+| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, `04-ameliorations.sql`, puis `05-reponses-commentaires.sql` |

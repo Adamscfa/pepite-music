@@ -27,12 +27,12 @@ const ICON: Record<Theme, React.ReactNode> = {
 };
 
 // Change le thème tout de suite et le retient un an (cookie lu par le serveur, sans clignotement).
-export default function ThemeToggle({ initial }: { initial: Theme }) {
+export default function ThemeToggle({ initial, withLabel = false }: { initial: Theme; withLabel?: boolean }) {
   const [theme, setTheme] = useState(initial);
   return (
     <button
       type="button"
-      className="icon-btn"
+      className={withLabel ? "theme-switch" : "icon-btn"}
       title={`${LABEL[theme]} (cliquer pour changer)`}
       aria-label={`${LABEL[theme]}. Changer de thème`}
       onClick={() => {
@@ -44,6 +44,12 @@ export default function ThemeToggle({ initial }: { initial: Theme }) {
       }}
     >
       {ICON[theme]}
+      {withLabel && (
+        <>
+          <span>{LABEL[theme]}</span>
+          <i className="switch" data-on={theme === "dark" ? "" : undefined} />
+        </>
+      )}
     </button>
   );
 }
