@@ -90,6 +90,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     la France choisi sur Classements est retenu un an (cookie `top_pays`, posé
     dans `proxy.ts`). Sans pays trouvé : la France, comme avant. Ne marche que
     sur Vercel (en local, toujours la France). Aucun SQL.
+18. Classement d'un pays ou du Monde affiché comme celui de la France
+    (1er novembre 2026) : top albums, top artistes et top titres, tirés du
+    « Top <pays> » de Deezer (`getPlaylistChart` dans `lib/deezer.ts`).
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.

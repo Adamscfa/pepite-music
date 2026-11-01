@@ -140,7 +140,7 @@ export const CHART_GENRES = [
 ];
 
 // Playlist officielle « Top Monde » de Deezer.
-const WORLD_PLAYLIST = 3155776842;
+export const WORLD_PLAYLIST = 3155776842;
 
 export type ChartTrack = TrackHit & { duration: number; preview: string; albumTitle: string; artistId: number };
 
@@ -193,6 +193,26 @@ export async function getPlaylistTracks(id: number): Promise<ChartTrack[]> {
 }
 
 export const getWorldTopTracks = () => getPlaylistTracks(WORLD_PLAYLIST);
+
+// Un top par pays (ou le Top Monde) affiché comme le top France : titres, mais aussi
+// les albums et les artistes qui y figurent, dans l'ordre du classement.
+export async function getPlaylistChart(id: number) {
+  const tracks = await getPlaylistTracks(id);
+  const albums: AlbumHit[] = [];
+  const albumIds = new Set<number>();
+  const artistIds: number[] = [];
+  for (const t of tracks) {
+    if (!albumIds.has(t.albumId) && albums.length < 20) {
+      albumIds.add(t.albumId);
+      albums.push({ id: t.albumId, title: t.albumTitle, artist: t.artist, cover: t.cover });
+    }
+    if (!artistIds.includes(t.artistId) && artistIds.length < 15) artistIds.push(t.artistId);
+  }
+  const artists = (await Promise.all(artistIds.map((a) => getArtist(a))))
+    .filter((a): a is Artist => Boolean(a && a.picture))
+    .map((a) => ({ id: a.id, name: a.name, picture: a.picture }));
+  return { tracks, albums, artists };
+}
 
 // Compte « Deezer Charts », qui publie une playlist « Top <pays> » par pays.
 const CHARTS_USER = 637006841;

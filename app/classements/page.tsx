@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import AlbumTile from "@/components/AlbumTile";
 import Carousel from "@/components/Carousel";
-import { CHART_GENRES, getChart, getCountryCharts, getPlaylistTracks, getWorldTopTracks } from "@/lib/deezer";
+import { CHART_GENRES, getChart, getCountryCharts, getPlaylistChart, WORLD_PLAYLIST } from "@/lib/deezer";
 import CountryPicker from "./CountryPicker";
 import ChartTracks from "./ChartTracks";
 import { sharpImage } from "@/lib/images";
@@ -29,11 +29,13 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
   const france = !country && !world && !rawGenre;
   const genre = CHART_GENRES.find((g) => String(g.id) === rawGenre) ?? CHART_GENRES[0];
   const onlyTracks = world || Boolean(country);
-  const [chart, playlistTracks] = await Promise.all([
-    onlyTracks ? null : getChart(genre.id),
-    country ? getPlaylistTracks(country.id) : world ? getWorldTopTracks() : null,
-  ]);
-  const tracks = playlistTracks ?? chart?.tracks ?? [];
+  // Un pays ou le Monde s'affiche comme la France : top albums, top artistes et top titres.
+  const chart = country
+    ? await getPlaylistChart(country.id)
+    : world
+      ? await getPlaylistChart(WORLD_PLAYLIST)
+      : await getChart(genre.id);
+  const tracks = chart.tracks;
   const heading = country ? country.title : world ? "Top Monde" : genre.id ? `Top ${genre.name} France` : "Top France";
   const isMine = Boolean(mine) && mine?.kind !== "france";
 
@@ -67,7 +69,7 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
         {countries.length > 0 && <CountryPicker countries={countries} current={country?.id ?? null} />}
       </div>
 
-      {chart && chart.albums.length > 0 && (
+      {chart.albums.length > 0 && (
         <Carousel eyebrow="Les plus écoutés" title="Top albums">
           {chart.albums.map((a, i) => (
             <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} badge={`#${i + 1}`} />
@@ -75,7 +77,7 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
         </Carousel>
       )}
 
-      {chart && chart.artists.length > 0 && (
+      {chart.artists.length > 0 && (
         <section className="carousel">
           <div className="eyebrow">Les plus écoutés</div>
           <h2 className="section-title">Top artistes</h2>
