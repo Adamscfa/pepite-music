@@ -119,6 +119,13 @@ export default async function Header() {
                   <small>@{me.username}</small>
                   <Link href={profile}>Mon profil</Link>
                   <Link href="/messages">Messages{unread.messages ? ` (${unread.messages})` : ""}</Link>
+                  <Link href={`${profile}#favoris`}>Mes favoris</Link>
+                  <Link href={`${profile}/annee`}>Mon année en musique</Link>
+                  <Link href="/classements">Classements</Link>
+                  {me.is_admin && <Link href="/moderation">Modération</Link>}
+                  <div className="me-pop-theme">
+                    <ThemeToggle initial={theme} withLabel />
+                  </div>
                   <form action={signOut}>
                     <button type="submit">Déconnexion</button>
                   </form>
@@ -135,9 +142,11 @@ export default async function Header() {
               </Link>
             </>
           )}
-          <span className="mobile-only">
-            <ThemeToggle initial={theme} />
-          </span>
+          {!me && (
+            <span className="mobile-only">
+              <ThemeToggle initial={theme} />
+            </span>
+          )}
         </div>
       </header>
       {me && <LiveUpdates userId={me.id} />}

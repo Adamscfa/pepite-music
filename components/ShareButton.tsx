@@ -23,7 +23,7 @@ export default function ShareButton({ title, path, compact = false }: { title: s
       }}
     >
       {compact && <Icon name="share" size={19} />}
-      {copied ? "Lien copié ✓" : "Partager"}
+      <span className={compact ? "action-label" : undefined}>{copied ? "Lien copié ✓" : "Partager"}</span>
     </button>
   );
 }

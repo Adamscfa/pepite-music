@@ -18,7 +18,7 @@ export default async function RightRail() {
   const pepite = weekly.current[0] ?? weekly.lastWinner;
 
   return (
-    <aside className="rail">
+    <aside className="rail home-rail">
       {albums.length > 0 && (
         <section className="rail-box">
           <h2 className="rail-title">

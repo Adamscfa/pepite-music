@@ -532,7 +532,7 @@ main { grid-column: 2; width: 100%; max-width: 1240px; margin: 0 auto; padding: 
 .post-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
 .post-author { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .post-author .avatar { width: 46px; height: 46px; font-size: 18px; }
-.post-author span { display: grid; min-width: 0; }
+.post-author > span { display: grid; min-width: 0; }
 .post-author b { font-size: 16px; }
 .post-author small { color: var(--muted); font-size: 13px; }
 .post-author:hover b { text-decoration: underline; text-underline-offset: 3px; }
@@ -691,11 +691,6 @@ main { grid-column: 2; width: 100%; max-width: 1240px; margin: 0 auto; padding: 
   .comments.flat { margin-left: -48px; }
   .two-cols { grid-template-columns: 1fr; }
   .rail { grid-template-columns: 1fr; }
-}
-@media (max-width: 420px) {
-  .post-body { grid-template-columns: 1fr; }
-  .post-cover { max-width: 200px; }
-  .action.share { margin-left: 0; }
 }
 
 /* Le lecteur flottant se centre dans la zone de contenu, à droite de la barre latérale. */
@@ -879,3 +874,132 @@ main:has(.chat) { padding-bottom: 0; }
 .mod-errors code { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
 .mod-errors small { color: var(--muted); font-size: 12px; }
 .btn.danger-btn { background: var(--danger); color: #fff; }
+
+/* =====================================================================
+   Icône de lecture des extraits
+   ===================================================================== */
+.play { width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink); display: grid; place-items: center; transition: color .15s ease, transform .15s ease; }
+.play:hover { color: var(--gold); transform: scale(1.08); }
+.play[aria-pressed="true"] { background: none; color: var(--gold); }
+.player-btn { width: 44px; height: 44px; padding: 0; background: none; color: var(--ink); box-shadow: none; display: grid; place-items: center; }
+.player-btn:hover { color: var(--gold); }
+
+/* Thème dans le menu du compte */
+.me-pop-theme { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 4px; }
+.me-pop-theme .theme-switch { color: var(--ink); padding: 8px 10px; }
+.me-pop-theme .theme-switch svg { color: var(--ink); }
+.me-pop-theme .switch { background: var(--line); }
+.me-pop-theme .switch[data-on] { background: var(--gold); }
+
+/* =====================================================================
+   Téléphone : affichage revu
+   ===================================================================== */
+.bottom-publish { display: none; }
+@media (max-width: 760px) {
+  /* Pas de zoom automatique de l'iPhone quand on touche un champ (il zoome sous 16 px). */
+  input, textarea, select { font-size: 16px !important; }
+
+  /* Barre du haut compacte */
+  .top { padding: 8px 12px; gap: 8px; }
+  .top-logo img { width: 32px; height: 32px; }
+  .top .search input { padding: 9px 12px 9px 38px; border-radius: 12px; box-shadow: none; }
+  .top-actions { gap: 4px; }
+  .top-actions .btn.violet { padding: 7px 12px; font-size: 13px; }
+  .me-pop { position: fixed; top: 58px; right: 10px; left: auto; width: min(270px, calc(100vw - 20px)); }
+
+  main { padding: 12px 12px calc(84px + env(safe-area-inset-bottom)); }
+  .hero-tint { margin: -12px -12px 0; padding: 20px 12px; }
+  h1 { letter-spacing: -0.02em; }
+  .feed-col { gap: 14px; }
+
+  /* Bandeau d'accueil plus court */
+  .hero { padding: 22px 18px 36px; border-radius: 16px; }
+  .hero h1 { font-size: 22px; margin-bottom: 6px; }
+  .hero p { font-size: 14px; margin-bottom: 14px; max-width: 75%; }
+  .hero-btn { padding: 10px 16px; font-size: 14px; }
+  .hero-art { right: -34px; opacity: .45; }
+  .hero-art img { width: 78px; height: 78px; margin-left: -28px; }
+  .hero-art img:nth-child(3) { width: 92px; height: 92px; }
+  .hero-dots { bottom: 12px; }
+
+  /* Titre du fil et onglets */
+  .feed-col > .feed-head { flex-direction: column; align-items: stretch; gap: 8px; }
+  .feed-head .tabs { display: grid; grid-template-columns: 1fr 1fr; }
+  .feed-head .tabs a { text-align: center; }
+
+  /* Cartes d'avis */
+  .post { padding: 14px 12px 4px; border-radius: 16px; box-shadow: none; }
+  .post-head { margin-bottom: 10px; }
+  .post-author .avatar { width: 40px; height: 40px; font-size: 16px; }
+  .post-author b { font-size: 15px; }
+  .post-author small { font-size: 12px; }
+  .post-body { grid-template-columns: 96px minmax(0, 1fr); gap: 12px; }
+  .post-text { gap: 3px; padding-top: 0; }
+  .kind { font-size: 11px; padding: 2px 8px; }
+  .post-text h3 { font-size: 18px; }
+  .post-text .artist { font-size: 13px; }
+  .post-text .stars { font-size: 15px; }
+  .post-text p { font-size: 14.5px; }
+  /* Actions : j'aime, commentaires, WhatsApp, partager sur une ligne ; réactions juste au-dessus */
+  .post-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 0; margin-top: 12px; padding: 6px 0; }
+  .post-actions .reactions { grid-column: 1 / -1; grid-row: 1; justify-content: flex-start; }
+  .post-actions .action { justify-content: center; padding: 8px 0; }
+  .post-actions .action.share { margin-left: 0; }
+  .post-actions .action-label { display: none; }
+  .post-actions details.report { display: none; }
+  .post-comments { gap: 10px; }
+  .mini-comment { grid-template-columns: 32px minmax(0, 1fr); gap: 10px; }
+  .mini-comment .avatar { width: 32px; height: 32px; font-size: 13px; }
+  .comment-form { grid-template-columns: minmax(0, 1fr); }
+  .comment-form > .avatar { display: none; }
+  .comment-field input { padding: 9px 14px; }
+  .send { width: 44px; height: 40px; border-radius: 12px; }
+
+  /* Colonne de droite de l'accueil : sur téléphone, on garde seulement les encarts utiles */
+  .home-rail .rail-box:has(.rank-list) { display: none; }
+  .rail { gap: 14px; }
+
+  /* Fil de commentaires */
+  .thread-box { border-radius: 16px; box-shadow: none; }
+  .thread-title { font-size: 18px; padding-top: 16px; }
+  .comment { grid-template-columns: 36px minmax(0, 1fr); gap: 10px; padding: 10px 0; }
+  .comment-avatar .avatar { width: 36px; height: 36px; font-size: 14px; }
+  .comments.flat { margin-left: -46px; }
+  .sort-chips { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+  .sort-chips button { white-space: nowrap; }
+
+  /* Rangées d'albums */
+  .carousel-track { grid-auto-columns: 124px; gap: 12px; }
+  .carousel { margin-bottom: 26px; }
+  .genre-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .explore-head h1 { font-size: 26px; }
+  .local-box { padding: 14px 12px 6px; }
+  .chart li { padding: 6px 2px; gap: 10px; }
+
+  /* Menu du bas : vraies icônes, bouton Publier au centre */
+  .bottom-nav { padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); align-items: flex-end; }
+  .bottom-nav a, .bottom-nav button { flex: 1; gap: 3px; padding: 4px 0; font-size: 10.5px; }
+  .bottom-nav svg { display: block; }
+  .bottom-nav .dot { top: -2px; right: calc(50% - 22px); }
+  .bottom-publish { display: grid; justify-items: center; }
+  .bottom-publish span { width: 52px; height: 52px; margin-top: -22px; border-radius: 50%; display: grid; place-items: center; background: var(--gold); color: var(--on-gold); box-shadow: 0 6px 18px rgb(0 0 0 / .22); border: 4px solid var(--surface); }
+  .player { bottom: calc(76px + env(safe-area-inset-bottom)); }
+
+  /* Conversation : la barre d'écriture se pose au-dessus du menu du bas */
+  .composer { bottom: calc(66px + env(safe-area-inset-bottom)); }
+  main:has(.chat) { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+  .composer-btn, .send.round { width: 44px; height: 44px; }
+  .composer textarea { padding: 10px 14px; }
+
+  /* Profil et premier pas */
+  .prof { gap: 14px; }
+  .prof .avatar, .avatar.big { width: 72px; height: 72px; font-size: 28px; }
+  .prof h1 { font-size: 24px; }
+  .stats { gap: 18px; }
+  .onboard-steps li { font-size: 12px; padding-right: 10px; }
+  .genre-pick, .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 380px) {
+  .post-body { grid-template-columns: 80px minmax(0, 1fr); }
+  .bottom-nav a, .bottom-nav button { font-size: 10px; }
+}
