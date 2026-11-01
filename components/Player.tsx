@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+import PlayIcon from "./PlayIcon";
 
 export type PlayerTrack = { id: number; title: string; artist: string; cover: string; preview: string };
 
@@ -66,7 +67,7 @@ export default function PlayerProvider({ children }: { children: React.ReactNode
             aria-label={playing ? "Pause" : "Lecture"}
             onClick={() => toggle(current)}
           >
-            {playing ? "❚❚" : "▶"}
+            <PlayIcon playing={playing} size={36} />
           </button>
           <button
             type="button"

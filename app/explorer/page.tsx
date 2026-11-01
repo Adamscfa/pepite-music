@@ -36,7 +36,7 @@ export default async function ExplorePage({ searchParams }: PageProps<"/explorer
         <h1>{scene ? scene.name : genre ? genre.name : "Trouve ta prochaine pépite"}</h1>
         <p>
           {scene
-            ? "Les sons d'ici qui tournent en ce moment. Touche ▶ pour écouter un extrait."
+            ? "Les sons d'ici qui tournent en ce moment. Touche le bouton de lecture pour écouter un extrait."
             : genre
               ? `Les albums, artistes et titres ${genre.name} les plus écoutés en ce moment.`
               : "Nouveaux artistes, albums tendance, genres musicaux et titres dont tout le monde parle."}

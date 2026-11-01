@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePlayer } from "@/components/Player";
 import { formatDuration } from "@/lib/format";
 import type { Track } from "@/lib/deezer";
+import PlayIcon from "@/components/PlayIcon";
 
 // Liste des titres avec les extraits de 30 secondes fournis par Deezer.
 export default function TrackList({
@@ -42,7 +43,7 @@ export default function TrackList({
                   aria-label={`${playing ? "Mettre en pause" : "Écouter"} un extrait de ${track.title}`}
                   onClick={() => player.toggle({ ...track, artist, cover })}
                 >
-                  {playing ? "❚❚" : "▶"}
+                  <PlayIcon playing={playing} size={28} />
                 </button>
               ) : (
                 <span />

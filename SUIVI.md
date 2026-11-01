@@ -70,6 +70,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     - **Mentions @pseudo** dans les commentaires (avec notification).
     - **Modération** (`/moderation`, pour les administrateurs) et **suivi des
       erreurs** du site.
+14. Téléphone (1er novembre 2026) : menu du bas avec de vraies icônes et
+    bouton « Publier » au centre, cartes d'avis compactes, bandeau plus
+    court, pas de zoom automatique sur iPhone, thème dans le menu du compte.
+    Nouvelle icône de lecture des extraits (cercle au trait + triangle).
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -88,7 +92,8 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `05-reponses-commentaires.sql` | Réponses aux commentaires, j'aime sur commentaires | oui |
 | `06-comptes-demo.sql` | Membres de démonstration (facultatif) | à vérifier |
 | `07-temps-reel.sql` | Messages et notifications en direct | à vérifier |
-| `08-grande-mise-a-jour.sql` | Premier pas, notifications téléphone, mentions, modération, erreurs | non (à faire) |
+| `08-grande-mise-a-jour.sql` | Premier pas, notifications téléphone, mentions, modération, erreurs | à vérifier |
+| `09-corriger-demo.sql` | Retire « Démo » des vrais membres (sans risque, rejouable) | non (à faire) |
 
 Remplacer « à vérifier » par « oui » une fois confirmé. Pour vérifier, dans
 Supabase, **Table Editor** :

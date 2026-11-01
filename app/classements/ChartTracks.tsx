@@ -5,6 +5,7 @@ import Cover from "@/components/Cover";
 import { usePlayer } from "@/components/Player";
 import { formatDuration } from "@/lib/format";
 import type { ChartTrack } from "@/lib/deezer";
+import PlayIcon from "@/components/PlayIcon";
 
 // Top titres numérotés, avec l'extrait de 30 s dans le lecteur flottant.
 export default function ChartTracks({ tracks }: { tracks: ChartTrack[] }) {
@@ -42,7 +43,7 @@ export default function ChartTracks({ tracks }: { tracks: ChartTrack[] }) {
                 aria-label={`${playing ? "Mettre en pause" : "Écouter"} un extrait de ${t.title}`}
                 onClick={() => player.toggle(t)}
               >
-                {playing ? "❚❚" : "▶"}
+                <PlayIcon playing={playing} size={28} />
               </button>
             ) : (
               <span />
