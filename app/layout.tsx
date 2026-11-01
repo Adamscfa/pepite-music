@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Bricolage_Grotesque, Figtree, JetBrains_Mono, Unbounded } from "next/font/google";
+import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import Header from "@/components/Header";
 import PlayerProvider from "@/components/Player";
 import SetupNotice from "@/components/SetupNotice";
 import "./globals.css";
 
-const display = Bricolage_Grotesque({ variable: "--font-display", subsets: ["latin"], weight: ["500", "700", "800"] });
-const body = Figtree({ variable: "--font-body", subsets: ["latin"], weight: ["400", "500", "600"] });
-// Police des grands titres et du logo.
-const title = Unbounded({ variable: "--font-title", subsets: ["latin"], weight: ["600", "800"] });
+// Une seule police ronde et nette pour tout le site (titres et texte), comme sur la maquette.
+const sans = Plus_Jakarta_Sans({ variable: "--font-sans", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 const mono = JetBrains_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["500"] });
 
 // Les pages dépendent du membre connecté : on les génère à chaque visite.
@@ -33,16 +31,18 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${display.variable} ${body.variable} ${mono.variable} ${title.variable}`}
+      className={`${sans.variable} ${mono.variable}`}
       data-theme={theme === "light" || theme === "dark" ? theme : undefined}
     >
       <body>
         <PlayerProvider>
-          <Header />
-          <main>
-            <SetupNotice />
-            {children}
-          </main>
+          <div className="shell">
+            <Header />
+            <main>
+              <SetupNotice />
+              {children}
+            </main>
+          </div>
         </PlayerProvider>
       </body>
     </html>

@@ -23,15 +23,9 @@ export default function BottomNav({
       <Link href="/" aria-current={current("/")}>
         <span aria-hidden="true">⌂</span>Accueil
       </Link>
-      <button
-        type="button"
-        onClick={() => {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          document.getElementById("recherche")?.focus();
-        }}
-      >
-        <span aria-hidden="true">⌕</span>Recherche
-      </button>
+      <Link href="/explorer" aria-current={current("/explorer")}>
+        <span aria-hidden="true">◎</span>Explorer
+      </Link>
       <Link href="/classements" aria-current={current("/classements")}>
         <span aria-hidden="true">♛</span>Tops
       </Link>

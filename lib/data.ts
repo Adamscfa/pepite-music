@@ -34,6 +34,8 @@ export type Review = {
   liked: boolean;
   comments: number;
   reactions: Reaction[];
+  // Les deux derniers commentaires, affichés sous l'avis dans le fil.
+  preview: Comment[];
 };
 
 export const EMOJIS = ["🔥", "😂", "😢", "💎"] as const;
@@ -44,7 +46,11 @@ export type Comment = {
   body: string;
   created_at: string;
   user_id: string;
+  // Commentaire auquel celui-ci répond (null pour un commentaire de premier niveau).
+  parent_id: number | null;
   profile: Author;
+  likes: number;
+  liked: boolean;
 };
 
 export type AlbumRef = {
@@ -68,7 +74,7 @@ export type List = {
 // "*" plutôt qu'une liste de colonnes : la page marche même si une colonne manque encore.
 const REVIEW_FIELDS = "*, profile:profiles!reviews_user_id_fkey!inner(*)";
 
-type RawReview = Omit<Review, "likes" | "liked" | "comments" | "reactions" | "profile"> & {
+type RawReview = Omit<Review, "likes" | "liked" | "comments" | "reactions" | "profile" | "preview"> & {
   profile: Profile;
   hidden?: boolean;
 };
@@ -100,7 +106,12 @@ async function withSocial(raw: RawReview[] | null): Promise<Review[]> {
   const [me, likes, comments, reactions] = await Promise.all([
     getCurrentProfile(),
     supabase.from("review_likes").select("review_id, user_id").in("review_id", ids),
-    supabase.from("review_comments").select("review_id").in("review_id", ids),
+    supabase
+      .from("review_comments")
+      .select("*, profile:profiles!inner(*)")
+      .in("review_id", ids)
+      .order("created_at", { ascending: false })
+      .returns<RawComment[]>(),
     supabase.from("review_reactions").select("review_id, user_id, emoji").in("review_id", ids),
   ]);
   return reviews.map((r) => {
@@ -115,6 +126,11 @@ async function withSocial(raw: RawReview[] | null): Promise<Review[]> {
       likes: mine.length,
       liked: Boolean(me && mine.some((l) => l.user_id === me.id)),
       comments: (comments.data ?? []).filter((c) => c.review_id === r.id).length,
+      preview: (comments.data ?? [])
+        .filter((c) => c.review_id === r.id && !c.parent_id)
+        .slice(0, 2)
+        .reverse()
+        .map((c) => toComment(c, [], me?.id)),
       reactions: EMOJIS.map((emoji) => {
         const of = reacts.filter((x) => x.emoji === emoji);
         return { emoji, count: of.length, mine: Boolean(me && of.some((x) => x.user_id === me.id)) };
@@ -181,15 +197,50 @@ export const getReview = cache(async (id: number): Promise<Review | null> => {
   return review ?? null;
 });
 
+type RawComment = Omit<Comment, "profile" | "likes" | "liked" | "parent_id"> & {
+  review_id: number;
+  parent_id?: number | null;
+  profile: Profile;
+};
+
+function toComment(c: RawComment, likes: { comment_id: number; user_id: string }[], meId?: string): Comment {
+  const mine = likes.filter((l) => l.comment_id === c.id);
+  return {
+    id: c.id,
+    body: c.body,
+    created_at: c.created_at,
+    user_id: c.user_id,
+    parent_id: c.parent_id ?? null,
+    profile: author(c.profile),
+    likes: mine.length,
+    liked: Boolean(meId && mine.some((l) => l.user_id === meId)),
+  };
+}
+
+// Tous les commentaires d'un avis, réponses comprises (rangées ensuite par la page).
 export async function getComments(reviewId: number): Promise<Comment[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("review_comments")
-    .select("id, body, created_at, user_id, profile:profiles!inner(*)")
-    .eq("review_id", reviewId)
-    .order("created_at", { ascending: true })
-    .returns<(Omit<Comment, "profile"> & { profile: Profile })[]>();
-  return (data ?? []).map((c) => ({ ...c, profile: author(c.profile) }));
+  const [me, { data }] = await Promise.all([
+    getCurrentProfile(),
+    supabase
+      .from("review_comments")
+      .select("*, profile:profiles!inner(*)")
+      .eq("review_id", reviewId)
+      .order("created_at", { ascending: true })
+      .returns<RawComment[]>(),
+  ]);
+  const raw = data ?? [];
+  // Si le fichier 05 n'a pas encore été exécuté, la table n'existe pas : 0 j'aime partout.
+  const { data: likes } = raw.length
+    ? await supabase
+        .from("comment_likes")
+        .select("comment_id, user_id")
+        .in(
+          "comment_id",
+          raw.map((c) => c.id),
+        )
+    : { data: [] };
+  return raw.map((c) => toComment(c, likes ?? [], me?.id));
 }
 
 export const getProfileByUsername = cache(async (username: string): Promise<Profile | null> => {
@@ -286,7 +337,7 @@ export async function getTopRatedAlbums(limit = 12): Promise<RankedAlbum[]> {
 
 export type Notification = {
   id: number;
-  kind: "like" | "comment" | "follow" | "reaction" | "message" | "recommend";
+  kind: "like" | "comment" | "reply" | "follow" | "reaction" | "message" | "recommend";
   review_id: number | null;
   emoji: string | null;
   read_at: string | null;
@@ -484,4 +535,89 @@ export async function getWeeklyPepite(meId?: string) {
   const current = tally(thisWeek.data ?? []);
   const myVote: number | null = (thisWeek.data ?? []).find((v) => v.user_id === meId)?.album_id ?? null;
   return { current, lastWinner: tally(lastWeek.data ?? [])[0] ?? null, myVote };
+}
+
+// ---- Accueil et Explorer ----
+
+export type Contributor = Author & { count: number };
+
+// Les membres qui ont publié le plus d'avis.
+export async function getTopContributors(limit = 3): Promise<Contributor[]> {
+  if (!hasSupabaseConfig) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reviews")
+    .select(REVIEW_FIELDS)
+    .order("updated_at", { ascending: false })
+    .limit(3000)
+    .returns<{ user_id: string; hidden?: boolean; profile: Profile }[]>();
+  const byUser = new Map<string, Contributor>();
+  for (const r of data ?? []) {
+    if (r.hidden) continue;
+    const c = byUser.get(r.user_id) ?? { ...author(r.profile), count: 0 };
+    c.count += 1;
+    byUser.set(r.user_id, c);
+  }
+  return [...byUser.values()].sort((a, b) => b.count - a.count).slice(0, limit);
+}
+
+export type Discussed = {
+  album_id: number;
+  album_title: string;
+  artist_name: string;
+  cover_url: string | null;
+  track_id: number | null;
+  track_title: string | null;
+  comments: number;
+  reviews: number;
+};
+
+// Les titres (ou albums) dont on parle le plus : avis + commentaires reçus.
+export async function getMostDiscussed({ tracks, limit = 8 }: { tracks: boolean; limit?: number }) {
+  if (!hasSupabaseConfig) return [];
+  const supabase = await createClient();
+  let query = supabase.from("reviews").select("*").order("updated_at", { ascending: false }).limit(2000);
+  query = tracks ? query.not("track_id", "is", null) : query.is("track_id", null);
+  const { data } = await query.returns<RawReview[]>();
+  const reviews = (data ?? []).filter((r) => !r.hidden);
+  if (!reviews.length) return [];
+  const { data: comments } = await supabase
+    .from("review_comments")
+    .select("review_id")
+    .in(
+      "review_id",
+      reviews.map((r) => r.id),
+    );
+  const countByReview = new Map<number, number>();
+  for (const c of comments ?? []) countByReview.set(c.review_id, (countByReview.get(c.review_id) ?? 0) + 1);
+  const byItem = new Map<number, Discussed>();
+  for (const r of reviews) {
+    const key = tracks ? r.track_id! : r.album_id;
+    const item = byItem.get(key) ?? {
+      album_id: r.album_id,
+      album_title: r.album_title,
+      artist_name: r.artist_name,
+      cover_url: r.cover_url,
+      track_id: r.track_id ?? null,
+      track_title: r.track_title ?? null,
+      comments: 0,
+      reviews: 0,
+    };
+    item.reviews += 1;
+    item.comments += countByReview.get(r.id) ?? 0;
+    byItem.set(key, item);
+  }
+  return [...byItem.values()]
+    .sort((a, b) => b.comments - a.comments || b.reviews - a.reviews)
+    .slice(0, limit);
+}
+
+// Nombre d'avis Pépite par album, pour une liste d'albums.
+export async function getReviewCounts(albumIds: number[]): Promise<Map<number, number>> {
+  const counts = new Map<number, number>();
+  if (!hasSupabaseConfig || !albumIds.length) return counts;
+  const supabase = await createClient();
+  const { data } = await supabase.from("reviews").select("album_id").in("album_id", albumIds);
+  for (const r of data ?? []) counts.set(r.album_id, (counts.get(r.album_id) ?? 0) + 1);
+  return counts;
 }

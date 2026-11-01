@@ -312,3 +312,43 @@ export async function getTrack(id: number): Promise<TrackDetail | null> {
     year: Number.isFinite(year) && year > 0 ? year : null,
   };
 }
+
+// ---- Explorer ----
+
+export type Genre = { id: number; name: string; picture: string };
+
+// Les genres musicaux de Deezer, avec leur image.
+export async function getGenres(): Promise<Genre[]> {
+  const json = await get<{ data: { id: number; name: string; picture_medium: string }[] }>("/genre", 86400);
+  return (json?.data ?? []).filter((g) => g.id !== 0).map((g) => ({ id: g.id, name: g.name, picture: g.picture_medium }));
+}
+
+type RawReleases = {
+  data: {
+    id: number;
+    title: string;
+    cover_medium: string;
+    artist: { id: number; name: string; picture_medium?: string };
+  }[];
+};
+
+// Artistes qui viennent de sortir quelque chose, tirés des nouveautés Deezer.
+// Ceux déjà dans le top des artistes les plus écoutés sont mis de côté.
+export async function getFreshArtists(limit = 12): Promise<(ArtistHit & { album: string })[]> {
+  const [releases, top] = await Promise.all([
+    get<RawReleases>("/editorial/0/releases?limit=60", 3600),
+    get<RawArtists>("/chart/0/artists?limit=50", 3600),
+  ]);
+  const known = new Set((top?.data ?? []).map((a) => a.id));
+  const seen = new Map<number, ArtistHit & { album: string }>();
+  for (const a of releases?.data ?? []) {
+    if (known.has(a.artist.id) || seen.has(a.artist.id)) continue;
+    seen.set(a.artist.id, {
+      id: a.artist.id,
+      name: a.artist.name,
+      picture: a.artist.picture_medium ?? a.cover_medium,
+      album: a.title,
+    });
+  }
+  return [...seen.values()].slice(0, limit);
+}

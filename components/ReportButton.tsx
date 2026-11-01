@@ -9,7 +9,7 @@ export default function ReportButton({ reviewId }: { reviewId: number }) {
   if (state.done) return <span className="small">Merci, c&apos;est signalé.</span>;
   return (
     <details className="report">
-      <summary className="like">⚑ Signaler</summary>
+      <summary className="icon-round" aria-label="Signaler cet avis" title="Signaler">⋮</summary>
       <form action={action} className="report-box">
         <input type="hidden" name="review_id" value={reviewId} />
         <select name="reason" className="select" aria-label="Raison du signalement" defaultValue="mechant">

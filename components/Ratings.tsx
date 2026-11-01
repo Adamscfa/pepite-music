@@ -1,9 +1,10 @@
 import Link from "next/link";
 import RatingForm from "@/app/album/RatingForm";
-import type { Profile, Review } from "@/lib/data";
+import { getCurrentProfile, type Profile, type Review } from "@/lib/data";
 import { formatScore, timeAgo } from "@/lib/format";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import AuthorLink from "./AuthorLink";
+import ReportButton from "./ReportButton";
 import { ReviewMeta } from "./ReviewCard";
 import Stars from "./Stars";
 
@@ -80,7 +81,8 @@ export function RatePanel({
   );
 }
 
-export function MemberReviews({ reviews, canLike }: { reviews: Review[]; canLike: boolean }) {
+export async function MemberReviews({ reviews, canLike }: { reviews: Review[]; canLike: boolean }) {
+  const me = await getCurrentProfile();
   return (
     <section>
       <h2 className="section-title" style={{ marginTop: 28 }}>
@@ -93,6 +95,11 @@ export function MemberReviews({ reviews, canLike }: { reviews: Review[]; canLike
               <div className="who">
                 <AuthorLink user={r.profile} />
                 <Stars value={r.rating} heart={r.heart} /> · {timeAgo(r.updated_at)}
+                {me && me.id !== r.user_id && (
+                  <span style={{ marginLeft: "auto" }}>
+                    <ReportButton reviewId={r.id} />
+                  </span>
+                )}
               </div>
               {r.body && <p>{r.body}</p>}
               <ReviewMeta review={r} canLike={canLike} />

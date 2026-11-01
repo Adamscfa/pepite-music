@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import Icon from "./Icon";
 
 // Partage via le menu du téléphone, ou copie le lien sur ordinateur.
-export default function ShareButton({ title }: { title: string }) {
+// path : adresse à partager (par défaut, la page en cours). compact : version icône pour les avis.
+export default function ShareButton({ title, path, compact = false }: { title: string; path?: string; compact?: boolean }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
       type="button"
-      className="btn ghost"
+      className={compact ? "action share" : "btn ghost"}
       onClick={async () => {
-        const url = window.location.href;
+        const url = path ? new URL(path, window.location.origin).href : window.location.href;
         if (navigator.share) {
           await navigator.share({ title, url }).catch(() => {});
           return;
@@ -20,6 +22,7 @@ export default function ShareButton({ title }: { title: string }) {
         setTimeout(() => setCopied(false), 2000);
       }}
     >
+      {compact && <Icon name="share" size={19} />}
       {copied ? "Lien copié ✓" : "Partager"}
     </button>
   );

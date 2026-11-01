@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import AuthorLink from "@/components/AuthorLink";
+import CommentThread from "@/components/CommentThread";
+import Cover from "@/components/Cover";
 import ReviewCard from "@/components/ReviewCard";
 import StoryButton from "@/components/StoryButton";
-import { deleteComment } from "@/app/social-actions";
-import { getComments, getCurrentProfile, getReview } from "@/lib/data";
-import { timeAgo } from "@/lib/format";
-import CommentForm from "./CommentForm";
+import { getComments, getCurrentProfile, getReview, getReviewCounts } from "@/lib/data";
+import { getAlbum, getArtist, getArtistAlbums } from "@/lib/deezer";
 
 async function loadReview(params: PageProps<"/avis/[id]">["params"]) {
   const id = Number((await params).id);
@@ -31,47 +30,68 @@ export async function generateMetadata({ params }: PageProps<"/avis/[id]">): Pro
 
 export default async function ReviewPage({ params }: PageProps<"/avis/[id]">) {
   const review = await loadReview(params);
-  const [comments, me] = await Promise.all([getComments(review.id), getCurrentProfile()]);
+  const [comments, me, more] = await Promise.all([
+    getComments(review.id),
+    getCurrentProfile(),
+    moreByArtist(review.album_id),
+  ]);
 
   return (
-    <>
-      <div className="eyebrow" style={{ marginBottom: 10 }}>
-        Avis
-      </div>
-      <ReviewCard review={review} canLike={Boolean(me)} />
-      <div className="row" style={{ justifyContent: "flex-start" }}>
-        <StoryButton reviewId={review.id} />
+    <div className="with-rail">
+      <div className="feed-col">
+        <div className="eyebrow">Avis</div>
+        <ReviewCard review={review} canLike={Boolean(me)} />
+        <div className="row" style={{ justifyContent: "flex-start", margin: "-6px 0 0" }}>
+          <StoryButton reviewId={review.id} />
+        </div>
+        <CommentThread
+          reviewId={review.id}
+          comments={comments}
+          me={me ? { username: me.username, display_name: me.display_name, avatar_url: me.avatar_url } : null}
+          meId={me?.id ?? null}
+        />
       </div>
 
-      <section style={{ marginTop: 28 }}>
-        <h2 className="section-title">
-          {comments.length} commentaire{comments.length > 1 ? "s" : ""}
-        </h2>
-        {comments.map((c) => (
-          <div className="mini" key={c.id}>
-            <div className="who">
-              <AuthorLink user={c.profile} /> · {timeAgo(c.created_at)}
-              {me?.id === c.user_id && (
-                <form action={deleteComment} style={{ marginLeft: "auto" }}>
-                  <input type="hidden" name="comment_id" value={c.id} />
-                  <button className="link-btn">Supprimer</button>
-                </form>
-              )}
+      {more && more.albums.length > 0 && (
+        <aside className="rail">
+          <section className="rail-box">
+            <h2 className="rail-title">Plus de {more.artist.name}</h2>
+            <div className="more-cards">
+              {more.albums.map((a) => (
+                <Link key={a.id} href={`/album/${a.id}`} className="more-card">
+                  <Cover src={a.cover} size="m" />
+                  <span className="rank-text">
+                    <b>{a.title}</b>
+                    <small>{more.artist.name}</small>
+                    <small>
+                      {[a.year, a.type === "single" ? "Single" : a.type === "ep" ? "EP" : "Album"]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </small>
+                    <span className="more-stats">
+                      <span title="Avis sur Pépite">★ {more.counts.get(a.id) ?? 0} avis</span>
+                    </span>
+                  </span>
+                </Link>
+              ))}
             </div>
-            <p>{c.body}</p>
-          </div>
-        ))}
-        {me ? (
-          <CommentForm reviewId={review.id} />
-        ) : (
-          <p className="small">
-            <Link href="/connexion" className="link-btn">
-              Connecte-toi
-            </Link>{" "}
-            pour commenter.
-          </p>
-        )}
-      </section>
-    </>
+            <Link href={`/artiste/${more.artist.id}`} className="more-link rail-more">
+              Toute la discographie →
+            </Link>
+          </section>
+        </aside>
+      )}
+    </div>
   );
+}
+
+// Les autres albums de l'artiste, pour la colonne de droite.
+async function moreByArtist(albumId: number) {
+  const album = await getAlbum(albumId);
+  if (!album) return null;
+  const artist = await getArtist(album.artistId);
+  if (!artist) return null;
+  const albums = (await getArtistAlbums(artist)).filter((a) => a.id !== albumId).slice(0, 4);
+  const counts = await getReviewCounts(albums.map((a) => a.id));
+  return { artist, albums, counts };
 }
