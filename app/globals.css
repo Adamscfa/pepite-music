@@ -1054,3 +1054,38 @@ main:has(.chat) { padding-top: 0; }
   .chat-head { margin: 0 -12px 8px; padding: 10px 12px; }
   .composer { bottom: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
 }
+
+/* =====================================================================
+   Téléphone : pochettes aussi grandes que sur ordinateur
+   ===================================================================== */
+@media (max-width: 760px) {
+  /* Fil : la pochette en grand, en haut de l'avis, puis le texte dessous */
+  .post-body { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .post-cover { display: block; width: 100%; max-width: 420px; justify-self: center; }
+  .post-cover .cover.l { width: 100%; border-radius: 12px; }
+  .post-text h3 { font-size: 21px; }
+  .post-text .artist { font-size: 14px; }
+  .post-text .stars { font-size: 18px; }
+  .post-text p { font-size: 15px; }
+
+  /* Rangées d'albums : même taille que sur ordinateur */
+  .carousel-track { grid-auto-columns: 150px; }
+  .artists-row { grid-auto-columns: 120px; }
+  .artist-tile .cover { width: 110px; }
+
+  /* Page d'un album ou d'un titre : grande pochette centrée */
+  .album-top .cover.l { max-width: 300px; width: 100%; justify-self: center; }
+  .hero-tint .album-top { justify-items: center; text-align: center; }
+  .hero-tint .album-top .score, .hero-tint .album-top .listen { justify-content: center; }
+
+  /* Classements et listes de titres : pochettes plus grandes */
+  .chart li { grid-template-columns: 22px 60px minmax(0, 1fr) 36px; gap: 10px; }
+  .chart .cover.s { width: 60px; border-radius: 8px; }
+  .rank-item .cover.s, .rank-item .avatar { width: 60px; height: 60px; }
+  .wrapped-top .cover.s { width: 60px; }
+  .more-card { grid-template-columns: 96px minmax(0, 1fr); }
+  .more-card .cover.m { width: 96px; }
+  .grid-rated { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-grid { gap: 14px; }
+  .results .cover.s { width: 52px; }
+}
