@@ -6,6 +6,7 @@ import { CHART_GENRES, getChart, getCountryCharts, getPlaylistTracks, getWorldTo
 import CountryPicker from "./CountryPicker";
 import ChartTracks from "./ChartTracks";
 import { sharpImage } from "@/lib/images";
+import { getTrendScope } from "@/lib/trends";
 
 export const metadata: Metadata = {
   title: "Classements",
@@ -15,9 +16,17 @@ export const metadata: Metadata = {
 export default async function ChartsPage({ searchParams }: PageProps<"/classements">) {
   const { genre: rawGenre, zone, id } = await searchParams;
   const countries = await getCountryCharts();
+  // Sans choix dans l'adresse : le classement « de chez toi » (ton pays, ou ton dernier choix ici).
+  const mine = !zone && !rawGenre ? await getTrendScope() : null;
   // Seuls les tops de la liste Deezer sont acceptés, pas n'importe quelle playlist.
-  const country = zone === "pays" ? (countries.find((c) => String(c.id) === id) ?? null) : null;
-  const world = zone === "monde";
+  const country =
+    zone === "pays"
+      ? (countries.find((c) => String(c.id) === id) ?? null)
+      : mine?.kind === "pays"
+        ? mine.chart
+        : null;
+  const world = zone === "monde" || mine?.kind === "monde";
+  const france = !country && !world && !rawGenre;
   const genre = CHART_GENRES.find((g) => String(g.id) === rawGenre) ?? CHART_GENRES[0];
   const onlyTracks = world || Boolean(country);
   const [chart, playlistTracks] = await Promise.all([
@@ -26,24 +35,33 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
   ]);
   const tracks = playlistTracks ?? chart?.tracks ?? [];
   const heading = country ? country.title : world ? "Top Monde" : genre.id ? `Top ${genre.name} France` : "Top France";
+  const isMine = Boolean(mine) && mine?.kind !== "france";
 
   return (
     <>
       <div className="eyebrow">Classements Deezer · mis à jour chaque jour</div>
       <h1 style={{ fontSize: 30, marginBottom: 14 }}>{heading}</h1>
+      {isMine && (
+        <p className="small" style={{ marginTop: -8, marginBottom: 14 }}>
+          Le classement de chez toi. Choisis-en un autre ci-dessous : Pépite s&apos;en souviendra pour tes tendances.
+        </p>
+      )}
 
       <div className="genres" role="navigation" aria-label="Choisir un classement">
-        {CHART_GENRES.map((g) => (
+        {CHART_GENRES.slice(1).map((g) => (
           <Link
             key={g.id}
-            href={g.id ? `/classements?genre=${g.id}` : "/classements"}
+            href={`/classements?genre=${g.id}`}
             className="chip"
-            aria-current={!onlyTracks && g.id === genre.id ? "page" : undefined}
+            aria-current={!onlyTracks && !france && g.id === genre.id ? "page" : undefined}
           >
             {g.name}
           </Link>
         ))}
-        <Link href="/classements?zone=monde" className="chip" aria-current={world ? "page" : undefined}>
+        <Link href="/classements?zone=france" prefetch={false} className="chip" aria-current={france ? "page" : undefined}>
+          🇫🇷 France
+        </Link>
+        <Link href="/classements?zone=monde" prefetch={false} className="chip" aria-current={world ? "page" : undefined}>
           🌍 Monde
         </Link>
         {countries.length > 0 && <CountryPicker countries={countries} current={country?.id ?? null} />}

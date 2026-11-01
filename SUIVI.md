@@ -83,6 +83,13 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     (`/invite/<pseudo>`, abonnement mutuel dès l'inscription, compteur et
     encart « Invite tes amis » sur son profil). Fichier `11-invitations.sql`.
     (Les images à poster `/partager` ont été retirées à la demande.)
+17. Tendances de chez soi (1er novembre 2026) : la page Classements, les albums
+    et titres tendance (accueil, colonne de droite, téléphone, Explorer)
+    suivent le **pays du visiteur** (en-tête Vercel `x-vercel-ip-country`,
+    relié au « Top <pays> » de Deezer, `lib/trends.ts`). Un pays, le Monde ou
+    la France choisi sur Classements est retenu un an (cookie `top_pays`, posé
+    dans `proxy.ts`). Sans pays trouvé : la France, comme avant. Ne marche que
+    sur Vercel (en local, toujours la France). Aucun SQL.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
