@@ -56,11 +56,11 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | --- | --- | --- |
 | `schema.sql` | Comptes, albums, avis | oui |
 | `02-reseau-social.sql` | Abonnements, j'aime, commentaires, listes | oui |
-| `03-chansons.sql` | Notes des chansons | à vérifier |
+| `03-chansons.sql` | Notes des chansons | oui |
 | `04-ameliorations.sql` | Notifications, messages, Pépite de la semaine | oui |
 | `05-reponses-commentaires.sql` | Réponses aux commentaires, j'aime sur commentaires | oui |
 
-Remplacer « à vérifier » par « oui » une fois confirmé (01, 02, 04 et 05 vérifiés le 1er novembre 2026). Pour vérifier, dans
+Remplacer « à vérifier » par « oui » une fois confirmé (tous vérifiés le 1er novembre 2026). Pour vérifier, dans
 Supabase, **Table Editor** :
 - fichier 01 : les tables `profiles` et `reviews` existent
 - fichier 02 : la table `follows` existe
@@ -74,7 +74,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 
 ## Prochaines étapes
 
-- [ ] Confirmer le fichier 03 : la table `reviews` a-t-elle une colonne `track_id` ?
+- [x] Tous les fichiers SQL (01 à 05) sont exécutés dans Supabase
 - [ ] Fusionner la pull request n°11 (nouvelle interface)
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
 - [ ] (idées à ajouter ici)
