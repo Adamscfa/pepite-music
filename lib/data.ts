@@ -357,7 +357,7 @@ export async function getTopRatedAlbums(limit = 12): Promise<RankedAlbum[]> {
 
 export type Notification = {
   id: number;
-  kind: "like" | "comment" | "reply" | "mention" | "follow" | "reaction" | "message" | "recommend";
+  kind: "like" | "comment" | "reply" | "mention" | "follow" | "reaction" | "message" | "recommend" | "invite";
   review_id: number | null;
   emoji: string | null;
   read_at: string | null;
@@ -705,4 +705,51 @@ export async function getTrackReviewCounts(trackIds: number[]): Promise<Map<numb
   const { data } = await supabase.from("reviews").select("track_id").in("track_id", trackIds);
   for (const r of data ?? []) counts.set(r.track_id, (counts.get(r.track_id) ?? 0) + 1);
   return counts;
+}
+
+// Les personnes qu'un membre a fait venir avec son lien d'invitation (fichier SQL 11).
+export async function getMyReferrals(meId: string): Promise<Author[]> {
+  if (!hasSupabaseConfig) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("referrals")
+    .select("invited_id, created_at, invited:profiles!referrals_invited_id_fkey(*)")
+    .eq("inviter_id", meId)
+    .order("created_at", { ascending: false })
+    .returns<{ invited: Profile }[]>();
+  return (data ?? []).filter((r) => r.invited).map((r) => author(r.invited));
+}
+
+// Le top 5 de la semaine : les albums les mieux notés ces 7 derniers jours
+// (moyenne pondérée : un seul 5 étoiles ne passe pas devant cinq 4,5).
+// S'il y a trop peu de notes cette semaine, on prend le classement de tous les temps.
+export async function getTopOfWeek(limit = 5): Promise<{ albums: RankedAlbum[]; thisWeek: boolean }> {
+  if (!hasSupabaseConfig) return { albums: [], thisWeek: false };
+  const supabase = await createClient();
+  const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+  const { data } = await supabase
+    .from("reviews")
+    .select("*")
+    .is("track_id", null)
+    .gte("updated_at", since)
+    .limit(2000);
+  const byAlbum = new Map<number, RankedAlbum>();
+  for (const r of (data ?? []) as RawReview[]) {
+    if (r.hidden) continue;
+    const a = byAlbum.get(r.album_id) ?? {
+      album_id: r.album_id,
+      album_title: r.album_title,
+      artist_name: r.artist_name,
+      cover_url: r.cover_url,
+      average: 0,
+      count: 0,
+    };
+    a.average = (a.average * a.count + r.rating) / (a.count + 1);
+    a.count += 1;
+    byAlbum.set(r.album_id, a);
+  }
+  const score = (a: RankedAlbum) => (a.average * a.count + 3 * 2) / (a.count + 2);
+  const albums = [...byAlbum.values()].sort((a, b) => score(b) - score(a)).slice(0, limit);
+  if (albums.length >= 3) return { albums, thisWeek: true };
+  return { albums: await getTopRatedAlbums(limit), thisWeek: false };
 }

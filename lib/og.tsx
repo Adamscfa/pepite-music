@@ -44,3 +44,34 @@ export function OgBrand({ logo }: { logo: string }) {
     </div>
   );
 }
+
+// Fond et en-tête communs aux images verticales (stories, TikTok) : 1080 × 1920.
+export const storySize = { width: 1080, height: 1920 };
+
+export function StoryFrame({ logo, children, footer }: { logo: string; children: React.ReactNode; footer: string }) {
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "110px 80px",
+        backgroundImage: "linear-gradient(180deg, #0B1410 0%, #123326 55%, #2E9E6B 100%)",
+        color: "#FFFFFF",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 20, fontSize: 48, fontWeight: 800 }}>
+        <img src={logo} width={104} height={72} alt="" />
+        Pépite
+      </div>
+      {children}
+      <div style={{ fontSize: 30, color: "#D8F3E6" }}>{footer}</div>
+    </div>
+  );
+}
+
+// Adresse du site à afficher en bas des images.
+export const siteLabel = (process.env.VERCEL_PROJECT_PRODUCTION_URL ?? "pepite-music.vercel.app").replace(/^https?:\/\//, "");

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AppPanel from "@/components/AppPanel";
+import InviteCard from "@/components/InviteCard";
 import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
 import DemoBadge from "@/components/DemoBadge";
@@ -14,6 +15,7 @@ import {
   getFavorites,
   getFollowStats,
   getBlockedIds,
+  getMyReferrals,
   getProfileByUsername,
   getSharedRatings,
   getUserLists,
@@ -200,6 +202,11 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
 
       {isMe && (
         <EditProfile displayName={profile.display_name} bio={profile.bio} hasAvatar={Boolean(profile.avatar_url)} />
+      )}
+      {isMe && (
+        <div style={{ marginTop: 20 }}>
+          <InviteCard username={profile.username} displayName={profile.display_name} invited={await getMyReferrals(profile.id)} />
+        </div>
       )}
       {isMe && (
         <div style={{ marginTop: 20 }}>
