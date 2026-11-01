@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { JetBrains_Mono, Noto_Color_Emoji, Plus_Jakarta_Sans } from "next/font/google";
 import { ServiceWorker } from "@/components/AppPanel";
+import CloseMenus from "@/components/CloseMenus";
 import ErrorReporter from "@/components/ErrorReporter";
 import Header from "@/components/Header";
 import PlayerProvider from "@/components/Player";
@@ -50,6 +51,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <ServiceWorker />
         <ErrorReporter />
+        <CloseMenus />
         <PlayerProvider>
           <div className="shell">
             <Header />

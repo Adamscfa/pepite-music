@@ -1262,3 +1262,20 @@ main:has(.chat) { padding-top: 0; }
   .pepite-mobile b { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pepite-mobile .more-link { flex: none; }
 }
+
+/* =====================================================================
+   Lecteur d'extraits : centré sans décalage (l'animation d'apparition
+   effaçait le décalage et le lecteur glissait vers la droite)
+   ===================================================================== */
+.player { left: 12px; right: 12px; margin: 0 auto; transform: none; }
+@media (min-width: 761px) {
+  .player { left: calc(280px + 12px); right: 12px; }
+}
+@media (min-width: 761px) and (max-width: 1000px) {
+  .player { left: calc(236px + 12px); }
+}
+@media (max-width: 760px) {
+  .player { left: 10px; right: 10px; width: auto; gap: 10px; padding: 8px 10px; }
+  .player-info b { font-size: 14px; }
+  .player-btn { width: 42px; height: 42px; }
+}
