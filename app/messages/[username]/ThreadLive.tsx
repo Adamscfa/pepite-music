@@ -8,6 +8,11 @@ import { markThreadRead } from "@/app/social-actions";
 export default function ThreadLive({ friendId, count, lastFromFriend }: { friendId: string; count: number; lastFromFriend: boolean }) {
   const seen = useRef(count);
 
+  // À l'ouverture, on arrive directement sur les derniers messages.
+  useEffect(() => {
+    window.scrollTo({ top: document.body.scrollHeight });
+  }, []);
+
   useEffect(() => {
     if (count === seen.current) return;
     seen.current = count;

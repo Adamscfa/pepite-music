@@ -1,8 +1,8 @@
 "use client";
 
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { getBrowserClient } from "@/lib/supabase/browser";
 
 // Écoute en direct les messages et notifications reçus par le membre connecté,
@@ -11,6 +11,11 @@ import { getBrowserClient } from "@/lib/supabase/browser";
 // à jour quand on revient dessus (changement d'onglet ou d'appli).
 export default function LiveUpdates({ userId }: { userId: string }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const path = useRef(pathname);
+  useEffect(() => {
+    path.current = pathname;
+  }, [pathname]);
 
   useEffect(() => {
     let pending: ReturnType<typeof setTimeout> | undefined;
@@ -46,6 +51,14 @@ export default function LiveUpdates({ userId }: { userId: string }) {
             "postgres_changes",
             { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
             refresh,
+          )
+          // Mes messages lus par l'autre personne : les coches passent au bleu (seulement sur les messages).
+          .on(
+            "postgres_changes",
+            { event: "UPDATE", schema: "public", table: "messages", filter: `sender_id=eq.${userId}` },
+            () => {
+              if (path.current.startsWith("/messages")) refresh();
+            },
           )
           .subscribe();
       });

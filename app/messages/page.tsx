@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import Avatar from "@/components/Avatar";
+import ReadTicks from "@/components/ReadTicks";
 import { getConversations, getCurrentProfile, getFriends } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
 
@@ -35,6 +36,7 @@ export default async function MessagesPage() {
                 <b>{c.friend.display_name}</b>
                 {c.unread > 0 && <i className="dot inline">{c.unread}</i>}
                 <small>
+                  {c.last.sender_id === me.id && <ReadTicks read={Boolean(c.last.read_at)} />}
                   {c.last.sender_id === me.id ? "Toi : " : ""}
                   {c.last.album_title ? `💿 ${c.last.album_title}` : c.last.body.slice(0, 80)} ·{" "}
                   {timeAgo(c.last.created_at)}
