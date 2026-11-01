@@ -8,7 +8,6 @@ import DemoBadge from "@/components/DemoBadge";
 import ListCard from "@/components/ListCard";
 import Stars from "@/components/Stars";
 import { removeFavorite, toggleFollow } from "@/app/social-actions";
-import { signOut } from "@/app/connexion/actions";
 import {
   areFriends,
   getCurrentProfile,
@@ -55,18 +54,20 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
     <>
       <div className="prof">
         <Avatar user={profile} big />
-        <div style={{ minWidth: 0, flex: 1 }}>
+        <div className="prof-id">
           <div className="eyebrow">@{profile.username}</div>
           <h1>
             {profile.display_name} <DemoBadge show={profile.is_demo} />
           </h1>
+        </div>
+        <div className="prof-more">
           {profile.bio ? <p>{profile.bio}</p> : isMe && <p>Ajoute une bio et une photo pour te présenter.</p>}
-          <Link href={`/profil/${profile.username}/annee`} className="year-link">
-            🎁 {isMe ? "Mon" : "Son"} année {new Date().getFullYear()} en musique →
-          </Link>
           {profile.is_demo && (
             <p className="small">Membre de démonstration : ce compte et ses avis sont imaginaires.</p>
           )}
+          <Link href={`/profil/${profile.username}/annee`} className="year-link">
+            🎁 {isMe ? "Mon" : "Son"} année {new Date().getFullYear()} en musique →
+          </Link>
         </div>
         {me && !isMe && (
           <div className="prof-actions">
@@ -84,19 +85,12 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
             )}
           </div>
         )}
-        {isMe && (
-          <form action={signOut} className="mobile-only">
-            <button className="btn ghost">Déconnexion</button>
-          </form>
-        )}
       </div>
 
       <div className="stats">
         <div>
           <b>{reviews.length}</b>
-          <span>
-            album{reviews.length > 1 ? "s" : ""} noté{reviews.length > 1 ? "s" : ""}
-          </span>
+          <span>note{reviews.length > 1 ? "s" : ""}</span>
         </div>
         <div>
           <b>{reviews.length ? formatScore(average) : "–"}</b>
