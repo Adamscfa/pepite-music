@@ -61,11 +61,13 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 
 | Fichier | Pour quoi | Exécuté ? |
 | --- | --- | --- |
-| `schema.sql` | Comptes, albums, avis | à vérifier |
-| `02-reseau-social.sql` | Abonnements, j'aime, commentaires, listes | à vérifier |
-| `03-chansons.sql` | Notes des chansons | à vérifier |
-| `04-ameliorations.sql` | Notifications, messages, Pépite de la semaine | à vérifier |
-| `05-reponses-commentaires.sql` | Réponses aux commentaires, j'aime sur commentaires | non (à faire) |
+| `schema.sql` | Comptes, albums, avis | oui |
+| `02-reseau-social.sql` | Abonnements, j'aime, commentaires, listes | oui |
+| `03-chansons.sql` | Notes des chansons | oui |
+| `04-ameliorations.sql` | Notifications, messages, Pépite de la semaine | oui |
+| `05-reponses-commentaires.sql` | Réponses aux commentaires, j'aime sur commentaires | oui |
+| `06-comptes-demo.sql` | Membres de démonstration (facultatif) | à vérifier |
+| `07-temps-reel.sql` | Messages et notifications en direct | non (à faire) |
 
 Remplacer « à vérifier » par « oui » une fois confirmé. Pour vérifier, dans
 Supabase, **Table Editor** :
@@ -84,8 +86,11 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 
 ## Prochaines étapes
 
-- [ ] Confirmer quels fichiers SQL ont été exécutés (tableau ci-dessus)
-- [ ] Exécuter `05-reponses-commentaires.sql` dans Supabase (après la fusion de la nouvelle interface)
+- [x] Fichiers SQL 01 à 05 exécutés (vérifiés le 1er novembre 2026)
+- [x] Nouvelle interface en ligne (pull request n°11)
+- [ ] Confirmer que `06-comptes-demo.sql` a bien marché (membres « Démo » sur l'accueil)
+- [ ] Exécuter `07-temps-reel.sql` après la fusion de la pull request « messages en direct »
+- [ ] Quand assez de vrais membres sont inscrits : exécuter `demo-supprimer.sql`
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
 - [ ] (idées à ajouter ici)
 
