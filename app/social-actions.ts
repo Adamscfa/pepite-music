@@ -31,6 +31,10 @@ function notifyLater(supabase: Supabase, users: () => Promise<(string | null | u
   });
 }
 const FAILED = "Ça n'a pas marché. Réessaie dans un instant.";
+const TOO_FAST = "Doucement ! Tu as beaucoup écrit en peu de temps. Attends une minute avant de recommencer.";
+
+// La base refuse au-delà de 20 commentaires ou messages par minute (fichier 10).
+const tooFast = (error: { message?: string } | null) => Boolean(error?.message?.includes("trop_vite"));
 
 // Copie des infos d'un album, relues chez Deezer plutôt que reçues du navigateur.
 async function albumRef(albumId: number) {
@@ -101,6 +105,7 @@ export async function addComment(_prev: FormState, formData: FormData): Promise<
     .from("review_comments")
     .insert({ review_id: reviewId, user_id: me.id, body, ...(parentId ? { parent_id: parentId } : {}) });
   if (error) {
+    if (tooFast(error)) return { error: TOO_FAST };
     if (parentId) return { error: "Les réponses ne sont pas encore activées (fichier 05 à exécuter dans Supabase)." };
     return { error: FAILED };
   }
@@ -267,10 +272,12 @@ export async function sendMessage(_prev: FormState, formData: FormData): Promise
   if (albumId && !album) return { error: FAILED };
   if (!body && !album) return { error: "Écris quelque chose avant d'envoyer." };
   const supabase = await createClient();
+  const { data: blocked } = await supabase.rpc("is_blocked", { a: me.id, b: friend.id });
+  if (blocked === true) return { error: "Tu ne peux pas écrire à ce membre." };
   const { error } = await supabase
     .from("messages")
     .insert({ sender_id: me.id, recipient_id: friend.id, body, ...(album ?? {}) });
-  if (error) return { error: FAILED };
+  if (error) return { error: tooFast(error) ? TOO_FAST : FAILED };
   notifyLater(supabase, async () => [friend.id]);
   revalidatePath("/", "layout");
   return { done: true };
@@ -316,6 +323,24 @@ export async function voteWeekly(formData: FormData) {
     if (!album) return;
     // La semaine est remplie par la base (lundi en cours).
     await supabase.from("weekly_votes").upsert({ user_id: me.id, ...album }, { onConflict: "user_id,week" });
+  }
+  revalidatePath("/", "layout");
+}
+
+// ---- Bloquer un membre ----
+
+// Bloquer : on ne voit plus ses avis, commentaires et notifications, on ne peut plus
+// s'écrire, et les abonnements entre vous deux sont retirés.
+export async function toggleBlock(formData: FormData) {
+  const me = await getCurrentProfile();
+  if (!me) return;
+  const target = String(formData.get("user_id"));
+  if (!target || target === me.id) return;
+  const supabase = await createClient();
+  if (formData.get("block") === "1") {
+    await supabase.from("blocks").insert({ blocker_id: me.id, blocked_id: target });
+  } else {
+    await supabase.from("blocks").delete().eq("blocker_id", me.id).eq("blocked_id", target);
   }
   revalidatePath("/", "layout");
 }

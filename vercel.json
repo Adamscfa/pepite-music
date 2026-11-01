@@ -1,3 +1,15 @@
 {
-  "regions": ["cdg1"]
+  "regions": [
+    "cdg1"
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/semaine?quoi=lundi",
+      "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/cron/semaine?quoi=rappel",
+      "schedule": "0 18 * * 4"
+    }
+  ]
 }

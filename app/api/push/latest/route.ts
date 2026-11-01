@@ -10,7 +10,7 @@ export async function GET() {
   if (!me) return Response.json(fallback);
 
   const supabase = await createClient();
-  const [notifications, { data: messages }] = await Promise.all([
+  const [notifications, { data: messages }, { data: news }] = await Promise.all([
     getNotifications(me.id),
     supabase
       .from("messages")
@@ -19,11 +19,24 @@ export async function GET() {
       .is("read_at", null)
       .order("created_at", { ascending: false })
       .limit(1),
+    // Annonce de la semaine (envoyée le lundi et le jeudi), si elle est toute récente.
+    supabase
+      .from("announcements")
+      .select("*")
+      .gt("created_at", new Date(Date.now() - 3 * 3600 * 1000).toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1),
   ]);
+  const announcement = news?.[0] as { id: number; title: string; body: string; url: string; created_at: string } | undefined;
   const notif = notifications.find((n) => !n.read_at);
   const message = messages?.[0] as
     | { body: string; album_title: string | null; created_at: string; sender: { username: string; display_name: string } }
     | undefined;
+
+  const newest = [message?.created_at, notif?.created_at].filter(Boolean).sort().at(-1) ?? "";
+  if (announcement && announcement.created_at >= newest) {
+    return Response.json({ title: announcement.title, body: announcement.body, url: announcement.url, tag: `annonce-${announcement.id}` });
+  }
 
   if (message && (!notif || message.created_at >= notif.created_at)) {
     return Response.json({

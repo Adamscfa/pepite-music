@@ -90,6 +90,11 @@ export default async function Header() {
               </button>
             </form>
           )}
+          <nav className="side-links" aria-label="Informations">
+            <Link href="/confidentialite">Confidentialité</Link>
+            <Link href="/conditions">Conditions</Link>
+            <Link href="/contact">Contact</Link>
+          </nav>
         </div>
       </aside>
 
@@ -123,6 +128,7 @@ export default async function Header() {
                   <Link href={`${profile}/annee`}>Mon année en musique</Link>
                   <Link href="/classements">Classements</Link>
                   {me.is_admin && <Link href="/moderation">Modération</Link>}
+                  <Link href="/contact">Contact</Link>
                   <div className="me-pop-theme">
                     <ThemeToggle initial={theme} withLabel />
                   </div>

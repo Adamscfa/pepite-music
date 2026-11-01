@@ -1,0 +1,14 @@
+<!-- Pépite : modèle d'e-mail. À coller dans Supabase > Authentication > Emails (onglet « Templates »). -->
+<div style="margin:0;padding:32px 16px;background:#F3F2F7;font-family:Arial,Helvetica,sans-serif;color:#1B1830">
+  <div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px 28px;border:1px solid #E1DEEA">
+    <p style="margin:0 0 20px;font-size:22px;font-weight:800;color:#0D1A14">Pépite</p>
+    <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3">Bienvenue sur Pépite !</h1>
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.5;color:#625D78">Il reste une étape : confirme ton adresse e-mail pour activer ton compte.</p>
+    <p style="margin:0 0 24px">
+      <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#2E9E6B;color:#04140c;text-decoration:none;font-weight:700;font-size:16px;padding:13px 24px;border-radius:999px">Activer mon compte</a>
+    </p>
+    <p style="margin:0 0 8px;font-size:13px;line-height:1.5;color:#625D78">Tu n'as pas créé de compte sur Pépite ? Ignore simplement cet e-mail.</p>
+    <p style="margin:0;font-size:12px;line-height:1.5;color:#9a96ad;word-break:break-all">Si le bouton ne marche pas, copie ce lien dans ton navigateur :<br>{{ .ConfirmationURL }}</p>
+  </div>
+  <p style="max-width:480px;margin:16px auto 0;font-size:12px;color:#9a96ad;text-align:center">Pépite · Note et partage la musique que tu écoutes.</p>
+</div>

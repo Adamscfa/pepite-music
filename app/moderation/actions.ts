@@ -44,3 +44,10 @@ export async function clearErrors() {
   await supabase.from("errors").delete().gt("id", 0);
   revalidatePath("/moderation");
 }
+
+export async function deleteContactMessage(formData: FormData) {
+  const supabase = await admin();
+  if (!supabase) return;
+  await supabase.from("contact_messages").delete().eq("id", Number(formData.get("id")));
+  revalidatePath("/moderation");
+}

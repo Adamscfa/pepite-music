@@ -77,6 +77,33 @@ Pour créer de nouvelles clés : `node -e "const c=require('crypto');const {priv
 
 Dans Supabase, **Table Editor > profiles**, trouve ta ligne et mets la colonne `is_admin` sur `true`. Un lien **Modération** apparaît dans le menu : avis signalés (masquer, réafficher, supprimer) et erreurs du site.
 
+### Lancement (contact, blocage, anti-spam, annonces)
+
+Colle [`supabase/10-lancement.sql`](supabase/10-lancement.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, après le fichier 08). Il ajoute : les messages de la page Contact, la suppression de compte, le blocage d'un membre, la limite anti-spam (20 commentaires ou messages par minute) et les annonces de la semaine.
+
+### E-mails d'inscription fiables, en français
+
+L'expéditeur fourni par Supabase n'envoie que quelques e-mails par heure. On branche **Brevo** (gratuit jusqu'à 300 e-mails par jour) :
+
+1. Crée un compte sur **brevo.com**. Dans **Expéditeurs** (Senders), ajoute et confirme l'adresse qui enverra les e-mails.
+2. Dans Brevo, **SMTP & API** > onglet **SMTP** : note l'identifiant (login) et crée une **clé SMTP**.
+3. Dans Supabase, **Authentication > Emails > SMTP Settings** : active **Custom SMTP** et remplis :
+   - Sender email : l'adresse confirmée à l'étape 1 · Sender name : `Pépite`
+   - Host : `smtp-relay.brevo.com` · Port : `587`
+   - Username : l'identifiant Brevo · Password : la clé SMTP
+4. Dans Supabase, **Authentication > Rate Limits** : monte la limite d'e-mails par heure (par exemple 100).
+5. Dans Supabase, **Authentication > URL Configuration** : **Site URL** = l'adresse du site en ligne, et dans **Redirect URLs** ajoute `https://ton-site/**` (pour le lien « Mot de passe oublié »).
+6. Les e-mails en français : suis [`supabase/emails/LISEZ-MOI.md`](supabase/emails/LISEZ-MOI.md).
+
+### Rendez-vous de la semaine (notifications automatiques)
+
+Chaque lundi à 9 h, les membres qui ont activé les notifications reçoivent la Pépite de la semaine ; chaque jeudi à 18 h, ceux qui n'ont pas voté reçoivent un rappel (heures de Côte d'Ivoire). Vercel s'en charge tout seul (fichier `vercel.json`). Il faut ajouter dans **Vercel > Settings > Environment Variables** (Production) :
+
+- `CRON_SECRET` : un long mot de passe inventé (au moins 20 caractères)
+- `SUPABASE_SERVICE_ROLE_KEY` : dans Supabase, **Project Settings > API Keys**, la clé **service_role** (ou « secret »). Elle est très sensible : uniquement dans Vercel, jamais ailleurs.
+
+Puis **Redeploy**.
+
 ### Membres de démonstration (facultatif)
 
 Pour que le site ne soit pas vide au lancement : colle [`supabase/06-comptes-demo.sql`](supabase/06-comptes-demo.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, après le fichier 05). Il crée 8 membres imaginaires avec des avis sur de vrais albums, des commentaires, des réponses, des « j'aime » et des abonnements. Ils sont marqués **Démo** sur le site, et personne ne peut se connecter à leurs comptes.
@@ -111,4 +138,4 @@ Si tu le laisses activé, va dans **Authentication > URL Configuration** et mets
 | `components/` | Les morceaux réutilisés : barre du haut, étoiles, carte d'avis… |
 | `lib/deezer.ts` | Les appels à l'API Deezer |
 | `lib/data.ts` | Les lectures dans Supabase |
-| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, `04-ameliorations.sql`, `05-reponses-commentaires.sql`, (facultatif) `06-comptes-demo.sql`, `07-temps-reel.sql`, puis `08-grande-mise-a-jour.sql` ; `demo-supprimer.sql` efface les membres de démo |
+| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, `04-ameliorations.sql`, `05-reponses-commentaires.sql`, (facultatif) `06-comptes-demo.sql`, `07-temps-reel.sql`, `08-grande-mise-a-jour.sql`, `09-corriger-demo.sql`, puis `10-lancement.sql` ; `demo-supprimer.sql` efface les membres de démo |

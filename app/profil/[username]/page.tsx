@@ -7,12 +7,13 @@ import Cover from "@/components/Cover";
 import DemoBadge from "@/components/DemoBadge";
 import ListCard from "@/components/ListCard";
 import Stars from "@/components/Stars";
-import { removeFavorite, toggleFollow } from "@/app/social-actions";
+import { removeFavorite, toggleBlock, toggleFollow } from "@/app/social-actions";
 import {
   areFriends,
   getCurrentProfile,
   getFavorites,
   getFollowStats,
+  getBlockedIds,
   getProfileByUsername,
   getSharedRatings,
   getUserLists,
@@ -20,6 +21,7 @@ import {
 } from "@/lib/data";
 import { formatScore } from "@/lib/format";
 import EditProfile from "../EditProfile";
+import DeleteAccount from "../DeleteAccount";
 import NewList from "../NewList";
 
 async function loadProfile(params: PageProps<"/profil/[username]">["params"]) {
@@ -38,6 +40,8 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
   const profile = await loadProfile(params);
   const me = await getCurrentProfile();
   const isMe = me?.id === profile.id;
+  // Membre que j'ai bloqué : ses avis sont cachés, on propose de le débloquer.
+  const iBlock = !isMe && (await getBlockedIds()).has(profile.id);
   const [reviews, favorites, lists, follow, taste] = await Promise.all([
     getUserReviews(profile.id),
     getFavorites(profile.id),
@@ -69,7 +73,16 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
             🎁 {isMe ? "Mon" : "Son"} année {new Date().getFullYear()} en musique →
           </Link>
         </div>
-        {me && !isMe && (
+        {me && !isMe && iBlock && (
+          <div className="prof-actions">
+            <form action={toggleBlock}>
+              <input type="hidden" name="user_id" value={profile.id} />
+              <input type="hidden" name="block" value="0" />
+              <button className="btn ghost">Débloquer</button>
+            </form>
+          </div>
+        )}
+        {me && !isMe && !iBlock && (
           <div className="prof-actions">
             <form action={toggleFollow}>
               <input type="hidden" name="user_id" value={profile.id} />
@@ -83,9 +96,28 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
                 ✉ Message
               </Link>
             )}
+            <details className="report more-menu">
+              <summary className="icon-round" aria-label="Plus d'actions" title="Plus d'actions">
+                ⋯
+              </summary>
+              <form action={toggleBlock} className="report-box">
+                <input type="hidden" name="user_id" value={profile.id} />
+                <input type="hidden" name="block" value="1" />
+                <p className="small" style={{ margin: 0 }}>
+                  Tu ne verras plus ses avis ni ses commentaires, et vous ne pourrez plus vous écrire.
+                </p>
+                <button className="btn danger-btn">Bloquer {profile.display_name}</button>
+              </form>
+            </details>
           </div>
         )}
       </div>
+
+      {iBlock && (
+        <p className="notice" style={{ marginTop: 16 }}>
+          Tu as bloqué {profile.display_name} : tu ne vois plus ses avis ni ses commentaires.
+        </p>
+      )}
 
       <div className="stats">
         <div>
@@ -242,6 +274,18 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
           </p>
         )}
       </section>
+
+      {isMe && (
+        <section className="account-zone">
+          <nav className="site-links" aria-label="Informations">
+            <Link href="/confidentialite">Confidentialité</Link>
+            <Link href="/conditions">Conditions</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/reglages/bloques">Membres bloqués</Link>
+          </nav>
+          <DeleteAccount username={profile.username} />
+        </section>
+      )}
     </>
   );
 }

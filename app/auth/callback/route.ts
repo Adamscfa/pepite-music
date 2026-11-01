@@ -6,9 +6,13 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  // Page où aller ensuite (ex. choisir un nouveau mot de passe) : seulement une page de Pépite.
+  const next = searchParams.get("next");
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
   if (code) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error && safeNext) return NextResponse.redirect(`${origin}${safeNext}`);
     if (!error) {
       // Nouveau membre (premier pas pas encore fait) : on l'accueille sur /bienvenue.
       const { data: profile } = await supabase

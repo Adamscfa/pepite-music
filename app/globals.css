@@ -1089,3 +1089,31 @@ main:has(.chat) { padding-top: 0; }
   .quick-grid { gap: 14px; }
   .results .cover.s { width: 52px; }
 }
+
+/* =====================================================================
+   Lancement : pages légales, contact, compte, blocage, « Voir plus »
+   ===================================================================== */
+.legal { max-width: 720px; margin: 0 auto; }
+.legal h1 { font-size: clamp(28px, 5vw, 38px); margin: 6px 0 12px; }
+.legal h2 { font-size: 20px; margin: 28px 0 8px; }
+.legal p, .legal li { font-size: 16px; line-height: 1.6; }
+.legal ul { padding-left: 20px; margin: 8px 0; display: grid; gap: 6px; }
+.legal a, .legal-note a, .legal-narrow a:not(.btn) { color: var(--gold); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.legal-lead { font-size: 18px !important; color: var(--muted); }
+.legal-narrow { max-width: 560px; margin: 0 auto; }
+.legal-note { margin: 4px 0 12px; }
+.site-links { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; }
+.sidebar .site-links a { color: var(--side-muted); }
+.sidebar .site-links a:hover { color: var(--side-ink); text-decoration: underline; }
+.account-zone { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); display: grid; gap: 14px; }
+.account-zone .site-links { font-size: 14px; }
+.account-zone .site-links a { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
+.danger-zone summary { color: var(--danger) !important; }
+.more-menu .report-box { left: auto; right: 0; display: grid; gap: 10px; width: 260px; }
+.prof-actions .more-menu { align-self: center; }
+.load-more { justify-self: center; margin: 6px auto 0; display: block; width: fit-content; }
+@media (max-width: 760px) {
+  .prof-actions { display: flex; gap: 8px; }
+  .prof-actions > form, .prof-actions > a.btn { flex: 1; }
+  .prof-actions > details { flex: none; }
+}

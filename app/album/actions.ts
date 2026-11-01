@@ -58,7 +58,10 @@ export async function saveReview(_prev: ReviewState, formData: FormData): Promis
       { user_id: me.id, ...item, rating, body, heart, updated_at: new Date().toISOString() },
       { onConflict: "user_id,album_id,track_id" },
     );
-  if (error) return { error: "L'enregistrement a échoué. Réessaie dans un instant." };
+  if (error) {
+    if (error.message?.includes("trop_vite")) return { error: "Doucement ! Attends une minute avant de publier un autre avis." };
+    return { error: "L'enregistrement a échoué. Réessaie dans un instant." };
+  }
 
   revalidatePath("/", "layout");
   return { saved: true, at: Date.now() };
