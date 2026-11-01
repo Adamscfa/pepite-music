@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { signOut } from "@/app/connexion/actions";
 import { getCurrentProfile, getUnreadCounts } from "@/lib/data";
+import AppPanel from "./AppPanel";
 import Avatar from "./Avatar";
 import BottomNav from "./BottomNav";
 import Icon, { type IconName } from "./Icon";
@@ -13,13 +14,13 @@ import ThemeToggle, { type Theme } from "./ThemeToggle";
 
 const Badge = ({ n }: { n: number }) => (n > 0 ? <i className="dot">{n > 99 ? "99+" : n}</i> : null);
 
-// Raccourcis vers des genres de la page Explorer (numéros de genre Deezer).
+// Raccourcis vers la musique d'ici et des genres de la page Explorer.
 const TRENDS = [
-  { tag: "Afro", genre: 2 },
-  { tag: "Rap", genre: 116 },
-  { tag: "RnB", genre: 165 },
-  { tag: "Pop", genre: 132 },
-  { tag: "Électro", genre: 106 },
+  { tag: "CoupéDécalé", href: "/explorer?scene=coupe-decale" },
+  { tag: "Zouglou", href: "/explorer?scene=zouglou" },
+  { tag: "RapIvoirien", href: "/explorer?scene=rap-ivoirien" },
+  { tag: "Afrobeats", href: "/explorer?scene=afro" },
+  { tag: "TopCI", href: "/explorer?scene=cote-divoire" },
 ];
 
 function Item({ href, match, icon, label, count = 0 }: { href: string; match: string; icon: IconName; label: string; count?: number }) {
@@ -61,6 +62,7 @@ export default async function Header() {
               <Item href="/notifications" match="/notifications" icon="bell" label="Notifications" count={unread.notifications} />
               <Item href="/messages" match="/messages" icon="mail" label="Messages" count={unread.messages} />
               <Item href={profile} match={profile} icon="user" label="Profil" />
+              {me.is_admin && <Item href="/moderation" match="/moderation" icon="shield" label="Modération" />}
             </>
           ) : (
             <Item href="/connexion" match="/connexion" icon="user" label="Connexion" />
@@ -72,13 +74,14 @@ export default async function Header() {
         <div className="side-trends">
           <h2>Tendances</h2>
           {TRENDS.map((t) => (
-            <Link key={t.tag} href={`/explorer?genre=${t.genre}`}>
+            <Link key={t.tag} href={t.href}>
               # {t.tag}
             </Link>
           ))}
         </div>
 
         <div className="side-bottom">
+          <AppPanel variant="side" loggedIn={Boolean(me)} />
           <ThemeToggle initial={theme} withLabel />
           {me && (
             <form action={signOut}>

@@ -1,6 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { JetBrains_Mono, Noto_Color_Emoji, Plus_Jakarta_Sans } from "next/font/google";
+import { ServiceWorker } from "@/components/AppPanel";
+import ErrorReporter from "@/components/ErrorReporter";
 import Header from "@/components/Header";
 import PlayerProvider from "@/components/Player";
 import SetupNotice from "@/components/SetupNotice";
@@ -25,6 +27,15 @@ export const metadata: Metadata = {
   openGraph: { siteName: "Pépite", locale: "fr_FR", type: "website" },
   title: { default: "Pépite", template: "%s · Pépite" },
   description: "Note et critique les albums que tu écoutes, et découvre ce que la communauté écoute.",
+  // Installée sur iPhone, Pépite s'ouvre comme une appli.
+  appleWebApp: { capable: true, title: "Pépite", statusBarStyle: "default" },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F3F2F7" },
+    { media: "(prefers-color-scheme: dark)", color: "#080B0A" },
+  ],
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
@@ -37,6 +48,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       data-theme={theme === "light" || theme === "dark" ? theme : undefined}
     >
       <body>
+        <ServiceWorker />
+        <ErrorReporter />
         <PlayerProvider>
           <div className="shell">
             <Header />

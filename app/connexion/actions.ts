@@ -67,7 +67,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     return { message: "C'est presque fini ! Clique sur le lien reçu par e-mail pour activer ton compte." };
   }
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/bienvenue");
 }
 
 // Connexion en un clic : Google renvoie ensuite sur /auth/callback.

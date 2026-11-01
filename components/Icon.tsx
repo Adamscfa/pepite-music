@@ -80,6 +80,15 @@ const PATHS = {
   ),
   chevron: <path d="m6 9 6 6 6-6" />,
   reply: <path d="M10 8 5 12l5 4M5 12h9a5 5 0 0 1 5 5v1" />,
+  download: <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />,
+  whatsapp: (
+    <>
+      <path d="M4 20l1.3-3.9A8 8 0 1 1 8 18.8z" />
+      <path d="M9.2 8.6c.3 2.6 2.4 4.9 5.2 5.4l1.1-1.2-1.7-.9-.8.8c-1-.4-1.9-1.3-2.3-2.3l.8-.8-.8-1.7z" />
+    </>
+  ),
+  sparkle: <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" />,
+  shield: <path d="M12 3l8 3v6c0 4.5-3.3 8.2-8 9-4.7-.8-8-4.5-8-9V6z" />,
 } as const;
 
 export type IconName = keyof typeof PATHS;

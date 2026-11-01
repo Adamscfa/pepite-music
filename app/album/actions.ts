@@ -77,3 +77,25 @@ export async function deleteReview(formData: FormData) {
   await (trackId ? query.eq("track_id", trackId) : query.is("track_id", null));
   revalidatePath("/", "layout");
 }
+
+// Note rapide en étoiles, sans texte (premier pas après l'inscription).
+// Ne remplace pas un avis déjà écrit : on garde son texte et on change seulement la note.
+export async function quickRate(albumId: number, rating: number): Promise<{ ok: boolean }> {
+  const me = await getCurrentProfile();
+  if (!me || !Number.isInteger(rating) || rating < 1 || rating > 5) return { ok: false };
+  const item = await snapshot(albumId, null);
+  if (!item) return { ok: false };
+  const supabase = await createClient();
+  const { data: existing } = await supabase
+    .from("reviews")
+    .select("id")
+    .eq("user_id", me.id)
+    .eq("album_id", albumId)
+    .is("track_id", null)
+    .maybeSingle();
+  const { error } = existing
+    ? await supabase.from("reviews").update({ rating, updated_at: new Date().toISOString() }).eq("id", existing.id)
+    : await supabase.from("reviews").insert({ user_id: me.id, ...item, rating });
+  revalidatePath("/", "layout");
+  return { ok: !error };
+}

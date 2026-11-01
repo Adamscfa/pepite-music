@@ -352,3 +352,48 @@ export async function getFreshArtists(limit = 12): Promise<(ArtistHit & { album:
   }
   return [...seen.values()].slice(0, limit);
 }
+
+// ---- Musique d'ici ----
+
+type RawPlaylistHits = { data: { id: number; title: string; picture_medium: string; user?: { name: string } }[] };
+
+// Une playlist trouvée par recherche, de préférence publiée par Deezer.
+async function findPlaylist(query: string) {
+  const json = await get<RawPlaylistHits>(`/search/playlist?q=${encodeURIComponent(query)}&limit=15`, 86400);
+  const list = json?.data ?? [];
+  const best = list.find((p) => /deezer/i.test(p.user?.name ?? "")) ?? list[0];
+  return best ? { id: best.id, title: best.title, picture: best.picture_medium } : null;
+}
+
+// Les rubriques « Made in Côte d'Ivoire » de la page Explorer.
+export const LOCAL_SCENES = [
+  { slug: "cote-divoire", name: "Top Côte d'Ivoire", query: "Top Côte d'Ivoire" },
+  { slug: "coupe-decale", name: "Coupé-décalé", query: "coupé décalé" },
+  { slug: "zouglou", name: "Zouglou", query: "zouglou" },
+  { slug: "rap-ivoirien", name: "Rap ivoirien", query: "rap ivoirien" },
+  { slug: "afro", name: "Afrobeats", query: "afrobeats hits" },
+] as const;
+
+export async function getLocalScene(slug: string) {
+  const scene = LOCAL_SCENES.find((s) => s.slug === slug);
+  if (!scene) return null;
+  let playlist: { id: number; title: string } | null = null;
+  if (scene.slug === "cote-divoire") {
+    // Le top officiel du pays, s'il est dans la liste des tops Deezer.
+    const countries = await getCountryCharts();
+    playlist = countries.find((c) => /c[ôo]te d.?ivoire|ivory coast/i.test(c.title)) ?? null;
+  }
+  playlist ??= await findPlaylist(scene.query);
+  const tracks = playlist ? await getPlaylistTracks(playlist.id) : [];
+  return { ...scene, tracks };
+}
+
+// ---- Recommandations ----
+
+export async function getRelatedArtists(artistId: number, limit = 4): Promise<Artist[]> {
+  const json = await get<{ data: { id: number; name: string; picture_medium: string; nb_fan: number }[] }>(
+    `/artist/${artistId}/related?limit=${limit}`,
+    86400,
+  );
+  return (json?.data ?? []).map((a) => ({ id: a.id, name: a.name, picture: a.picture_medium, fans: a.nb_fan }));
+}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HeroSlider, { type Slide } from "@/components/HeroSlider";
+import Icon from "@/components/Icon";
 import ReviewCard from "@/components/ReviewCard";
 import RightRail from "@/components/RightRail";
 import { getCurrentProfile, getRecentReviews } from "@/lib/data";
@@ -41,6 +42,16 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
   return (
     <div className="with-rail">
       <div className="feed-col">
+        {me?.onboarded === false && (
+          <Link href="/bienvenue" className="onboard-banner">
+            <Icon name="sparkle" size={24} />
+            <span>
+              <b>Termine ton arrivée sur Pépite</b>
+              <small>Choisis tes genres, note 3 albums et trouve des membres à suivre. Ça prend une minute.</small>
+            </span>
+            <span className="more-link">C&apos;est parti →</span>
+          </Link>
+        )}
         {slides.length > 0 && <HeroSlider slides={slides} />}
 
         <div className="feed-head">

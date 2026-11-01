@@ -5,12 +5,14 @@ import Avatar from "./Avatar";
 import CommentForm from "./CommentForm";
 import Cover from "./Cover";
 import DemoBadge from "./DemoBadge";
+import MentionText from "./MentionText";
 import Icon from "./Icon";
 import LikeButton from "./LikeButton";
 import Reactions from "./Reactions";
 import ReportButton from "./ReportButton";
 import ShareButton from "./ShareButton";
 import Stars from "./Stars";
+import WhatsAppButton from "./WhatsAppButton";
 
 // Un avis publié : l'auteur, la pochette, la note, le texte, puis les actions.
 // Dans le fil (withComments), on montre aussi les derniers commentaires et un champ pour répondre.
@@ -98,7 +100,9 @@ export default async function ReviewCard({
                   <DemoBadge show={c.profile.is_demo} />
                   <span>{timeAgo(c.created_at)}</span>
                 </div>
-                <p className="comment-body">{c.body}</p>
+                <p className="comment-body">
+                  <MentionText text={c.body} />
+                </p>
                 <Link href={`${page}#c-${c.id}`} className="text-btn">
                   Répondre
                 </Link>
@@ -122,6 +126,10 @@ export function ReviewMeta({ review, canLike }: { review: Review; canLike: boole
         <Icon name="comment" size={20} /> {review.comments}
       </Link>
       <Reactions reviewId={review.id} reactions={review.reactions} canReact={canLike} />
+      <WhatsAppButton
+        path={page}
+        text={`${review.profile.display_name} a donné ${"★".repeat(review.rating)} à « ${review.track_title ?? review.album_title} » de ${review.artist_name} sur Pépite 🎧`}
+      />
       <ShareButton title={review.track_title ?? review.album_title} path={page} compact />
     </div>
   );
