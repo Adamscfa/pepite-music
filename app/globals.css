@@ -1168,3 +1168,21 @@ main:has(.chat) { padding-top: 0; }
   .post-actions .action.share { margin-left: 0; }
   .post-text .stars { font-size: 26px; }
 }
+
+/* =====================================================================
+   Colonne de droite : elle défile toute seule, indépendamment du fil
+   ===================================================================== */
+@media (min-width: 1181px) {
+  .rail {
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 6px 16px 2px;
+    margin-right: -6px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+  .rail::-webkit-scrollbar { width: 6px; }
+  .rail::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
+  .rail:hover::-webkit-scrollbar-thumb { background: var(--muted); }
+}
