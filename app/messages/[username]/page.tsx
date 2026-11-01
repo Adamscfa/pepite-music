@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import AuthorLink from "@/components/AuthorLink";
 import MarkRead from "@/components/MarkRead";
 import { markThreadRead } from "@/app/social-actions";
 import { areFriends, getCurrentProfile, getProfileByUsername, getThread } from "@/lib/data";
@@ -26,17 +24,11 @@ export default async function ThreadPage({ params }: PageProps<"/messages/[usern
         lastFromFriend={messages.at(-1)?.sender_id === friend.id}
       />
       <div className="chat">
-        <header className="chat-head">
-          <Link href="/messages" className="chat-back" aria-label="Tous les messages">
-            ←
-          </Link>
-          <AuthorLink user={friend} />
-        </header>
-
         <ThreadView
           messages={messages}
           meId={me.id}
           friendId={friend.id}
+          friend={friend}
           friendName={friend.display_name}
           friendUsername={friend.username}
           canWrite={friends}
