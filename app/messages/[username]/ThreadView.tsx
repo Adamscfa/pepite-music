@@ -3,9 +3,11 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
+import DemoBadge from "@/components/DemoBadge";
 import ReadTicks from "@/components/ReadTicks";
-import type { Message } from "@/lib/data";
+import type { Author, Message } from "@/lib/data";
 import { emojiCount } from "@/lib/format";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import MessageForm from "./MessageForm";
@@ -33,6 +35,7 @@ export default function ThreadView({
   messages,
   meId,
   friendId,
+  friend,
   friendName,
   friendUsername,
   canWrite,
@@ -40,6 +43,7 @@ export default function ThreadView({
   messages: Message[];
   meId: string;
   friendId: string;
+  friend: Author;
   friendName: string;
   friendUsername: string;
   canWrite: boolean;
@@ -104,6 +108,24 @@ export default function ThreadView({
 
   return (
     <>
+      {/* En-tête collé en haut : retour, photo et nom de l'ami, « en train d'écrire… » */}
+      <header className="chat-head">
+        <Link href="/messages" className="chat-back" aria-label="Tous les messages">
+          ←
+        </Link>
+        <Link href={`/profil/${friend.username}`} className="chat-who">
+          <Avatar user={friend} />
+          <span>
+            <b>
+              {friend.display_name} <DemoBadge show={friend.is_demo} />
+            </b>
+            <small className={typing ? "typing-label" : undefined}>
+              {typing ? "en train d'écrire…" : `@${friend.username}`}
+            </small>
+          </span>
+        </Link>
+      </header>
+
       <div className="thread">
         {messages.length === 0 && <p className="small chat-empty">Pas encore de message. Dis bonjour !</p>}
         {messages.map((m, i) => {
