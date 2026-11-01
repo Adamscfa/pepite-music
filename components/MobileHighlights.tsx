@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getCurrentProfile, getReviewCounts, getTopContributors, getTrackReviewCounts, getWeeklyPepite } from "@/lib/data";
-import { getTopTracks, type AlbumHit } from "@/lib/deezer";
+import type { Trends } from "@/lib/trends";
 import Avatar from "./Avatar";
 import Cover from "./Cover";
 import DemoBadge from "./DemoBadge";
@@ -10,13 +10,13 @@ import TrendingTracks from "./TrendingTracks";
 // Sur téléphone seulement (voir globals.css) : la Pépite de la semaine, puis les albums
 // et titres tendance et les meilleurs contributeurs, en rangées à faire glisser, en haut du fil.
 // Sur ordinateur, ces infos sont dans la colonne de droite (RightRail).
-export default async function MobileHighlights({ albums }: { albums: AlbumHit[] }) {
-  const top = albums.slice(0, 10);
+export default async function MobileHighlights({ trends }: { trends: Trends }) {
+  const top = trends.albums.slice(0, 10);
+  const tracks = trends.tracks.slice(0, 10);
   const me = await getCurrentProfile();
-  const [counts, contributors, tracks, weekly] = await Promise.all([
+  const [counts, contributors, weekly] = await Promise.all([
     getReviewCounts(top.map((a) => a.id)),
     getTopContributors(10),
-    getTopTracks(10),
     getWeeklyPepite(me?.id),
   ]);
   const trackCounts = await getTrackReviewCounts(tracks.map((t) => t.id));
@@ -46,7 +46,7 @@ export default async function MobileHighlights({ albums }: { albums: AlbumHit[] 
               <span className="flame">
                 <Icon name="flame" size={20} filled />
               </span>
-              Albums tendance
+              Albums tendance <small className="trend-where">{trends.label}</small>
             </h2>
             <Link href="/explorer" className="more-link">
               Tout voir →
@@ -79,7 +79,7 @@ export default async function MobileHighlights({ albums }: { albums: AlbumHit[] 
               <span className="flame">
                 <Icon name="music" size={20} />
               </span>
-              Titres tendance
+              Titres tendance <small className="trend-where">{trends.label}</small>
             </h2>
             <Link href="/classements" className="more-link">
               Tout voir →

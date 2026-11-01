@@ -6,7 +6,8 @@ import MobileHighlights from "@/components/MobileHighlights";
 import ReviewCard from "@/components/ReviewCard";
 import RightRail from "@/components/RightRail";
 import { getCurrentProfile, getRecentReviews } from "@/lib/data";
-import { getNewReleases, getTopAlbums } from "@/lib/deezer";
+import { getNewReleases } from "@/lib/deezer";
+import { getTrends } from "@/lib/trends";
 
 export default async function FeedPage({ searchParams }: PageProps<"/">) {
   const me = await getCurrentProfile();
@@ -15,12 +16,13 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
   // Le fil se charge par paquets de 15 avis (plus léger sur une connexion 4G).
   const PAGE = 15;
   const shown = Math.min(150, Math.max(PAGE, Number(params.n) || PAGE));
-  const [reviews, topAlbums, newReleases] = await Promise.all([
+  const [reviews, trends, newReleases] = await Promise.all([
     getRecentReviews({ followedBy: followingOnly ? me!.id : undefined, limit: shown }),
-    getTopAlbums(10),
+    getTrends(10),
     getNewReleases(6),
   ]);
 
+  const topAlbums = trends.albums;
   const slides: Slide[] = [
     {
       title: "Bienvenue sur Pépite !",
@@ -38,7 +40,7 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
     },
     {
       title: "Les tops du moment",
-      text: "Ce qui s'écoute le plus en France et dans le monde, genre par genre.",
+      text: `Ce qui s'écoute le plus ${trends.label}, et ailleurs dans le monde.`,
       cta: { href: "/classements", label: "Voir les classements" },
       covers: topAlbums.slice(5, 10).map((a) => a.cover),
     },
@@ -59,7 +61,7 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
           </Link>
         )}
         {slides.length > 0 && <HeroSlider slides={slides} />}
-        <MobileHighlights albums={topAlbums} />
+        <MobileHighlights trends={trends} />
 
         <div className="feed-head">
           <h2 className="section-title" style={{ margin: 0 }}>

@@ -12,11 +12,11 @@ import {
   getGenres,
   getLocalScene,
   getNewReleases,
-  getTopAlbums,
   LOCAL_SCENES,
 } from "@/lib/deezer";
 import { formatScore } from "@/lib/format";
 import { getForYou } from "@/lib/recommend";
+import { getTrends } from "@/lib/trends";
 import { sharpImage } from "@/lib/images";
 
 export const metadata: Metadata = {
@@ -81,7 +81,7 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
   const [forYou, local, trending, fresh, releases, topRated, tracks, albums] = await Promise.all([
     me ? getForYou(me) : Promise.resolve([]),
     getLocalScene("cote-divoire"),
-    getTopAlbums(15),
+    getTrends(15),
     getFreshArtists(14),
     getNewReleases(15),
     getTopRatedAlbums(12),
@@ -123,9 +123,13 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
         </section>
       )}
 
-      {trending.length > 0 && (
-        <Carousel eyebrow="Classement Deezer" title="Albums tendance" more={{ href: "/classements", label: "Classements →" }}>
-          {trending.map((a, i) => (
+      {trending.albums.length > 0 && (
+        <Carousel
+          eyebrow={`Classement Deezer · ${trending.label}`}
+          title="Albums tendance"
+          more={{ href: "/classements", label: "Classements →" }}
+        >
+          {trending.albums.map((a, i) => (
             <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} badge={`#${i + 1}`} />
           ))}
         </Carousel>
