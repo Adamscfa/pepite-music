@@ -127,6 +127,8 @@ export default async function Header() {
                   <Link href="/messages">Messages{unread.messages ? ` (${unread.messages})` : ""}</Link>
                   <Link href={`${profile}#favoris`}>Mes favoris</Link>
                   <Link href={`${profile}/annee`}>Mon année en musique</Link>
+                  <Link href={`${profile}#inviter`}>Inviter des amis</Link>
+                  <Link href="/partager">Images à partager</Link>
                   <Link href="/classements">Classements</Link>
                   {me.is_admin && <Link href="/moderation">Modération</Link>}
                   <Link href="/contact">Contact</Link>

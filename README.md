@@ -81,6 +81,10 @@ Dans Supabase, **Table Editor > profiles**, trouve ta ligne et mets la colonne `
 
 Colle [`supabase/10-lancement.sql`](supabase/10-lancement.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, après le fichier 08). Il ajoute : les messages de la page Contact, la suppression de compte, le blocage d'un membre, la limite anti-spam (20 commentaires ou messages par minute) et les annonces de la semaine.
 
+### Liens d'invitation
+
+Colle [`supabase/11-invitations.sql`](supabase/11-invitations.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, après le fichier 10). Chaque membre trouve ensuite son lien `/invite/<pseudo>` sur son profil (encart « Invite tes amis »).
+
 ### E-mails d'inscription fiables, en français
 
 L'expéditeur fourni par Supabase n'envoie que quelques e-mails par heure. On branche **Brevo** (gratuit jusqu'à 300 e-mails par jour) :
@@ -138,4 +142,4 @@ Si tu le laisses activé, va dans **Authentication > URL Configuration** et mets
 | `components/` | Les morceaux réutilisés : barre du haut, étoiles, carte d'avis… |
 | `lib/deezer.ts` | Les appels à l'API Deezer |
 | `lib/data.ts` | Les lectures dans Supabase |
-| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, `04-ameliorations.sql`, `05-reponses-commentaires.sql`, (facultatif) `06-comptes-demo.sql`, `07-temps-reel.sql`, `08-grande-mise-a-jour.sql`, `09-corriger-demo.sql`, puis `10-lancement.sql` ; `demo-supprimer.sql` efface les membres de démo |
+| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, `04-ameliorations.sql`, `05-reponses-commentaires.sql`, (facultatif) `06-comptes-demo.sql`, `07-temps-reel.sql`, `08-grande-mise-a-jour.sql`, `09-corriger-demo.sql`, `10-lancement.sql`, puis `11-invitations.sql` ; `demo-supprimer.sql` efface les membres de démo |
