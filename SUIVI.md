@@ -132,6 +132,11 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Faire relire les pages Confidentialité et Conditions, et vérifier la déclaration auprès de l'ARTCI
 - [ ] Quand assez de vrais membres sont inscrits : exécuter `demo-supprimer.sql`
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
+- [ ] **Nom de domaine** (plus tard) : `.ci` (environ 45 000 à 75 000 FCFA/an,
+  CNI demandée, 2 à 5 jours) ou `.com` (environ 10 à 15 $/an, immédiat, achat
+  possible dans Vercel). Puis : Vercel > Settings > Domains ; Supabase > URL
+  Configuration (Site URL + Redirect URLs) ; Brevo > Domaines (authentifier) et
+  expéditeur `bonjour@…` ; renvoi des e-mails reçus avec ImprovMX.
 - [ ] (idées à ajouter ici)
 
 ## Idées mises de côté
