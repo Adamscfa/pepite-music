@@ -107,6 +107,8 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     Bouton pour tout enregistrer (menu de partage sur téléphone). La
     publication sur TikTok se fait à la main (carrousel photo, programmation
     dans TikTok Studio) : TikTok limite et contrôle la publication automatique.
+    Accéléré : plus de recherche des photos d'artistes, images gardées une
+    journée par le navigateur (l'enregistrement ne les refabrique plus).
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.

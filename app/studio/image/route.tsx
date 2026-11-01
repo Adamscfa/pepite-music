@@ -9,7 +9,9 @@ import { logoDataUri, siteLabel } from "@/lib/og";
 //   s=intro : titre de la série et 4 pochettes ;
 //   s=item  : une pochette avec son rang ;
 //   s=fin   : « Lien en bio ».
-const SIZE = { width: 1080, height: 1920 };
+// Le navigateur garde l'image une journée : « Enregistrer » reprend celles déjà affichées
+// au lieu de tout refabriquer. (« private » : jamais gardée par un serveur intermédiaire.)
+const SIZE = { width: 1080, height: 1920, headers: { "Cache-Control": "private, max-age=86400" } };
 const BG = "linear-gradient(180deg, #0B1410 0%, #123326 55%, #2E9E6B 100%)";
 
 async function lookup(kind: string, id: number) {
@@ -21,16 +23,20 @@ async function lookup(kind: string, id: number) {
   return a ? { title: a.title, artist: a.artist, sub: a.year ? String(a.year) : "", cover: a.cover } : null;
 }
 
-const big = (url: string) => deezerAt(url, 1000);
+const big = (url: string, px = 1000) => deezerAt(url, px);
 const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
 export async function GET(request: Request) {
-  const me = await getCurrentProfile();
-  if (!me?.is_admin) return new Response("Réservé aux admins", { status: 404 });
   const q = new URL(request.url).searchParams;
   const slide = q.get("s");
   const kind = q.get("k") === "titre" ? "titre" : "album";
-  const logo = await logoDataUri();
+  // Tout en même temps : vérifier qu'on est admin, lire le logo, chercher l'album chez Deezer.
+  const [me, logo, item] = await Promise.all([
+    getCurrentProfile(),
+    logoDataUri(),
+    slide === "item" ? lookup(kind, Number(q.get("id"))) : Promise.resolve(null),
+  ]);
+  if (!me?.is_admin) return new Response("Réservé aux admins", { status: 404 });
 
   const brand = (
     <div style={{ display: "flex", alignItems: "center", gap: 18, fontSize: 48, fontWeight: 800 }}>
@@ -70,7 +76,7 @@ export async function GET(request: Request) {
           {brand}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 24, width: 824, justifyContent: "center" }}>
             {found.map((f, i) => (
-              <img key={i} src={big(f!.cover)} width={400} height={400} style={{ borderRadius: 24 }} alt="" />
+              <img key={i} src={big(f!.cover, 500)} width={400} height={400} style={{ borderRadius: 24 }} alt="" />
             ))}
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
@@ -118,7 +124,6 @@ export async function GET(request: Request) {
     );
   }
 
-  const item = await lookup(kind, Number(q.get("id")));
   if (!item) return new Response("Introuvable", { status: 404 });
   const rank = Number(q.get("n")) || 0;
   return new ImageResponse(
