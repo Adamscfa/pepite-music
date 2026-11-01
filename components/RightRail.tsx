@@ -1,20 +1,25 @@
 import Link from "next/link";
-import { getCurrentProfile, getReviewCounts, getTopContributors, getWeeklyPepite } from "@/lib/data";
-import { getTopAlbums } from "@/lib/deezer";
+import { getCurrentProfile, getReviewCounts, getTopContributors, getTrackReviewCounts, getWeeklyPepite } from "@/lib/data";
+import { getTopAlbums, getTopTracks } from "@/lib/deezer";
 import Avatar from "./Avatar";
 import Cover from "./Cover";
 import DemoBadge from "./DemoBadge";
 import Icon from "./Icon";
+import TrendingTracks from "./TrendingTracks";
 
 // Colonne de droite de l'accueil : albums tendance, meilleurs contributeurs, et un encart.
 export default async function RightRail() {
   const me = await getCurrentProfile();
-  const [albums, contributors, weekly] = await Promise.all([
+  const [albums, tracks, contributors, weekly] = await Promise.all([
     getTopAlbums(5),
+    getTopTracks(5),
     getTopContributors(3),
     getWeeklyPepite(me?.id),
   ]);
-  const counts = await getReviewCounts(albums.map((a) => a.id));
+  const [counts, trackCounts] = await Promise.all([
+    getReviewCounts(albums.map((a) => a.id)),
+    getTrackReviewCounts(tracks.map((t) => t.id)),
+  ]);
   const pepite = weekly.current[0] ?? weekly.lastWinner;
 
   return (
@@ -47,6 +52,21 @@ export default async function RightRail() {
           </ol>
           <Link href="/explorer" className="more-link rail-more">
             Explorer les tendances →
+          </Link>
+        </section>
+      )}
+
+      {tracks.length > 0 && (
+        <section className="rail-box">
+          <h2 className="rail-title">
+            <span className="flame">
+              <Icon name="music" size={22} />
+            </span>
+            Titres tendance
+          </h2>
+          <TrendingTracks tracks={tracks} counts={Object.fromEntries(trackCounts)} variant="rail" />
+          <Link href="/classements" className="more-link rail-more">
+            Tous les classements →
           </Link>
         </section>
       )}

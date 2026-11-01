@@ -1240,3 +1240,25 @@ main:has(.chat) { padding-top: 0; }
 .flame, .rank-stat svg, .strip-stat svg { color: #F97316; }
 .rank-stat { color: var(--ink); }
 .strip-stat { color: var(--muted) !important; }
+
+/* =====================================================================
+   Titres tendance et Pépite de la semaine sur téléphone
+   ===================================================================== */
+.rank-track { grid-template-columns: 22px minmax(0, 1fr) 32px !important; }
+.rank-track .play { width: 32px; height: 32px; }
+.strip-play { position: absolute; right: 6px; bottom: 6px; }
+.strip-play .play { width: 36px; height: 36px; background: rgb(255 255 255 / .92); color: #0D1A14; box-shadow: 0 2px 8px rgb(0 0 0 / .25); }
+.strip-play .play[aria-pressed="true"] { background: var(--gold); color: var(--on-gold); }
+.strip-title { min-width: 0; display: block; overflow: hidden; }
+.pepite-mobile { display: none; }
+@media (max-width: 760px) {
+  /* Tout ce que contient la colonne de droite est maintenant en haut du fil */
+  .home-rail { display: none; }
+  .pepite-mobile { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+  .pepite-mobile .cover.m { width: 64px; border-radius: 10px; }
+  .pepite-mobile > span:nth-child(2) { display: grid; flex: 1; min-width: 0; gap: 1px; }
+  .pepite-mobile small { font-size: 11px; color: var(--muted); }
+  .pepite-mobile small:first-child { font-family: var(--mono); letter-spacing: .04em; text-transform: uppercase; font-size: 10px; }
+  .pepite-mobile b { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pepite-mobile .more-link { flex: none; }
+}

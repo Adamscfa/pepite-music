@@ -696,3 +696,13 @@ export async function getBlockedMembers(): Promise<(Author & { id: string })[]> 
   const { data } = await supabase.from("profiles").select("*").in("id", ids);
   return ((data ?? []) as Profile[]).map((p) => ({ id: p.id, ...author(p) }));
 }
+
+// Nombre d'avis Pépite par titre, pour une liste de titres.
+export async function getTrackReviewCounts(trackIds: number[]): Promise<Map<number, number>> {
+  const counts = new Map<number, number>();
+  if (!hasSupabaseConfig || !trackIds.length) return counts;
+  const supabase = await createClient();
+  const { data } = await supabase.from("reviews").select("track_id").in("track_id", trackIds);
+  for (const r of data ?? []) counts.set(r.track_id, (counts.get(r.track_id) ?? 0) + 1);
+  return counts;
+}

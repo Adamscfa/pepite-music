@@ -397,3 +397,9 @@ export async function getRelatedArtists(artistId: number, limit = 4): Promise<Ar
   );
   return (json?.data ?? []).map((a) => ({ id: a.id, name: a.name, picture: a.picture_medium, fans: a.nb_fan }));
 }
+
+// Les titres les plus écoutés en ce moment (top France chez Deezer), pour « Titres tendance ».
+export async function getTopTracks(limit = 10): Promise<ChartTrack[]> {
+  const json = await get<RawChartTracks>(`/chart/0/tracks?limit=${limit}`, 3600);
+  return (json?.data ?? []).map(chartTrack);
+}

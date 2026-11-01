@@ -1,21 +1,44 @@
 import Link from "next/link";
-import { getReviewCounts, getTopContributors } from "@/lib/data";
-import type { AlbumHit } from "@/lib/deezer";
+import { getCurrentProfile, getReviewCounts, getTopContributors, getTrackReviewCounts, getWeeklyPepite } from "@/lib/data";
+import { getTopTracks, type AlbumHit } from "@/lib/deezer";
 import Avatar from "./Avatar";
 import Cover from "./Cover";
 import DemoBadge from "./DemoBadge";
 import Icon from "./Icon";
+import TrendingTracks from "./TrendingTracks";
 
-// Sur téléphone seulement (voir globals.css) : les albums tendance et les meilleurs
-// contributeurs, en rangées qu'on fait glisser du doigt, en haut du fil.
+// Sur téléphone seulement (voir globals.css) : la Pépite de la semaine, puis les albums
+// et titres tendance et les meilleurs contributeurs, en rangées à faire glisser, en haut du fil.
 // Sur ordinateur, ces infos sont dans la colonne de droite (RightRail).
 export default async function MobileHighlights({ albums }: { albums: AlbumHit[] }) {
   const top = albums.slice(0, 10);
-  const [counts, contributors] = await Promise.all([getReviewCounts(top.map((a) => a.id)), getTopContributors(10)]);
-  if (!top.length && !contributors.length) return null;
+  const me = await getCurrentProfile();
+  const [counts, contributors, tracks, weekly] = await Promise.all([
+    getReviewCounts(top.map((a) => a.id)),
+    getTopContributors(10),
+    getTopTracks(10),
+    getWeeklyPepite(me?.id),
+  ]);
+  const trackCounts = await getTrackReviewCounts(tracks.map((t) => t.id));
+  const pepite = weekly.current[0] ?? weekly.lastWinner;
+  if (!top.length && !contributors.length && !tracks.length && !pepite) return null;
 
   return (
     <div className="mobile-strips">
+      {pepite && (
+        <Link href={`/album/${pepite.album_id}`} className="pepite-mobile">
+          <Cover src={pepite.cover_url} size="m" />
+          <span>
+            <small>💎 {weekly.current[0] ? "Pépite de la semaine · vote en cours" : "Pépite de la semaine dernière"}</small>
+            <b>{pepite.album_title}</b>
+            <small>
+              {pepite.artist_name} · {pepite.votes} vote{pepite.votes > 1 ? "s" : ""}
+            </small>
+          </span>
+          <span className="more-link">Voter →</span>
+        </Link>
+      )}
+
       {top.length > 0 && (
         <section className="strip">
           <div className="strip-head">
@@ -46,6 +69,23 @@ export default async function MobileHighlights({ albums }: { albums: AlbumHit[] 
               </Link>
             ))}
           </div>
+        </section>
+      )}
+
+      {tracks.length > 0 && (
+        <section className="strip">
+          <div className="strip-head">
+            <h2>
+              <span className="flame">
+                <Icon name="music" size={20} />
+              </span>
+              Titres tendance
+            </h2>
+            <Link href="/classements" className="more-link">
+              Tout voir →
+            </Link>
+          </div>
+          <TrendingTracks tracks={tracks} counts={Object.fromEntries(trackCounts)} variant="strip" />
         </section>
       )}
 
