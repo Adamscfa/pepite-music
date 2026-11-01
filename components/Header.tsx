@@ -5,6 +5,7 @@ import { getCurrentProfile, getUnreadCounts } from "@/lib/data";
 import Avatar from "./Avatar";
 import BottomNav from "./BottomNav";
 import Icon, { type IconName } from "./Icon";
+import LiveUpdates from "./LiveUpdates";
 import NavLink from "./NavLink";
 import PublishButton from "./PublishButton";
 import SearchBox from "./SearchBox";
@@ -136,6 +137,7 @@ export default async function Header() {
           </span>
         </div>
       </header>
+      {me && <LiveUpdates userId={me.id} />}
       <BottomNav username={me?.username ?? null} notifications={unread.notifications} messages={unread.messages} />
     </>
   );

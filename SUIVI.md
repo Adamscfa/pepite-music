@@ -47,6 +47,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     marqués « Démo » sur le site, avec avis, commentaires, réponses et
     « j'aime » sur de vrais albums. Fichier `06-comptes-demo.sql` ; on les
     efface tous avec `demo-supprimer.sql`.
+11. Messages et notifications en direct (1er novembre 2026) : un nouveau
+    message apparaît tout seul dans la conversation ouverte, et les pastilles
+    du menu se mettent à jour sans rafraîchir. Fichier `07-temps-reel.sql`.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -72,6 +75,8 @@ Supabase, **Table Editor** :
 - fichier 04 : la table `notifications` existe
 - fichier 05 : la table `comment_likes` existe
 - fichier 06 : des membres marqués « Démo » apparaissent sur l'accueil
+- fichier 07 : dans Database > Publications > supabase_realtime, les tables
+  `messages` et `notifications` sont cochées
 
 Les clés Supabase (URL du projet et clé publishable) ne sont **jamais** dans ce
 dépôt. Elles sont dans les réglages du projet Vercel (Environment Variables) et

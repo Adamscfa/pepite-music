@@ -8,6 +8,7 @@ import { markThreadRead } from "@/app/social-actions";
 import { areFriends, getCurrentProfile, getProfileByUsername, getThread } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
 import MessageForm from "./MessageForm";
+import ThreadLive from "./ThreadLive";
 
 export const metadata: Metadata = { title: "Messages" };
 
@@ -21,6 +22,11 @@ export default async function ThreadPage({ params }: PageProps<"/messages/[usern
   return (
     <>
       <MarkRead action={markThreadRead.bind(null, friend.id)} />
+      <ThreadLive
+        friendId={friend.id}
+        count={messages.length}
+        lastFromFriend={messages.at(-1)?.sender_id === friend.id}
+      />
       <Link href="/messages" className="small link-under">
         ← Tous les messages
       </Link>
