@@ -43,6 +43,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
    top contributeurs). Nouvelle page **Explorer** (nouveaux artistes, albums
    tendance, genres, titres et albums les plus commentés). **Réponses aux
    commentaires** et « j'aime » sur les commentaires, avec tri Top / récents.
+10. Membres de démonstration (1er novembre 2026) : 8 membres imaginaires,
+    marqués « Démo » sur le site, avec avis, commentaires, réponses et
+    « j'aime » sur de vrais albums. Fichier `06-comptes-demo.sql` ; on les
+    efface tous avec `demo-supprimer.sql`.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -67,6 +71,7 @@ Supabase, **Table Editor** :
 - fichier 03 : la table `reviews` a une colonne `track_id`
 - fichier 04 : la table `notifications` existe
 - fichier 05 : la table `comment_likes` existe
+- fichier 06 : des membres marqués « Démo » apparaissent sur l'accueil
 
 Les clés Supabase (URL du projet et clé publishable) ne sont **jamais** dans ce
 dépôt. Elles sont dans les réglages du projet Vercel (Environment Variables) et

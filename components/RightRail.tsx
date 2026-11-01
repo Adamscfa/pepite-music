@@ -3,6 +3,7 @@ import { getCurrentProfile, getReviewCounts, getTopContributors, getWeeklyPepite
 import { getTopAlbums } from "@/lib/deezer";
 import Avatar from "./Avatar";
 import Cover from "./Cover";
+import DemoBadge from "./DemoBadge";
 import Icon from "./Icon";
 
 // Colonne de droite de l'accueil : albums tendance, meilleurs contributeurs, et un encart.
@@ -65,7 +66,9 @@ export default async function RightRail() {
                 <Link href={`/profil/${c.username}`} className="rank-item">
                   <Avatar user={c} />
                   <span className="rank-text">
-                    <b>{c.display_name}</b>
+                    <b>
+                      {c.display_name} <DemoBadge show={c.is_demo} />
+                    </b>
                     <small>
                       {c.count} avis
                     </small>

@@ -7,6 +7,7 @@ import type { Author, Comment } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
 import Avatar from "./Avatar";
 import CommentForm from "./CommentForm";
+import DemoBadge from "./DemoBadge";
 import Icon from "./Icon";
 
 type Sort = "top" | "recent" | "old";
@@ -128,6 +129,7 @@ function CommentItem({ comment: c, depth, ctx }: { comment: Comment; depth: numb
           <Link href={`/profil/${c.profile.username}`} className="link-under">
             <b>{c.profile.display_name}</b>
           </Link>
+          <DemoBadge show={c.profile.is_demo} />
           <span>{timeAgo(c.created_at)}</span>
         </div>
         <p className="comment-body">{c.body}</p>

@@ -9,9 +9,11 @@ export type Profile = {
   display_name: string;
   bio: string;
   avatar_url: string | null;
+  // Membre de démonstration (fichier 06-comptes-demo.sql), affiché avec l'étiquette « Démo ».
+  is_demo?: boolean;
 };
 
-export type Author = Pick<Profile, "username" | "display_name" | "avatar_url">;
+export type Author = Pick<Profile, "username" | "display_name" | "avatar_url" | "is_demo">;
 
 export type Review = {
   id: number;
@@ -83,6 +85,7 @@ const author = (p: Profile): Author => ({
   username: p.username,
   display_name: p.display_name,
   avatar_url: p.avatar_url ?? null,
+  is_demo: Boolean(p.is_demo),
 });
 
 // Le membre connecté et son profil, ou null. Mis en cache le temps d'une requête.
