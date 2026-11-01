@@ -95,6 +95,8 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     « Top <pays> » de Deezer (`getPlaylistChart` dans `lib/deezer.ts`).
     Un artiste sans photo chez Deezer (image grise) prend la pochette de son
     titre classé. Le « Top UK » de Deezer est vide pour l'instant.
+    Par genre (Rap, Jazz…), Deezer renvoie toujours les mêmes « top artistes » :
+    on les tire désormais des titres du genre.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.

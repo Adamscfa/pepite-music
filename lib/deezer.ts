@@ -176,7 +176,7 @@ export async function getChart(genre: number) {
   const [tracks, albums, artists] = await Promise.all([
     get<RawChartTracks>(`/chart/${genre}/tracks?limit=50`, 3600),
     get<RawSearch>(`/chart/${genre}/albums?limit=20`, 3600),
-    get<RawArtists>(`/chart/${genre}/artists?limit=20`, 3600),
+    genre ? null : get<RawArtists>(`/chart/${genre}/artists?limit=20`, 3600),
   ]);
   return {
     tracks: (tracks?.data ?? []).map(chartTrack),
@@ -186,7 +186,11 @@ export async function getChart(genre: number) {
       artist: a.artist.name,
       cover: a.cover_medium,
     })),
-    artists: (artists?.data ?? []).map((a) => ({ id: a.id, name: a.name, picture: a.picture_medium })),
+    // Deezer donne les mêmes « top artistes » quel que soit le genre : pour un genre,
+    // on prend donc les artistes de ses titres les plus écoutés.
+    artists: genre
+      ? await artistsFromTracks((tracks?.data ?? []).map(chartTrack))
+      : (artists?.data ?? []).map((a) => ({ id: a.id, name: a.name, picture: a.picture_medium })),
   };
 }
 
@@ -197,29 +201,36 @@ export async function getPlaylistTracks(id: number): Promise<ChartTrack[]> {
 
 export const getWorldTopTracks = () => getPlaylistTracks(WORLD_PLAYLIST);
 
-// Un top par pays (ou le Top Monde) affiché comme le top France : titres, mais aussi
-// les albums et les artistes qui y figurent, dans l'ordre du classement.
-export async function getPlaylistChart(id: number) {
-  const tracks = await getPlaylistTracks(id);
-  const albums: AlbumHit[] = [];
-  const albumIds = new Set<number>();
+// Les artistes d'un classement, tirés de ses titres, dans l'ordre (15 au plus).
+// Photo de l'artiste ; s'il n'en a pas (image grise par défaut de Deezer) ou si Deezer
+// ne répond pas, on prend la pochette de son titre classé, pour ne perdre personne.
+async function artistsFromTracks(tracks: ChartTrack[]): Promise<ArtistHit[]> {
   const firstTrack = new Map<number, ChartTrack>();
   for (const t of tracks) {
-    if (!albumIds.has(t.albumId) && albums.length < 20) {
-      albumIds.add(t.albumId);
-      albums.push({ id: t.albumId, title: t.albumTitle, artist: t.artist, cover: t.cover });
-    }
     if (!firstTrack.has(t.artistId) && firstTrack.size < 15) firstTrack.set(t.artistId, t);
   }
-  // Photo de l'artiste ; s'il n'en a pas (image grise par défaut de Deezer) ou si Deezer
-  // ne répond pas, on prend la pochette de son titre classé, pour ne perdre personne.
-  const artists = await Promise.all(
+  return Promise.all(
     [...firstTrack.values()].map(async (t) => {
       const a = await getArtist(t.artistId);
       const photo = a?.picture && !NO_PHOTO.test(a.picture) ? a.picture : t.cover;
       return { id: t.artistId, name: a?.name ?? t.artist, picture: photo };
     }),
   );
+}
+
+// Un top par pays (ou le Top Monde) affiché comme le top France : titres, mais aussi
+// les albums et les artistes qui y figurent, dans l'ordre du classement.
+export async function getPlaylistChart(id: number) {
+  const tracks = await getPlaylistTracks(id);
+  const albums: AlbumHit[] = [];
+  const albumIds = new Set<number>();
+  for (const t of tracks) {
+    if (!albumIds.has(t.albumId) && albums.length < 20) {
+      albumIds.add(t.albumId);
+      albums.push({ id: t.albumId, title: t.albumTitle, artist: t.artist, cover: t.cover });
+    }
+  }
+  const artists = await artistsFromTracks(tracks);
   return { tracks, albums, artists };
 }
 
