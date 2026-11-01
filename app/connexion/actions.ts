@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { logError } from "@/app/error-actions";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 
@@ -59,6 +60,10 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   if (error) {
     if (error.code === "user_already_exists") return { error: "Un compte existe déjà avec cet e-mail." };
     if (error.code === "weak_password") return { error: "Ce mot de passe est trop faible." };
+    if (error.code === "over_email_send_rate_limit") {
+      return { error: "Trop d'inscriptions en même temps. Réessaie dans quelques minutes." };
+    }
+    await logError({ message: `[e-mail] Inscription : ${error.code ?? error.status} ${error.message}`, path: "/connexion" });
     return { error: "L'inscription a échoué. Réessaie dans un instant." };
   }
 
@@ -107,6 +112,11 @@ export async function requestPasswordReset(_prev: AuthState, formData: FormData)
   });
   if (error?.code === "over_email_send_rate_limit") {
     return { error: "Trop d'e-mails envoyés pour l'instant. Réessaie dans quelques minutes." };
+  }
+  if (error && error.code !== "user_not_found") {
+    // La vraie cause (souvent la configuration SMTP) est notée sur la page Modération.
+    await logError({ message: `[e-mail] Mot de passe oublié : ${error.code ?? error.status} ${error.message}`, path: "/connexion/oubli" });
+    return { error: "L'e-mail n'a pas pu partir. Réessaie dans un moment ; si ça continue, écris-nous depuis la page Contact." };
   }
   return { message: "Si un compte existe avec cette adresse, tu vas recevoir un e-mail avec un lien. Pense à regarder dans les spams." };
 }
