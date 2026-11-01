@@ -127,7 +127,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Ajouter les clés `NEXT_PUBLIC_VAPID_PUBLIC_KEY` et `VAPID_PRIVATE_KEY` dans Vercel, puis redéployer
 - [ ] Se mettre administrateur (`is_admin` dans la table `profiles`)
 - [ ] Exécuter `10-lancement.sql`
-- [ ] Brancher Brevo pour les e-mails et coller les modèles en français (README)
+- [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions, et vérifier la déclaration auprès de l'ARTCI
 - [ ] Quand assez de vrais membres sont inscrits : exécuter `demo-supprimer.sql`
