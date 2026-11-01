@@ -140,6 +140,9 @@ export const CHART_GENRES = [
 ];
 
 // Playlist officielle « Top Monde » de Deezer.
+// Image grise que Deezer met quand un artiste n'a pas de photo.
+const NO_PHOTO = /\/artist\/\/|d41d8cd98f00b204e9800998ecf8427e/;
+
 export const WORLD_PLAYLIST = 3155776842;
 
 export type ChartTrack = TrackHit & { duration: number; preview: string; albumTitle: string; artistId: number };
@@ -200,17 +203,23 @@ export async function getPlaylistChart(id: number) {
   const tracks = await getPlaylistTracks(id);
   const albums: AlbumHit[] = [];
   const albumIds = new Set<number>();
-  const artistIds: number[] = [];
+  const firstTrack = new Map<number, ChartTrack>();
   for (const t of tracks) {
     if (!albumIds.has(t.albumId) && albums.length < 20) {
       albumIds.add(t.albumId);
       albums.push({ id: t.albumId, title: t.albumTitle, artist: t.artist, cover: t.cover });
     }
-    if (!artistIds.includes(t.artistId) && artistIds.length < 15) artistIds.push(t.artistId);
+    if (!firstTrack.has(t.artistId) && firstTrack.size < 15) firstTrack.set(t.artistId, t);
   }
-  const artists = (await Promise.all(artistIds.map((a) => getArtist(a))))
-    .filter((a): a is Artist => Boolean(a && a.picture))
-    .map((a) => ({ id: a.id, name: a.name, picture: a.picture }));
+  // Photo de l'artiste ; s'il n'en a pas (image grise par défaut de Deezer) ou si Deezer
+  // ne répond pas, on prend la pochette de son titre classé, pour ne perdre personne.
+  const artists = await Promise.all(
+    [...firstTrack.values()].map(async (t) => {
+      const a = await getArtist(t.artistId);
+      const photo = a?.picture && !NO_PHOTO.test(a.picture) ? a.picture : t.cover;
+      return { id: t.artistId, name: a?.name ?? t.artist, picture: photo };
+    }),
+  );
   return { tracks, albums, artists };
 }
 
