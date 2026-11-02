@@ -23,6 +23,31 @@ async function lookup(kind: string, id: number) {
   return a ? { title: a.title, artist: a.artist, sub: a.year ? String(a.year) : "", cover: a.cover } : null;
 }
 
+// Police Inter en gras (sinon le texte reste fin) : chargée chez Google Fonts, seulement
+// les lettres utilisées, puis gardée en mémoire.
+async function font(weight: number, text: string): Promise<ArrayBuffer | null> {
+  try {
+    const css = await (
+      await fetch(`https://fonts.googleapis.com/css2?family=Inter:wght@${weight}&text=${encodeURIComponent(text)}`, {
+        cache: "force-cache",
+      })
+    ).text();
+    const url = css.match(/src: url\((.+?)\) format/)?.[1];
+    return url ? await (await fetch(url, { cache: "force-cache" })).arrayBuffer() : null;
+  } catch {
+    return null;
+  }
+}
+
+async function options(text: string) {
+  const [bold, medium] = await Promise.all([font(800, text), font(500, text)]);
+  const fonts = [
+    ...(bold ? [{ name: "Inter", data: bold, weight: 800 as const, style: "normal" as const }] : []),
+    ...(medium ? [{ name: "Inter", data: medium, weight: 500 as const, style: "normal" as const }] : []),
+  ];
+  return fonts.length ? { ...SIZE, fonts } : SIZE;
+}
+
 const big = (url: string, px = 1000) => deezerAt(url, px);
 const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
@@ -39,8 +64,8 @@ export async function GET(request: Request) {
   if (!me?.is_admin) return new Response("Réservé aux admins", { status: 404 });
 
   const brand = (
-    <div style={{ display: "flex", alignItems: "center", gap: 18, fontSize: 48, fontWeight: 800 }}>
-      <img src={logo} width={104} height={72} alt="" />
+    <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 40, fontWeight: 800 }}>
+      <img src={logo} width={84} height={58} alt="" />
       Pépite
     </div>
   );
@@ -60,9 +85,13 @@ export async function GET(request: Request) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: justify,
-        padding: "120px 80px",
+        // Zone sûre de TikTok : en haut la barre de recherche, en bas le texte de la
+        // publication, à droite les boutons (j'aime, commentaires…). On n'y met rien.
+        padding: "250px 190px 500px 70px",
         backgroundImage: BG,
         color: "#FFFFFF",
+        fontFamily: "Inter",
+        fontWeight: 500,
       }}
     >
       {children}
@@ -82,18 +111,18 @@ export async function GET(request: Request) {
       frame(
         <>
           {brand}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 24, width: 824, justifyContent: "center" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 20, width: 680, justifyContent: "center" }}>
             {found.map((f, i) => (
-              <img key={i} src={big(f!.cover, 500)} width={400} height={400} style={{ borderRadius: 24 }} alt="" />
+              <img key={i} src={big(f!.cover, 500)} width={330} height={330} style={{ borderRadius: 20 }} alt="" />
             ))}
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
-            <div style={{ fontSize: 84, fontWeight: 800, textAlign: "center", lineHeight: 1.08 }}>{heading}</div>
-            <div style={{ fontSize: 40, color: "#D8F3E6" }}>Fais défiler →</div>
+            <div style={{ fontSize: 66, fontWeight: 800, textAlign: "center", lineHeight: 1.1 }}>{heading}</div>
+            <div style={{ fontSize: 36, color: "#D8F3E6" }}>Fais défiler →</div>
           </div>
         </>,
       ),
-      SIZE,
+      await options(`Pépite${heading}Fais défiler →`),
     );
   }
 
@@ -103,10 +132,10 @@ export async function GET(request: Request) {
         <>
           {brand}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 40 }}>
-            <div style={{ fontSize: 92, fontWeight: 800, textAlign: "center", lineHeight: 1.08 }}>
+            <div style={{ fontSize: 74, fontWeight: 800, textAlign: "center", lineHeight: 1.1 }}>
               Et toi, tu leur mets combien d&apos;étoiles ?
             </div>
-            <div style={{ fontSize: 46, color: "#D8F3E6", textAlign: "center", lineHeight: 1.3 }}>
+            <div style={{ fontSize: 40, color: "#D8F3E6", textAlign: "center", lineHeight: 1.3 }}>
               Note tes albums, donne ton avis et découvre ce que la communauté écoute.
             </div>
           </div>
@@ -114,48 +143,52 @@ export async function GET(request: Request) {
             <div
               style={{
                 display: "flex",
-                fontSize: 64,
+                fontSize: 54,
                 fontWeight: 800,
                 background: "#FFFFFF",
                 color: "#123326",
                 borderRadius: 999,
-                padding: "26px 60px",
+                padding: "22px 52px",
               }}
             >
               Lien en bio ↑
             </div>
-            <div style={{ fontSize: 36, color: "#D8F3E6" }}>{siteLabel}</div>
+            <div style={{ fontSize: 32, color: "#D8F3E6" }}>{siteLabel}</div>
           </div>
         </>,
       ),
-      SIZE,
+      await options(
+        `Pépite Et toi, tu leur mets combien d'étoiles ? Note tes albums, donne ton avis et découvre ce que la communauté écoute. Lien en bio ↑${siteLabel}`,
+      ),
     );
   }
 
   if (!item) return new Response("Introuvable", { status: 404 });
   const rank = Number(q.get("n")) || 0;
+  const title = cut(item.title, 60);
+  const sub = cut(item.sub ? `${item.artist} · ${item.sub}` : item.artist, 70);
   return new ImageResponse(
     frame(
       <>
         {brand}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 30 }}>
           <div style={{ display: "flex", position: "relative" }}>
-            <img src={big(item.cover)} width={860} height={860} style={{ borderRadius: 30, boxShadow: "0 30px 80px rgba(0,0,0,.5)" }} alt="" />
+            <img src={big(item.cover)} width={700} height={700} style={{ borderRadius: 26, boxShadow: "0 30px 80px rgba(0,0,0,.5)" }} alt="" />
             {rank > 0 && (
               <div
                 style={{
                   position: "absolute",
-                  top: -40,
-                  left: -30,
+                  top: -36,
+                  left: -36,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 170,
-                  height: 170,
+                  width: 140,
+                  height: 140,
                   borderRadius: 999,
                   background: "#FFFFFF",
                   color: "#123326",
-                  fontSize: 84,
+                  fontSize: 66,
                   fontWeight: 800,
                 }}
               >
@@ -163,14 +196,12 @@ export async function GET(request: Request) {
               </div>
             )}
           </div>
-          <div style={{ fontSize: 76, fontWeight: 800, textAlign: "center", lineHeight: 1.08 }}>{cut(item.title, 60)}</div>
-          <div style={{ fontSize: 46, color: "#D8F3E6", textAlign: "center" }}>
-            {cut(item.sub ? `${item.artist} · ${item.sub}` : item.artist, 70)}
-          </div>
+          <div style={{ fontSize: 62, fontWeight: 800, textAlign: "center", lineHeight: 1.1 }}>{title}</div>
+          <div style={{ fontSize: 40, color: "#D8F3E6", textAlign: "center" }}>{sub}</div>
         </div>
-        <div style={{ fontSize: 38, color: "#D8F3E6" }}>Note-le sur Pépite · lien en bio</div>
+        <div style={{ fontSize: 34, color: "#D8F3E6" }}>Note-le sur Pépite · lien en bio</div>
       </>,
     ),
-    SIZE,
+    await options(`Pépite#${rank}${title}${sub}Note-le sur Pépite · lien en bio`),
   );
 }

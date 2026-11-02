@@ -4,47 +4,62 @@ import { useState } from "react";
 
 type Slide = { src: string; name: string; label: string };
 
-// Aperçu des images, texte à copier, et un bouton pour tout enregistrer d'un coup :
-// sur téléphone, le menu de partage s'ouvre (Enregistrer les images, ou TikTok directement) ;
-// sur ordinateur, les images se téléchargent une par une.
+// Envoyer 12 grandes images d'un coup au menu de partage échoue sur beaucoup de
+// téléphones. On les convertit donc en JPEG de haute qualité (4 à 5 fois plus légères)
+// et on les enregistre par paquets de 4.
+const BATCH = 4;
+
+async function toJpeg(slide: Slide): Promise<File> {
+  const png = await (await fetch(slide.src, { cache: "force-cache" })).blob();
+  const bitmap = await createImageBitmap(png);
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  canvas.getContext("2d")!.drawImage(bitmap, 0, 0);
+  const jpeg = await new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("jpeg"))), "image/jpeg", 0.95),
+  );
+  return new File([jpeg], `${slide.name}.jpg`, { type: "image/jpeg" });
+}
+
+function download(file: File) {
+  const url = URL.createObjectURL(file);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = file.name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
 export default function StudioSlides({ slides, caption }: { slides: Slide[]; caption: string }) {
   const [status, setStatus] = useState("");
+  const [done, setDone] = useState<Set<number>>(new Set());
   const [copied, setCopied] = useState(false);
+  const batches: Slide[][] = [];
+  for (let i = 0; i < slides.length; i += BATCH) batches.push(slides.slice(i, i + BATCH));
 
-  async function files() {
-    return Promise.all(
-      slides.map(async (s) => {
-        const blob = await (await fetch(s.src, { cache: "force-cache" })).blob();
-        return new File([blob], `${s.name}.png`, { type: "image/png" });
-      }),
-    );
-  }
-
-  function download(file: File) {
-    const url = URL.createObjectURL(file);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = file.name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-  }
-
-  async function saveAll() {
-    setStatus("Préparation des images…");
+  async function save(list: Slide[], index: number) {
+    setStatus("Préparation…");
     try {
-      const list = await files();
-      if (navigator.canShare?.({ files: list })) {
-        setStatus("");
-        await navigator.share({ files: list });
-        return;
+      const files = await Promise.all(list.map(toJpeg));
+      if (navigator.canShare?.({ files })) {
+        await navigator.share({ files });
+      } else {
+        for (const f of files) {
+          download(f);
+          await new Promise((r) => setTimeout(r, 500));
+        }
       }
-      for (const f of list) {
-        download(f);
-        await new Promise((r) => setTimeout(r, 400));
-      }
-      setStatus("Images téléchargées ✓");
+      setDone((d) => new Set(d).add(index));
+      setStatus("");
     } catch (error) {
-      setStatus(error instanceof DOMException && error.name === "AbortError" ? "" : "Échec, réessaie dans un instant.");
+      setStatus(
+        error instanceof DOMException && error.name === "AbortError"
+          ? ""
+          : "Ça n'a pas marché. Réessaie, ou appuie longuement sur une image pour l'enregistrer.",
+      );
     }
   }
 
@@ -56,12 +71,21 @@ export default function StudioSlides({ slides, caption }: { slides: Slide[]; cap
 
   return (
     <>
+      <p className="small">
+        Enregistre les images dans l&apos;ordre, paquet par paquet (choisis « Enregistrer » ou « Galerie » dans le
+        menu qui s&apos;ouvre) :
+      </p>
       <div className="studio-actions">
-        <button className="btn" onClick={saveAll}>
-          Enregistrer les {slides.length} images
-        </button>
-        {status && <span className="small">{status}</span>}
+        {batches.map((b, i) => {
+          const from = i * BATCH + 1;
+          return (
+            <button key={i} className={done.has(i) ? "btn ghost" : "btn"} onClick={() => save(b, i)}>
+              {done.has(i) ? "✓ " : ""}Images {from} à {from + b.length - 1}
+            </button>
+          );
+        })}
       </div>
+      {status && <p className="small">{status}</p>}
 
       <div className="studio-caption">
         <textarea readOnly value={caption} rows={6} aria-label="Texte de la publication" />
@@ -73,9 +97,9 @@ export default function StudioSlides({ slides, caption }: { slides: Slide[]; cap
       <div className="studio-slides">
         {slides.map((s, i) => (
           <figure key={s.src}>
-            <a href={s.src} download={`${s.name}.png`} title="Télécharger cette image">
+            <button type="button" className="studio-one" onClick={() => save([s], -1 - i)} title="Enregistrer cette image">
               <img src={s.src} alt={s.label} loading={i < 6 ? "eager" : "lazy"} width={1080} height={1920} />
-            </a>
+            </button>
             <figcaption>{s.label}</figcaption>
           </figure>
         ))}
