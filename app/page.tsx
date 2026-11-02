@@ -7,7 +7,9 @@ import ReviewCard from "@/components/ReviewCard";
 import RightRail from "@/components/RightRail";
 import { getCurrentProfile, getRecentReviews } from "@/lib/data";
 import { getNewReleases } from "@/lib/deezer";
-import { getTrends } from "@/lib/trends";
+import { getHomeTrends } from "@/lib/home";
+import { Suspense } from "react";
+import { MobileHighlightsSkeleton, RightRailSkeleton } from "@/components/HomeSkeletons";
 
 export default async function FeedPage({ searchParams }: PageProps<"/">) {
   const me = await getCurrentProfile();
@@ -18,7 +20,7 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
   const shown = Math.min(150, Math.max(PAGE, Number(params.n) || PAGE));
   const [reviews, trends, newReleases] = await Promise.all([
     getRecentReviews({ followedBy: followingOnly ? me!.id : undefined, limit: shown }),
-    getTrends(10),
+    getHomeTrends(),
     getNewReleases(6),
   ]);
 
@@ -61,7 +63,10 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
           </Link>
         )}
         {slides.length > 0 && <HeroSlider slides={slides} />}
-        <MobileHighlights trends={trends} />
+        {/* Ces blocs arrivent juste après le reste de la page, sans la retarder. */}
+        <Suspense fallback={<MobileHighlightsSkeleton />}>
+          <MobileHighlights />
+        </Suspense>
 
         <div className="feed-head">
           <h2 className="section-title" style={{ margin: 0 }}>
@@ -96,7 +101,9 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
           </div>
         )}
       </div>
-      <RightRail />
+      <Suspense fallback={<RightRailSkeleton />}>
+        <RightRail />
+      </Suspense>
     </div>
   );
 }

@@ -1362,3 +1362,16 @@ section.dash-box + section.dash-box { margin-top: 0; }
   .dash-nums { grid-column: 2; justify-content: flex-start; }
   .dash-chart { height: 120px; }
 }
+
+/* Emplacements gris pendant le chargement de l'accueil */
+.skel { display: block; background: var(--line); border-radius: 10px; animation: skel 1.4s ease-in-out infinite; }
+@keyframes skel { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
+.skel-box { display: grid; gap: 12px; }
+.skel-title { height: 20px; width: 55%; }
+.skel-row { display: flex; align-items: center; gap: 12px; }
+.skel-cover { width: 48px; height: 48px; flex: none; }
+.skel-line { height: 14px; flex: 1; }
+.skel-pepite { height: 96px; border-radius: 16px; }
+.skel-strip { display: flex; gap: 12px; overflow: hidden; }
+.skel-tile { width: 132px; height: 132px; flex: none; }

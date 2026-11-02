@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { getCurrentProfile, getReviewCounts, getTopContributors, getTrackReviewCounts, getWeeklyPepite } from "@/lib/data";
-import type { Trends } from "@/lib/trends";
+import { getHomeExtras } from "@/lib/home";
 import Avatar from "./Avatar";
 import Cover from "./Cover";
 import DemoBadge from "./DemoBadge";
@@ -10,16 +9,10 @@ import TrendingTracks from "./TrendingTracks";
 // Sur téléphone seulement (voir globals.css) : la Pépite de la semaine, puis les albums
 // et titres tendance et les meilleurs contributeurs, en rangées à faire glisser, en haut du fil.
 // Sur ordinateur, ces infos sont dans la colonne de droite (RightRail).
-export default async function MobileHighlights({ trends }: { trends: Trends }) {
+export default async function MobileHighlights() {
+  const { trends, contributors, weekly, albumCounts: counts, trackCounts } = await getHomeExtras();
   const top = trends.albums.slice(0, 10);
   const tracks = trends.tracks.slice(0, 10);
-  const me = await getCurrentProfile();
-  const [counts, contributors, weekly] = await Promise.all([
-    getReviewCounts(top.map((a) => a.id)),
-    getTopContributors(10),
-    getWeeklyPepite(me?.id),
-  ]);
-  const trackCounts = await getTrackReviewCounts(tracks.map((t) => t.id));
   const pepite = weekly.current[0] ?? weekly.lastWinner;
   if (!top.length && !contributors.length && !tracks.length && !pepite) return null;
 
