@@ -112,6 +112,11 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     Images recadrées pour la zone sûre de TikTok (rien sous la barre du haut,
     le texte du bas ni les boutons de droite), police Inter en gras ;
     enregistrement en JPEG par paquets de 4 (12 d'un coup échouait sur Android).
+21. Tableau de bord (2 novembre 2026), page `/tableau-de-bord`, réservée aux
+    admins : membres inscrits (démo exclus), nouveaux du jour / 7 / 30 jours,
+    actifs de la semaine, premier pas terminé, avis et commentaires,
+    inscriptions par jour sur 30 jours, les plus suivis, les plus actifs et les
+    50 derniers inscrits. Aucun e-mail ni message privé affiché. Aucun SQL.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
