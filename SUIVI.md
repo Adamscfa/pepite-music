@@ -117,6 +117,12 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     actifs de la semaine, premier pas terminé, avis et commentaires,
     inscriptions par jour sur 30 jours, les plus suivis, les plus actifs et les
     50 derniers inscrits. Aucun e-mail ni message privé affiché. Aucun SQL.
+22. Accueil plus rapide (2 novembre 2026) : tendances, top contributeurs,
+    Pépite de la semaine et compteurs préparés une seule fois par visite
+    (`lib/home.ts`, partagés entre la colonne de droite et les bandeaux du
+    téléphone), gardés 5 minutes pour tout le monde (donc jusqu'à 5 minutes de
+    retard sur ces chiffres), et affichés juste après le reste de la page avec
+    des emplacements gris en attendant (`components/HomeSkeletons.tsx`).
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.

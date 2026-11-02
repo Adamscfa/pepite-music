@@ -86,7 +86,7 @@ type RawReview = Omit<Review, "likes" | "liked" | "comments" | "reactions" | "pr
   hidden?: boolean;
 };
 
-const author = (p: Profile): Author => ({
+export const author = (p: Profile): Author => ({
   username: p.username,
   display_name: p.display_name,
   avatar_url: p.avatar_url ?? null,
