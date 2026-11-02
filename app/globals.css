@@ -1322,6 +1322,7 @@ main:has(.chat) { padding-top: 0; }
   .studio-form label { flex: 1 1 140px; }
   .studio-form .select { width: 100%; }
 }
+.studio-one { padding: 0; border: 0; background: none; cursor: pointer; display: block; width: 100%; }
 
 /* Tableau de bord (admins) */
 .dash h1 { margin-bottom: 16px; }
