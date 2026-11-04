@@ -159,7 +159,7 @@ export default function EditProfile({ user, bio, locale }: { user: Author; bio: 
             <button
               type="button"
               className="profile-editor-pencil"
-              aria-label={`${locale === "fr" ? "Modifier" : "Edit"} ${tx("identifier").toLowerCase()}`}
+              aria-label={`${tx("clickToEditIdentifier")} ${tx("identifier").toLowerCase()}`}
               onClick={() => setEditing("username")}
             >
               <PencilIcon />

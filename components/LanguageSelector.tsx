@@ -2,14 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import type { ChangeEvent } from "react";
-import { type Locale, t } from "@/lib/i18n";
+import { isLocale, type Locale, t } from "@/lib/i18n";
 
 export default function LanguageSelector({ locale, compact = false }: { locale: Locale; compact?: boolean }) {
   const router = useRouter();
 
   function changeLanguage(event: ChangeEvent<HTMLSelectElement>) {
     const nextLocale = event.currentTarget.value;
-    if (nextLocale !== "fr" && nextLocale !== "en") return;
+    if (!isLocale(nextLocale)) return;
     document.cookie = `pepite_locale=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
     router.refresh();
   }
@@ -20,6 +20,7 @@ export default function LanguageSelector({ locale, compact = false }: { locale: 
       <select value={locale} onChange={changeLanguage} aria-label={t(locale, "language")}>
         <option value="fr">🇫🇷 {t(locale, "french")}</option>
         <option value="en">🇬🇧 {t(locale, "english")}</option>
+        <option value="es">🇪🇸 {t(locale, "spanish")}</option>
       </select>
     </label>
   );

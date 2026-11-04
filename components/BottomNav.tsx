@@ -26,7 +26,7 @@ export default function BottomNav({
   const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
 
   return (
-    <nav className="bottom-nav" aria-label="Menu principal">
+    <nav className="bottom-nav" aria-label={tx("mainMenu")}>
       <Link href="/" aria-current={current("/")}>
         <Icon name="home" size={24} />
         {tx("home")}
@@ -44,8 +44,7 @@ export default function BottomNav({
             const box = document.getElementById("recherche") as HTMLInputElement | null;
             window.scrollTo({ top: 0, behavior: "smooth" });
             if (box) {
-              box.placeholder =
-                locale === "fr" ? "Quel album ou titre veux-tu noter ?" : "Which album or track would you like to rate?";
+              box.placeholder = tx("publishPrompt");
               box.focus();
             }
           }}

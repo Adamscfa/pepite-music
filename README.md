@@ -7,7 +7,7 @@ Un réseau social pour noter et critiquer des albums (un peu comme Letterboxd, m
 - **Page album** : pochette, titres avec extraits de 30 s, note moyenne, ta note de 1 à 5 étoiles et ton avis
 - **Page titre** : chaque chanson se note et se critique aussi
 - **Profil** : tes stats et notes récentes ; modifie ton nom, ton pseudo (@), ta bio et ta photo
-- **Langue** : l’interface suit le français ou l’anglais de ton navigateur ; tu peux aussi choisir ta langue dans Paramètres
+- **Langue** : l’interface suit le français, l’anglais ou l’espagnol de ton navigateur ; tu peux aussi choisir ta langue dans Paramètres
 
 Pour savoir où en est le projet et quoi faire ensuite, voir [`SUIVI.md`](SUIVI.md).
 
@@ -26,7 +26,7 @@ Puis ouvre http://localhost:3000. Sans Supabase, la recherche et les pages d'alb
 
 ### Langue du site
 
-Pépite propose le français et l’anglais. À la première visite, le site choisit la langue préférée du navigateur (français ou anglais ; sinon français). Pour la changer ou la garder indépendamment du navigateur, ouvre **Paramètres > Langue**. Le choix est enregistré sur cet appareil. La navigation, l’accueil, la recherche, la connexion, Explorer, les classements et les principaux réglages sont traduits ; les autres pages seront traduites progressivement.
+Pépite propose le français, l’anglais et l’espagnol. À la première visite, le site choisit la langue préférée du navigateur (y compris `es-ES`). Si le navigateur n’indique aucune de ces langues, les visiteurs en Espagne voient l’espagnol par défaut. Pour changer la langue ou la garder indépendamment du navigateur, ouvre **Paramètres > Langue**. Le choix est enregistré sur cet appareil et reste prioritaire. La navigation, l’accueil, la recherche, la connexion, Explorer, les classements et les principaux réglages sont traduits ; les autres pages seront traduites progressivement. La détection du pays fonctionne sur Vercel.
 
 ## Brancher Supabase (une seule fois, environ 10 minutes)
 

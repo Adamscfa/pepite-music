@@ -45,7 +45,7 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
     },
     {
       title: tx("trendingNow"),
-      text: locale === "fr" ? `Ce qui s'écoute le plus ${trends.label}, et ailleurs dans le monde.` : "What people are listening to here and around the world.",
+      text: tx("trendingText").replace("{place}", trends.label),
       cta: { href: "/classements", label: tx("seeCharts") },
       covers: topAlbums.slice(5, 10).map((a) => a.cover),
     },

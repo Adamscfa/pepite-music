@@ -14,10 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   return {
     title: t(locale, "charts"),
-    description:
-      locale === "fr"
-        ? "Les titres, albums et artistes les plus écoutés en ce moment sur Deezer."
-        : "The most listened-to tracks, albums, and artists on Deezer right now.",
+    description: t(locale, "genreChartDescription"),
   };
 }
 
@@ -50,8 +47,8 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
     (world
       ? tx("topWorld")
       : genre.id
-        ? locale === "fr"
-          ? `Top ${genre.name} France`
+        ? locale === "es"
+          ? `Top de ${genre.name} en España`
           : `Top ${genre.name} France`
         : tx("topFrance"));
   const isMine = Boolean(mine) && mine?.kind !== "france";
