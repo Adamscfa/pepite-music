@@ -169,9 +169,11 @@ details.edit summary { cursor: pointer; color: var(--muted); font-weight: 600; f
 .profile-editor-form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 .prof-owner-meta { display: grid; justify-items: center; gap: 6px; margin-bottom: 20px; text-align: center; }
 .language-switch { display: grid; gap: 5px; color: var(--side-ink); font-size: 13px; font-weight: 600; }
-.language-switch select { width: 100%; padding: 8px 10px; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 9px; font: inherit; }
+.language-switch select { width: 100%; padding: 8px 10px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 9px; font: inherit; }
+.language-switch option { color: var(--ink); background: var(--surface); }
 .language-switch.compact { grid-template-columns: auto minmax(0, 1fr); align-items: center; padding: 8px 10px; color: var(--ink); }
 .language-switch.compact select { padding: 6px 8px; }
+.account-settings .language-switch { color: var(--ink); }
 .account-settings { display: grid; gap: 16px; }
 .account-settings > h1 { margin: 4px 0 2px; font-size: 30px; }
 .account-setting { display: grid; gap: 12px; }

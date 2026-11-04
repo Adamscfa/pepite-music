@@ -138,6 +138,8 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     local, aucun SQL). Navigation, accueil, recherche, connexion, Explorer,
     classements et réglages principaux sont traduits. Les textes des autres
     pages restent à traduire.
+25. Contraste du menu de langue (4 novembre 2026) : texte des choix et options
+    rendu lisible dans les réglages, avec les thèmes clair et sombre.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
