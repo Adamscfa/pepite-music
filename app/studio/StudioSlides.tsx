@@ -44,7 +44,8 @@ export default function StudioSlides({ slides, caption }: { slides: Slide[]; cap
     setStatus("Préparation…");
     try {
       const files = await Promise.all(list.map(toJpeg));
-      if (navigator.canShare?.({ files })) {
+      const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+      if (isTouchDevice && navigator.canShare?.({ files })) {
         await navigator.share({ files });
       } else {
         for (const f of files) {
@@ -58,7 +59,7 @@ export default function StudioSlides({ slides, caption }: { slides: Slide[]; cap
       setStatus(
         error instanceof DOMException && error.name === "AbortError"
           ? ""
-          : "Ça n'a pas marché. Réessaie, ou appuie longuement sur une image pour l'enregistrer.",
+          : "Ça n'a pas marché. Réessaie, ou enregistre l’image depuis son menu.",
       );
     }
   }
@@ -72,8 +73,8 @@ export default function StudioSlides({ slides, caption }: { slides: Slide[]; cap
   return (
     <>
       <p className="small">
-        Enregistre les images dans l&apos;ordre, paquet par paquet (choisis « Enregistrer » ou « Galerie » dans le
-        menu qui s&apos;ouvre) :
+        Sur ordinateur, les images sont téléchargées. Sur téléphone, le menu de partage s&apos;ouvre : choisis
+        « Enregistrer » ou « Galerie ».
       </p>
       <div className="studio-actions">
         {batches.map((b, i) => {
