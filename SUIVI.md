@@ -130,6 +130,11 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     attachées à l'ID du compte ; les anciennes adresses de profil, d'invitation
     et mentions continuent de pointer vers le membre après un changement de
     pseudo. Fichier `12-pseudos-modifiables.sql` (après le 11) pour les alias.
+24. Langues (4 novembre 2026) : français et anglais. À la première visite,
+    Pépite suit la langue du navigateur ; le choix peut être modifié et retenu
+    dans **Paramètres > Langue** (cookie local, aucun SQL). Navigation,
+    accueil, recherche, connexion, Explorer, classements et réglages principaux
+    sont traduits. Les textes des autres pages restent à traduire.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -153,6 +158,9 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `10-lancement.sql` | Contact, suppression de compte, blocage, anti-spam, annonces | à vérifier |
 | `11-invitations.sql` | Liens d'invitation (parrainage) | non (à faire) |
 | `12-pseudos-modifiables.sql` | Changement de pseudo, anciennes adresses et mentions conservées | non (à faire) |
+
+La fonction multilingue ne modifie pas la base Supabase : aucune requête SQL
+n’est à exécuter pour la langue.
 
 Remplacer « à vérifier » par « oui » une fois confirmé. Pour vérifier, dans
 Supabase, **Table Editor** :
@@ -182,6 +190,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Se mettre administrateur (`is_admin` dans la table `profiles`)
 - [ ] Exécuter `10-lancement.sql`, puis `11-invitations.sql`
 - [ ] Exécuter `12-pseudos-modifiables.sql` après le fichier 11 (nécessaire pour changer de pseudo et garder les anciens liens)
+- [ ] Compléter la traduction anglaise des pages restantes (avis, albums, messages, notifications, modération et pages d'information)
 - [ ] Brancher Brevo pour les e-mails et coller les modèles en français (README)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions, et vérifier la déclaration auprès de l'ARTCI

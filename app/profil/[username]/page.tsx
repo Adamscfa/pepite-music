@@ -25,6 +25,7 @@ import { formatScore } from "@/lib/format";
 import EditProfile from "../EditProfile";
 import DeleteAccount from "../DeleteAccount";
 import NewList from "../NewList";
+import { getLocale } from "@/lib/server-locale";
 
 async function loadProfile(params: PageProps<"/profil/[username]">["params"]) {
   const requestedUsername = decodeURIComponent((await params).username);
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: PageProps<"/profil/[username]
 
 export default async function ProfilePage({ params }: PageProps<"/profil/[username]">) {
   const profile = await loadProfile(params);
-  const me = await getCurrentProfile();
+  const [me, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
   const isMe = me?.id === profile.id;
   // Membre que j'ai bloqué : ses avis sont cachés, on propose de le débloquer.
   const iBlock = !isMe && (await getBlockedIds()).has(profile.id);
@@ -63,7 +64,7 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
       <div className={`prof ${isMe ? "prof-owner" : ""}`}>
         {isMe ? (
           <>
-            <EditProfile user={profile} bio={profile.bio} />
+            <EditProfile user={profile} bio={profile.bio} locale={locale} />
             <div className="prof-owner-meta">
               <h1 className="sr-only">{profile.display_name}</h1>
               <div className="eyebrow">@{profile.username}</div>

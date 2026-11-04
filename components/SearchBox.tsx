@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { type Locale, t } from "@/lib/i18n";
 
 type Results = {
   artists: { id: number; name: string; picture: string }[];
@@ -9,7 +10,7 @@ type Results = {
   tracks: { id: number; title: string; artist: string; albumId: number; cover: string }[];
 };
 
-export default function SearchBox() {
+export default function SearchBox({ locale }: { locale: Locale }) {
   const [query, setQuery] = useState("");
   // Les résultats sont rangés avec la recherche qui les a produits.
   const [results, setResults] = useState<{ q: string; data: Results } | null>(null);
@@ -69,8 +70,8 @@ export default function SearchBox() {
       <input
         type="search"
         id="recherche"
-        placeholder="Chercher un album, un artiste ou un titre"
-        aria-label="Chercher un album, un artiste ou un titre"
+        placeholder={t(locale, "searchPlaceholder")}
+        aria-label={t(locale, "searchLabel")}
         autoComplete="off"
         value={query}
         onChange={(e) => {
@@ -84,17 +85,17 @@ export default function SearchBox() {
         <div className="results">
           {found.artists.length + found.albums.length + found.tracks.length === 0 && (
             <div className="small" style={{ padding: 8 }}>
-              Aucun résultat.
+              {t(locale, "noResults")}
             </div>
           )}
-          {found.artists.length > 0 && <div className="results-label">Artistes</div>}
+          {found.artists.length > 0 && <div className="results-label">{t(locale, "artists")}</div>}
           {found.artists.map((artist) => (
             <Link key={`ar-${artist.id}`} href={`/artiste/${artist.id}`} onClick={close}>
               <img className="cover s round" src={artist.picture} alt="" />
               <span>{artist.name}</span>
             </Link>
           ))}
-          {found.albums.length > 0 && <div className="results-label">Albums</div>}
+          {found.albums.length > 0 && <div className="results-label">{t(locale, "albums")}</div>}
           {found.albums.map((album) => (
             <Link key={`al-${album.id}`} href={`/album/${album.id}`} onClick={close}>
               <img className="cover s" src={album.cover} alt="" />
@@ -104,7 +105,7 @@ export default function SearchBox() {
               </span>
             </Link>
           ))}
-          {found.tracks.length > 0 && <div className="results-label">Titres</div>}
+          {found.tracks.length > 0 && <div className="results-label">{t(locale, "tracks")}</div>}
           {found.tracks.map((track) => (
             <Link key={`t-${track.id}`} href={`/titre/${track.id}`} onClick={close}>
               <img className="cover s" src={track.cover} alt="" />

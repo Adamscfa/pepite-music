@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
+import { isLocale, t } from "@/lib/i18n";
 
 export type ProfileState = { error?: string; saved?: boolean };
 
@@ -15,38 +16,40 @@ const IMAGE_TYPES: Record<string, string> = {
 };
 
 export async function updateProfile(_prev: ProfileState, formData: FormData): Promise<ProfileState> {
+  const localeValue = String(formData.get("locale") ?? "");
+  const locale = isLocale(localeValue) ? localeValue : "fr";
   const me = await getCurrentProfile();
-  if (!me) return { error: "Connecte-toi d'abord." };
+  if (!me) return { error: t(locale, "loginRequired") };
 
   const changes: { display_name?: string; bio?: string; avatar_url?: string | null } = {};
   let usernameChanged = false;
   if (formData.has("username")) {
     const username = String(formData.get("username") ?? "").trim().toLowerCase();
     if (!/^[a-z0-9_.]{3,20}$/.test(username)) {
-      return { error: "Le pseudo doit faire 3 à 20 caractères : lettres, chiffres, point ou tiret bas." };
+      return { error: t(locale, "invalidUsername") };
     }
     if (username !== me.username) {
       const supabase = await createClient();
       const { data: changed, error } = await supabase.rpc("change_my_username", { new_username: username });
       if (error) {
         if (error.code === "PGRST202" || error.code === "42883" || error.code === "42P01") {
-          return { error: "Le changement de pseudo n'est pas activé. La personne qui gère Pépite doit exécuter le fichier 12 dans Supabase." };
+          return { error: t(locale, "usernameMigrationRequired") };
         }
-        return { error: "Le changement de pseudo a échoué. Réessaie dans un instant." };
+        return { error: t(locale, "usernameSaveFailed") };
       }
-      if (changed !== true) return { error: "Ce pseudo est déjà pris." };
+      if (changed !== true) return { error: t(locale, "usernameUnavailable") };
       usernameChanged = true;
     }
   }
 
   if (formData.has("display_name")) {
     const displayName = String(formData.get("display_name") ?? "").trim();
-    if (!displayName || displayName.length > 40) return { error: "Le nom affiché doit faire 1 à 40 caractères." };
+    if (!displayName || displayName.length > 40) return { error: t(locale, "invalidName") };
     changes.display_name = displayName;
   }
   if (formData.has("bio")) {
     const bio = String(formData.get("bio") ?? "").trim();
-    if (bio.length > 200) return { error: "La bio est trop longue (200 caractères max)." };
+    if (bio.length > 200) return { error: t(locale, "bioTooLong") };
     changes.bio = bio;
   }
 
@@ -57,23 +60,23 @@ export async function updateProfile(_prev: ProfileState, formData: FormData): Pr
   let uploadedPath: string | null = null;
   if (photo instanceof File && photo.size > 0) {
     const ext = IMAGE_TYPES[photo.type];
-    if (!ext) return { error: "La photo doit être en JPG, PNG, WebP ou GIF." };
-    if (photo.size > 2 * 1024 * 1024) return { error: "La photo est trop lourde (2 Mo max)." };
+    if (!ext) return { error: t(locale, "invalidPhoto") };
+    if (photo.size > 2 * 1024 * 1024) return { error: t(locale, "photoTooLarge") };
     // Un nom de fichier nouveau à chaque fois, pour que les navigateurs ne gardent pas l'ancienne en mémoire.
     const path = `${me.id}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("avatars").upload(path, photo, { contentType: photo.type });
-    if (error) return { error: "L'envoi de la photo a échoué. Réessaie dans un instant." };
+    if (error) return { error: t(locale, "photoUploadFailed") };
     uploadedPath = path;
     changes.avatar_url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
   }
 
-  if (!Object.keys(changes).length && !usernameChanged) return { error: "Aucune modification à enregistrer." };
+  if (!Object.keys(changes).length && !usernameChanged) return { error: t(locale, "noProfileChanges") };
 
   if (Object.keys(changes).length) {
     const { error } = await supabase.from("profiles").update(changes).eq("id", me.id);
     if (error) {
       if (uploadedPath) await supabase.storage.from("avatars").remove([uploadedPath]);
-      return { error: "L'enregistrement a échoué. Réessaie dans un instant." };
+      return { error: t(locale, "profileSaveFailed") };
     }
   }
 
