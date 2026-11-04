@@ -266,8 +266,16 @@ export async function getComments(reviewId: number): Promise<Comment[]> {
 export const getProfileByUsername = cache(async (username: string): Promise<Profile | null> => {
   if (!hasSupabaseConfig) return null;
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select("*").eq("username", username).maybeSingle();
-  return data ? { ...data, avatar_url: data.avatar_url ?? null } : null;
+  const normalized = username.toLowerCase();
+  const { data } = await supabase.from("profiles").select("*").eq("username", normalized).maybeSingle();
+  if (data) return { ...data, avatar_url: data.avatar_url ?? null };
+  const { data: alias } = await supabase
+    .from("profile_username_aliases")
+    .select("profile:profiles!profile_username_aliases_profile_id_fkey(*)")
+    .eq("username", normalized)
+    .maybeSingle();
+  const profile = alias?.profile as Profile | null | undefined;
+  return profile ? { ...profile, avatar_url: profile.avatar_url ?? null } : null;
 });
 
 export async function getFavorites(userId: string): Promise<Favorite[]> {

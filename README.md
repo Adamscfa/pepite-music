@@ -6,7 +6,7 @@ Un réseau social pour noter et critiquer des albums (un peu comme Letterboxd, m
 - **Recherche** : tous les albums du catalogue Deezer, par titre ou par artiste
 - **Page album** : pochette, titres avec extraits de 30 s, note moyenne, ta note de 1 à 5 étoiles et ton avis
 - **Page titre** : chaque chanson se note et se critique aussi
-- **Profil** : tes stats, tes notes récentes, ta bio
+- **Profil** : tes stats et notes récentes ; modifie ton nom, ton pseudo (@), ta bio et ta photo
 
 Pour savoir où en est le projet et quoi faire ensuite, voir [`SUIVI.md`](SUIVI.md).
 
@@ -60,7 +60,7 @@ Pour que les messages et les notifications arrivent sans rafraîchir la page : c
 
 ### Grande mise à jour (appli, premier pas, mentions, modération)
 
-Colle [`supabase/08-grande-mise-a-jour.sql`](supabase/08-grande-mise-a-jour.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, après le fichier 07). Il ajoute : les genres préférés et le premier pas des nouveaux membres, les appareils abonnés aux notifications, les mentions @pseudo, la modération et le suivi des erreurs.
+Colle [`supabase/08-grande-mise-a-jour.sql`](supabase/08-grande-mise-a-jour.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, après le fichier 07). Il ajoute : les genres préférés et le premier pas des nouveaux membres, autorise la modification du profil (nom, bio et photo), les appareils abonnés aux notifications, les mentions @pseudo, la modération et le suivi des erreurs.
 
 ### Notifications sur le téléphone
 
@@ -84,6 +84,10 @@ Colle [`supabase/10-lancement.sql`](supabase/10-lancement.sql) dans **SQL Editor
 ### Liens d'invitation
 
 Colle [`supabase/11-invitations.sql`](supabase/11-invitations.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, après le fichier 10). Chaque membre trouve ensuite son lien `/invite/<pseudo>` sur son profil (encart « Invite tes amis »).
+
+### Changer son pseudo sans casser ses liens
+
+Colle [`supabase/12-pseudos-modifiables.sql`](supabase/12-pseudos-modifiables.sql) dans **SQL Editor** (une seule fois, après `11-invitations.sql`). Le membre peut ensuite modifier son identifiant `@pseudo` depuis son profil. Les anciennes adresses de profil et d'invitation continuent de fonctionner et redirigent vers le nouveau pseudo ; les anciennes mentions restent associées au même compte. Les liens partagés récemment affichent automatiquement le nouveau pseudo.
 
 ### E-mails d'inscription fiables, en français
 
@@ -124,7 +128,7 @@ Le bouton « Continuer avec Google » ne marche qu'une fois Google branché dans
 2. Dans **URI de redirection autorisés**, colle l'adresse donnée par Supabase dans **Authentication > Sign In / Providers > Google** (elle finit par `/auth/v1/callback`).
 3. Recopie l'**ID client** et le **Code secret** dans cette page Supabase, active Google et enregistre.
 
-Le pseudo des comptes Google est fabriqué à partir de l'e-mail ; le membre peut changer son nom affiché sur son profil.
+Le pseudo des comptes Google est fabriqué à partir de l'e-mail ; le membre peut ensuite changer son nom affiché et son pseudo sur son profil.
 
 ### Pour tester plus vite (facultatif)
 
@@ -142,4 +146,4 @@ Si tu le laisses activé, va dans **Authentication > URL Configuration** et mets
 | `components/` | Les morceaux réutilisés : barre du haut, étoiles, carte d'avis… |
 | `lib/deezer.ts` | Les appels à l'API Deezer |
 | `lib/data.ts` | Les lectures dans Supabase |
-| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, `04-ameliorations.sql`, `05-reponses-commentaires.sql`, (facultatif) `06-comptes-demo.sql`, `07-temps-reel.sql`, `08-grande-mise-a-jour.sql`, `09-corriger-demo.sql`, `10-lancement.sql`, puis `11-invitations.sql` ; `demo-supprimer.sql` efface les membres de démo |
+| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, `04-ameliorations.sql`, `05-reponses-commentaires.sql`, (facultatif) `06-comptes-demo.sql`, `07-temps-reel.sql`, `08-grande-mise-a-jour.sql`, `09-corriger-demo.sql`, `10-lancement.sql`, `11-invitations.sql`, puis `12-pseudos-modifiables.sql` ; `demo-supprimer.sql` efface les membres de démo |
