@@ -140,6 +140,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     pages restent à traduire.
 25. Contraste du menu de langue (4 novembre 2026) : texte des choix et options
     rendu lisible dans les réglages, avec les thèmes clair et sombre.
+26. Studio TikTok (4 novembre 2026) : cliquer une image ou un paquet sur ordinateur
+    télécharge les fichiers au lieu d’ouvrir le menu de partage. Sur téléphone,
+    le partage natif reste disponible pour enregistrer dans la galerie.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
