@@ -146,6 +146,11 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 27. Confidentialité (4 novembre 2026) : la page présente désormais des
     informations générales sur la protection des données, sans mentionner de
     loi, d'autorité ni de pays en particulier.
+28. Affiche Top 10 dans le Studio (4 novembre 2026) : nouvelle option pour
+    composer une affiche verticale à deux colonnes depuis le classement Deezer
+    actuel d'un pays, avec les pochettes, titres et artistes, trois couleurs
+    de fond et téléchargement prêt à publier. Deezer ne fournit pas les chiffres
+    historiques d'écoutes hebdomadaires montrés dans certains exemples.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
