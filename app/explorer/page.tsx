@@ -19,16 +19,13 @@ import { getForYou } from "@/lib/recommend";
 import { getTrends } from "@/lib/trends";
 import { sharpImage } from "@/lib/images";
 import { getLocale } from "@/lib/server-locale";
-import { t } from "@/lib/i18n";
+import { t, type Locale } from "@/lib/i18n";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   return {
     title: t(locale, "explore"),
-    description:
-      locale === "fr"
-        ? "Nouveaux artistes, albums tendance, genres musicaux et titres les plus commentés sur Pépite."
-        : "Discover new artists, trending albums, music genres, and the most discussed tracks on Pépite.",
+    description: t(locale, "exploreDescription"),
   };
 }
 
@@ -46,13 +43,9 @@ export default async function ExplorePage({ searchParams }: PageProps<"/explorer
         <h1>{scene ? scene.name : genre ? genre.name : tx("findNextGem")}</h1>
         <p>
           {scene
-            ? locale === "fr"
-              ? "Les sons d'ici qui tournent en ce moment. Touche le bouton de lecture pour écouter un extrait."
-              : "The sounds trending here right now. Tap play to listen to a preview."
+            ? tx("sceneDescription")
             : genre
-              ? locale === "fr"
-                ? `Les albums, artistes et titres ${genre.name} les plus écoutés en ce moment.`
-                : `The most listened-to ${genre.name} albums, artists, and tracks right now.`
+              ? tx("genreDescription").replace("{genre}", genre.name)
               : tx("exploreDescription")}
         </p>
       </header>
@@ -89,7 +82,7 @@ export default async function ExplorePage({ searchParams }: PageProps<"/explorer
   );
 }
 
-async function Overview({ genres, locale }: { genres: Awaited<ReturnType<typeof getGenres>>; locale: "fr" | "en" }) {
+async function Overview({ genres, locale }: { genres: Awaited<ReturnType<typeof getGenres>>; locale: Locale }) {
   const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const me = await getCurrentProfile();
   const [forYou, local, trending, fresh, releases, topRated, tracks, albums] = await Promise.all([
@@ -139,7 +132,7 @@ async function Overview({ genres, locale }: { genres: Awaited<ReturnType<typeof 
 
       {trending.albums.length > 0 && (
         <Carousel
-          eyebrow={`Deezer ${locale === "fr" ? "·" : "chart ·"} ${trending.label}`}
+          eyebrow={`Deezer ${tx("chartLabel")} ${trending.label}`}
           title={tx("trendingAlbums")}
           more={{ href: "/classements", label: tx("chartsArrow") }}
         >
@@ -189,7 +182,7 @@ async function Overview({ genres, locale }: { genres: Awaited<ReturnType<typeof 
         <div id="nouveautes">
           <Carousel eyebrow={tx("justReleased")} title={tx("freshThisWeek")}>
             {releases.map((a) => (
-              <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} badge={locale === "fr" ? "Nouveau" : "New"} />
+              <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} badge={tx("new")} />
             ))}
           </Carousel>
         </div>
@@ -218,7 +211,7 @@ async function Overview({ genres, locale }: { genres: Awaited<ReturnType<typeof 
 }
 
 // Liste « les plus commentés » : on y voit le nombre de commentaires et d'avis.
-function Discussion({ title, items, tracks, locale }: { title: string; items: Discussed[]; tracks: boolean; locale: "fr" | "en" }) {
+function Discussion({ title, items, tracks, locale }: { title: string; items: Discussed[]; tracks: boolean; locale: Locale }) {
   return (
     <section className="rail-box discussed">
       <h2 className="rail-title">
@@ -241,7 +234,7 @@ function Discussion({ title, items, tracks, locale }: { title: string; items: Di
                     <small>{it.artist_name}</small>
                   </span>
                 </Link>
-                <span className="rank-stat" title={`${it.reviews} ${locale === "fr" ? "avis" : "reviews"}`}>
+                <span className="rank-stat" title={`${it.reviews} ${t(locale, "reviews")}`}>
                   <Icon name="comment" size={15} />
                   {it.comments}
                 </span>
@@ -258,7 +251,7 @@ function Discussion({ title, items, tracks, locale }: { title: string; items: Di
   );
 }
 
-async function SceneView({ slug, locale }: { slug: string; locale: "fr" | "en" }) {
+async function SceneView({ slug, locale }: { slug: string; locale: Locale }) {
   const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const scene = await getLocalScene(slug);
   const tracks = scene?.tracks ?? [];
@@ -285,7 +278,7 @@ async function SceneView({ slug, locale }: { slug: string; locale: "fr" | "en" }
   );
 }
 
-async function GenreView({ id, locale }: { id: number; locale: "fr" | "en" }) {
+async function GenreView({ id, locale }: { id: number; locale: Locale }) {
   const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const chart = await getChart(id);
   return (

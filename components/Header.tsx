@@ -51,11 +51,11 @@ export default async function Header() {
           <img src="/logo-mark.png" alt="" width={58} height={40} className="logo-mark" />
           <span>
             Pépite
-            <small>{locale === "fr" ? "Écoute · Note · Partage" : "Listen · Rate · Share"}</small>
+            <small>{tx("siteTagline")}</small>
           </span>
         </Link>
 
-        <nav className="side-nav" aria-label={locale === "fr" ? "Menu principal" : "Main menu"}>
+        <nav className="side-nav" aria-label={tx("mainMenu")}>
           <Item href="/" match="/" icon="home" label={tx("home")} />
           <Item href="/explorer" match="/explorer" icon="explore" label={tx("explore")} />
           <Item href="/classements" match="/classements" icon="chart" label={tx("charts")} />
@@ -97,7 +97,7 @@ export default async function Header() {
               </button>
             </form>
           )}
-          <nav className="side-links" aria-label={locale === "fr" ? "Informations" : "Information"}>
+          <nav className="side-links" aria-label={tx("information")}>
             <Link href="/reglages">{tx("settings")}</Link>
             <Link href="/confidentialite">{tx("privacy")}</Link>
             <Link href="/conditions">{tx("terms")}</Link>
@@ -118,7 +118,7 @@ export default async function Header() {
               <Link
                 href="/notifications"
                 className="top-icon"
-                aria-label={`${tx("notifications")}${unread.notifications ? `, ${unread.notifications} ${locale === "fr" ? "non lues" : "unread"}` : ""}`}
+                aria-label={`${tx("notifications")}${unread.notifications ? `, ${unread.notifications} ${tx("unread")}` : ""}`}
               >
                 <Icon name="bell" size={24} />
                 <Badge n={unread.notifications} />

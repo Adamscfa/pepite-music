@@ -9,6 +9,7 @@ import PlayerProvider from "@/components/Player";
 import SetupNotice from "@/components/SetupNotice";
 import "./globals.css";
 import { getLocale } from "@/lib/server-locale";
+import { t } from "@/lib/i18n";
 
 // Une seule police ronde et nette pour tout le site (titres et texte), comme sur la maquette.
 const sans = Plus_Jakarta_Sans({ variable: "--font-sans", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
@@ -28,12 +29,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   return {
     metadataBase: new URL(siteUrl),
-    openGraph: { siteName: "Pépite", locale: locale === "fr" ? "fr_FR" : "en_US", type: "website" },
+    openGraph: { siteName: "Pépite", locale: { fr: "fr_FR", en: "en_US", es: "es_ES" }[locale], type: "website" },
     title: { default: "Pépite", template: "%s · Pépite" },
     description:
-      locale === "fr"
-        ? "Note et critique les albums que tu écoutes, et découvre ce que la communauté écoute."
-        : "Rate and review the albums you listen to, and discover what the community is listening to.",
+      t(locale, "siteDescription"),
     appleWebApp: { capable: true, title: "Pépite", statusBarStyle: "default" },
   };
 }

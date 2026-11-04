@@ -21,8 +21,7 @@ export default function PublishButton({ loggedIn, locale }: { loggedIn: boolean;
         const box = document.getElementById("recherche") as HTMLInputElement | null;
         window.scrollTo({ top: 0, behavior: "smooth" });
         if (box) {
-          box.placeholder =
-            locale === "fr" ? "Quel album ou titre veux-tu noter ?" : "Which album or track would you like to rate?";
+          box.placeholder = t(locale, "publishPrompt");
           box.focus();
         }
       }}

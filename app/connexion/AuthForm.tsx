@@ -23,7 +23,7 @@ export default function AuthForm({
 
   return (
     <div className="auth">
-      <div className="eyebrow">{locale === "fr" ? "Bienvenue" : "Welcome"}</div>
+      <div className="eyebrow">{tx("welcomeEyebrow")}</div>
       <h1>{mode === "in" ? tx("loginTitle") : tx("createAccountTitle")}</h1>
       <p className="small">{tx("authIntro")}</p>
 
@@ -115,8 +115,10 @@ export default function AuthForm({
           <p className="small legal-note">
             {locale === "fr" ? (
               <>En créant ton compte, tu acceptes les <Link href="/conditions">conditions d&apos;utilisation</Link> et la <Link href="/confidentialite">politique de confidentialité</Link>.</>
-            ) : (
+            ) : locale === "en" ? (
               <>By creating an account, you agree to the <Link href="/conditions">Terms of Service</Link> and <Link href="/confidentialite">Privacy Policy</Link>.</>
+            ) : (
+              <>Al crear una cuenta, aceptas las <Link href="/conditions">condiciones de uso</Link> y la <Link href="/confidentialite">política de privacidad</Link>.</>
             )}
           </p>
           <button className="btn" disabled={upPending}>

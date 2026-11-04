@@ -38,15 +38,15 @@ export default function ThemeToggle({
 }) {
   const [theme, setTheme] = useState(initial);
   const label = {
-    auto: locale === "fr" ? "Thème automatique" : "Automatic theme",
-    dark: locale === "fr" ? "Thème sombre" : "Dark theme",
-    light: locale === "fr" ? "Thème clair" : "Light theme",
+    auto: t(locale, "automaticTheme"),
+    dark: t(locale, "darkTheme"),
+    light: t(locale, "lightTheme"),
   }[theme];
   return (
     <button
       type="button"
       className={withLabel ? "theme-switch" : "icon-btn"}
-      title={`${label} (${locale === "fr" ? "cliquer pour changer" : "click to change"})`}
+      title={`${label} (${t(locale, "clickToChange")})`}
       aria-label={`${label}. ${t(locale, "changeTheme")}`}
       onClick={() => {
         const next = NEXT[theme];
