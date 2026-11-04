@@ -18,12 +18,13 @@ export async function claimInvite(): Promise<{ inviter?: string }> {
   const supabase = await createClient();
   const { data: accepted } = await supabase.rpc("accept_invite", { inviter_username: decodeURIComponent(username) });
   if (accepted !== true) return {};
-  const { data: inviter } = await supabase
-    .from("profiles")
-    .select("id, display_name")
-    .eq("username", decodeURIComponent(username).toLowerCase())
+  const { data: referral } = await supabase
+    .from("referrals")
+    .select("inviter:profiles!referrals_inviter_id_fkey(id, display_name)")
+    .eq("invited_id", me.id)
     .maybeSingle();
-  if (inviter) after(() => pushTo(supabase, [inviter.id as string]).catch(() => {}));
+  const inviter = referral?.inviter as { id: string; display_name: string } | null | undefined;
+  if (inviter) after(() => pushTo(supabase, [inviter.id]).catch(() => {}));
   revalidatePath("/", "layout");
-  return { inviter: (inviter?.display_name as string | undefined) ?? undefined };
+  return { inviter: inviter?.display_name };
 }

@@ -112,17 +112,21 @@ export async function addComment(_prev: FormState, formData: FormData): Promise<
   // Prévenir l'auteur de l'avis, celui à qui on répond, et les @pseudos mentionnés.
   notifyLater(supabase, async () => {
     const names = [...new Set([...body.matchAll(/@([a-z0-9_.]{3,20})/gi)].map((m) => m[1].toLowerCase()))].slice(0, 5);
-    const [owner, parent, mentioned] = await Promise.all([
+    const [owner, parent, mentioned, mentionedAliases] = await Promise.all([
       reviewOwner(supabase, reviewId),
       parentId
         ? supabase.from("review_comments").select("user_id").eq("id", parentId).maybeSingle()
         : Promise.resolve({ data: null }),
       names.length ? supabase.from("profiles").select("id").in("username", names) : Promise.resolve({ data: [] }),
+      names.length
+        ? supabase.from("profile_username_aliases").select("profile_id").in("username", names)
+        : Promise.resolve({ data: [] }),
     ]);
     return [
       owner,
       (parent.data as { user_id?: string } | null)?.user_id,
       ...((mentioned.data ?? []) as { id: string }[]).map((p) => p.id),
+      ...((mentionedAliases.data ?? []) as { profile_id: string }[]).map((p) => p.profile_id),
     ];
   });
   revalidatePath("/", "layout");
