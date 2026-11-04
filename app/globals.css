@@ -168,6 +168,21 @@ details.edit summary { cursor: pointer; color: var(--muted); font-weight: 600; f
 .profile-editor-form textarea { resize: vertical; }
 .profile-editor-form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 .prof-owner-meta { display: grid; justify-items: center; gap: 6px; margin-bottom: 20px; text-align: center; }
+.language-switch { display: grid; gap: 5px; color: var(--side-ink); font-size: 13px; font-weight: 600; }
+.language-switch select { width: 100%; padding: 8px 10px; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 9px; font: inherit; }
+.language-switch.compact { grid-template-columns: auto minmax(0, 1fr); align-items: center; padding: 8px 10px; color: var(--ink); }
+.language-switch.compact select { padding: 6px 8px; }
+.account-settings { display: grid; gap: 16px; }
+.account-settings > h1 { margin: 4px 0 2px; font-size: 30px; }
+.account-setting { display: grid; gap: 12px; }
+.account-setting h2 { font-size: 17px; margin: 0 0 4px; }
+.account-setting p { margin: 0; }
+.account-setting .theme-switch { color: var(--ink); }
+.account-setting .theme-switch svg { color: var(--ink); }
+.account-setting .switch { background: var(--line); }
+.account-setting .switch[data-on] { background: var(--gold); }
+.mobile-preferences { align-items: center; gap: 8px; }
+.mobile-preferences > a { color: var(--muted); font-size: 13px; font-weight: 600; }
 
 /* Formulaires */
 .auth { max-width: 420px; margin: 0 auto; }
@@ -352,6 +367,7 @@ a:hover > .cover, .tile:hover .cover, a:hover > .tile-cover .cover { transform: 
 .mobile-only { display: none; }
 @media (max-width: 760px) {
   .mobile-only { display: block; }
+  .mobile-preferences { display: flex; }
   main { padding-bottom: 110px; }
   .bottom-nav { display: flex; position: fixed; z-index: 15; left: 0; right: 0; bottom: 0; justify-content: space-around; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
   .bottom-nav a, .bottom-nav button { position: relative; display: grid; justify-items: center; gap: 1px; background: none; border: 0; padding: 4px 8px; font-size: 11px; font-weight: 600; color: var(--muted); }

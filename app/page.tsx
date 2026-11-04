@@ -10,9 +10,12 @@ import { getNewReleases } from "@/lib/deezer";
 import { getHomeTrends } from "@/lib/home";
 import { Suspense } from "react";
 import { MobileHighlightsSkeleton, RightRailSkeleton } from "@/components/HomeSkeletons";
+import { t } from "@/lib/i18n";
+import { getLocale } from "@/lib/server-locale";
 
 export default async function FeedPage({ searchParams }: PageProps<"/">) {
-  const me = await getCurrentProfile();
+  const [me, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
+  const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const params = await searchParams;
   const followingOnly = Boolean(me) && params.fil === "abonnements";
   // Le fil se charge par paquets de 15 avis (plus léger sur une connexion 4G).
@@ -27,23 +30,23 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
   const topAlbums = trends.albums;
   const slides: Slide[] = [
     {
-      title: "Bienvenue sur Pépite !",
-      text: "Découvre, note et commente tes albums et titres préférés, et vois ce que la communauté écoute.",
+      title: tx("welcome"),
+      text: tx("welcomeText"),
       cta: me
-        ? { href: "/explorer", label: "Explorer maintenant" }
-        : { href: "/connexion?mode=inscription", label: "Créer mon compte" },
+        ? { href: "/explorer", label: tx("exploreNow") }
+        : { href: "/connexion?mode=inscription", label: tx("createAccount") },
       covers: topAlbums.slice(0, 5).map((a) => a.cover),
     },
     {
-      title: "Les sorties de la semaine",
-      text: "Les albums qui viennent d'arriver. Sois parmi les premiers à donner ton avis.",
-      cta: { href: "/explorer#nouveautes", label: "Voir les nouveautés" },
+      title: tx("weeklyReleases"),
+      text: tx("weeklyReleasesText"),
+      cta: { href: "/explorer#nouveautes", label: tx("seeNewReleases") },
       covers: newReleases.slice(0, 5).map((a) => a.cover),
     },
     {
-      title: "Les tops du moment",
-      text: `Ce qui s'écoute le plus ${trends.label}, et ailleurs dans le monde.`,
-      cta: { href: "/classements", label: "Voir les classements" },
+      title: tx("trendingNow"),
+      text: locale === "fr" ? `Ce qui s'écoute le plus ${trends.label}, et ailleurs dans le monde.` : "What people are listening to here and around the world.",
+      cta: { href: "/classements", label: tx("seeCharts") },
       covers: topAlbums.slice(5, 10).map((a) => a.cover),
     },
     // Le premier bandeau reste toujours ; les autres seulement si Deezer a répondu.
@@ -56,10 +59,10 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
           <Link href="/bienvenue" className="onboard-banner">
             <Icon name="sparkle" size={24} />
             <span>
-              <b>Termine ton arrivée sur Pépite</b>
-              <small>Choisis tes genres, note 3 albums et trouve des membres à suivre. Ça prend une minute.</small>
+              <b>{tx("finishOnboarding")}</b>
+              <small>{tx("finishOnboardingText")}</small>
             </span>
-            <span className="more-link">C&apos;est parti →</span>
+            <span className="more-link">{tx("start")}</span>
           </Link>
         )}
         {slides.length > 0 && <HeroSlider slides={slides} />}
@@ -70,15 +73,15 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
 
         <div className="feed-head">
           <h2 className="section-title" style={{ margin: 0 }}>
-            {followingOnly ? "Ce que tes abonnements écoutent" : "Ce que la communauté écoute"}
+            {followingOnly ? tx("followingFeed") : tx("communityFeed")}
           </h2>
           {me && (
             <div className="tabs" style={{ margin: 0 }}>
               <Link href="/" aria-current={followingOnly ? undefined : "page"}>
-                Tout le monde
+                {tx("everyone")}
               </Link>
               <Link href="/?fil=abonnements" aria-current={followingOnly ? "page" : undefined}>
-                Mes abonnements
+                {tx("myFollowing")}
               </Link>
             </div>
           )}
@@ -96,8 +99,8 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
         ) : (
           <div className="empty">
             {followingOnly
-              ? "Rien pour l'instant. Abonne-toi à des membres depuis leur profil pour voir leurs avis ici."
-              : "Aucun avis pour l'instant. Cherche un album en haut de la page, ou va dans Explorer, et donne la première note !"}
+              ? tx("emptyFollowing")
+              : tx("emptyFeed")}
           </div>
         )}
       </div>

@@ -7,6 +7,7 @@ Un réseau social pour noter et critiquer des albums (un peu comme Letterboxd, m
 - **Page album** : pochette, titres avec extraits de 30 s, note moyenne, ta note de 1 à 5 étoiles et ton avis
 - **Page titre** : chaque chanson se note et se critique aussi
 - **Profil** : tes stats et notes récentes ; modifie ton nom, ton pseudo (@), ta bio et ta photo
+- **Langue** : l’interface suit le français ou l’anglais de ton navigateur ; tu peux aussi choisir ta langue dans Paramètres
 
 Pour savoir où en est le projet et quoi faire ensuite, voir [`SUIVI.md`](SUIVI.md).
 
@@ -22,6 +23,10 @@ npm run dev
 ```
 
 Puis ouvre http://localhost:3000. Sans Supabase, la recherche et les pages d'album marchent déjà, mais pas les comptes ni les avis.
+
+### Langue du site
+
+Pépite propose le français et l’anglais. À la première visite, le site choisit la langue préférée du navigateur (français ou anglais ; sinon français). Pour la changer ou la garder indépendamment du navigateur, ouvre **Paramètres > Langue**. Le choix est enregistré sur cet appareil. La navigation, l’accueil, la recherche, la connexion, Explorer, les classements et les principaux réglages sont traduits ; les autres pages seront traduites progressivement.
 
 ## Brancher Supabase (une seule fois, environ 10 minutes)
 

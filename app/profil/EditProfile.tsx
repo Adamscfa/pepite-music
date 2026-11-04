@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import type { Author } from "@/lib/data";
 import { updateProfile, type ProfileState } from "./actions";
 import Avatar from "@/components/Avatar";
+import { type Locale, t } from "@/lib/i18n";
 
-export default function EditProfile({ user, bio }: { user: Author; bio: string }) {
+export default function EditProfile({ user, bio, locale }: { user: Author; bio: string; locale: Locale }) {
   const router = useRouter();
+  const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const [editing, setEditing] = useState<"name" | "bio" | "username" | null>(null);
   const updateAndRefresh = useCallback(
     async (previous: ProfileState, formData: FormData) => {
@@ -27,15 +29,16 @@ export default function EditProfile({ user, bio }: { user: Author; bio: string }
   const avatarInput = useRef<HTMLInputElement>(null);
 
   return (
-    <section className="profile-editor" aria-label="Modifier mon profil">
+    <section className="profile-editor" aria-label={tx("editProfile")}>
       <form action={avatarAction} className="profile-editor-photo">
+        <input type="hidden" name="locale" value={locale} />
         <input
           ref={avatarInput}
           className="profile-editor-file"
           name="avatar"
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif"
-          aria-label="Choisir une photo de profil"
+          aria-label={tx("chooseProfilePhoto")}
           onChange={(event) => {
             if (event.currentTarget.files?.length) event.currentTarget.form?.requestSubmit();
           }}
@@ -45,7 +48,7 @@ export default function EditProfile({ user, bio }: { user: Author; bio: string }
           <button
             type="button"
             className="profile-editor-camera"
-            aria-label="Ajouter ou modifier la photo de profil"
+            aria-label={tx("addOrChangePhoto")}
             onClick={() => avatarInput.current?.click()}
             disabled={avatarPending}
           >
@@ -62,30 +65,31 @@ export default function EditProfile({ user, bio }: { user: Author; bio: string }
           onClick={() => avatarInput.current?.click()}
           disabled={avatarPending}
         >
-          {avatarPending ? "Envoi…" : "Modifier"}
+          {avatarPending ? tx("sending") : tx("changePhoto")}
         </button>
-        <small className="small">JPG, PNG, WebP ou GIF, 2 Mo maximum.</small>
+        <small className="small">{tx("acceptedPhoto")}</small>
         {avatarState.error && <p className="error">{avatarState.error}</p>}
-        {avatarState.saved && !avatarPending && <p className="success">Photo mise à jour.</p>}
+        {avatarState.saved && !avatarPending && <p className="success">{tx("photoUpdated")}</p>}
       </form>
 
       {user.avatar_url && (
         <form action={avatarAction} className="profile-editor-remove">
           <input type="hidden" name="remove_avatar" value="1" />
+          <input type="hidden" name="locale" value={locale} />
           <button className="link-btn" disabled={avatarPending}>
-            Retirer ma photo
+            {tx("removePhoto")}
           </button>
         </form>
       )}
 
       <section className="profile-editor-section">
         <div className="profile-editor-section-head">
-          <h2>About</h2>
+          <h2>{tx("about")}</h2>
           {editing !== "bio" && (
             <button
               type="button"
               className="profile-editor-pencil"
-              aria-label="Modifier About"
+              aria-label={tx("editAbout")}
               onClick={() => setEditing("bio")}
             >
               <PencilIcon />
@@ -94,33 +98,34 @@ export default function EditProfile({ user, bio }: { user: Author; bio: string }
         </div>
         {editing === "bio" ? (
           <form action={bioAction} className="profile-editor-form">
-            <textarea name="bio" defaultValue={bio} maxLength={200} rows={3} placeholder="Share a thought" autoFocus />
+            <input type="hidden" name="locale" value={locale} />
+            <textarea name="bio" defaultValue={bio} maxLength={200} rows={3} placeholder={tx("bioPlaceholder")} autoFocus />
             <div className="profile-editor-form-actions">
               <button type="button" className="btn ghost" onClick={() => setEditing(null)} disabled={bioPending}>
-                Annuler
+                {tx("cancel")}
               </button>
               <button className="btn" disabled={bioPending}>
-                {bioPending ? "Enregistrement…" : "Enregistrer"}
+                {bioPending ? tx("saving") : tx("save")}
               </button>
             </div>
             {bioState.error && <p className="error">{bioState.error}</p>}
-            {bioState.saved && !bioPending && <p className="success">Bio mise à jour.</p>}
+            {bioState.saved && !bioPending && <p className="success">{tx("bioUpdated")}</p>}
           </form>
         ) : (
           <p className={bio ? "profile-editor-value" : "profile-editor-placeholder"}>
-            {bio || "Share a thought"}
+            {bio || tx("bioPlaceholder")}
           </p>
         )}
       </section>
 
       <section className="profile-editor-section">
         <div className="profile-editor-section-head">
-          <h2>Nom</h2>
+          <h2>{tx("name")}</h2>
           {editing !== "name" && (
             <button
               type="button"
               className="profile-editor-pencil"
-              aria-label="Modifier le nom"
+              aria-label={tx("editName")}
               onClick={() => setEditing("name")}
             >
               <PencilIcon />
@@ -129,17 +134,18 @@ export default function EditProfile({ user, bio }: { user: Author; bio: string }
         </div>
         {editing === "name" ? (
           <form action={nameAction} className="profile-editor-form">
+            <input type="hidden" name="locale" value={locale} />
             <input name="display_name" defaultValue={user.display_name} required maxLength={40} autoFocus />
             <div className="profile-editor-form-actions">
               <button type="button" className="btn ghost" onClick={() => setEditing(null)} disabled={namePending}>
-                Annuler
+                {tx("cancel")}
               </button>
               <button className="btn" disabled={namePending}>
-                {namePending ? "Enregistrement…" : "Enregistrer"}
+                {namePending ? tx("saving") : tx("save")}
               </button>
             </div>
             {nameState.error && <p className="error">{nameState.error}</p>}
-            {nameState.saved && !namePending && <p className="success">Nom mis à jour.</p>}
+            {nameState.saved && !namePending && <p className="success">{tx("nameUpdated")}</p>}
           </form>
         ) : (
           <h1 className="profile-editor-value">{user.display_name}</h1>
@@ -148,12 +154,12 @@ export default function EditProfile({ user, bio }: { user: Author; bio: string }
 
       <section className="profile-editor-section">
         <div className="profile-editor-section-head">
-          <h2>Identifiant</h2>
+          <h2>{tx("identifier")}</h2>
           {editing !== "username" && (
             <button
               type="button"
               className="profile-editor-pencil"
-              aria-label="Modifier l’identifiant"
+              aria-label={`${locale === "fr" ? "Modifier" : "Edit"} ${tx("identifier").toLowerCase()}`}
               onClick={() => setEditing("username")}
             >
               <PencilIcon />
@@ -162,7 +168,8 @@ export default function EditProfile({ user, bio }: { user: Author; bio: string }
         </div>
         {editing === "username" ? (
           <form action={usernameAction} className="profile-editor-form">
-            <label className="small" htmlFor="profile-username">Pseudo visible après @ et utilisé dans les liens</label>
+            <input type="hidden" name="locale" value={locale} />
+            <label className="small" htmlFor="profile-username">{tx("usernameDetail")}</label>
             <input
               id="profile-username"
               name="username"
@@ -177,14 +184,14 @@ export default function EditProfile({ user, bio }: { user: Author; bio: string }
             />
             <div className="profile-editor-form-actions">
               <button type="button" className="btn ghost" onClick={() => setEditing(null)} disabled={usernamePending}>
-                Annuler
+                {tx("cancel")}
               </button>
               <button className="btn" disabled={usernamePending}>
-                {usernamePending ? "Enregistrement…" : "Enregistrer"}
+                {usernamePending ? tx("saving") : tx("save")}
               </button>
             </div>
             {usernameState.error && <p className="error">{usernameState.error}</p>}
-            {usernameState.saved && !usernamePending && <p className="success">Identifiant mis à jour. Tes anciens liens restent valides.</p>}
+            {usernameState.saved && !usernamePending && <p className="success">{tx("identifierUpdated")}</p>}
           </form>
         ) : (
           <p className="profile-editor-value">@{user.username}</p>

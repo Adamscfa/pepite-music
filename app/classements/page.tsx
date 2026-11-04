@@ -7,14 +7,23 @@ import CountryPicker from "./CountryPicker";
 import ChartTracks from "./ChartTracks";
 import { sharpImage } from "@/lib/images";
 import { getTrendScope } from "@/lib/trends";
+import { getLocale } from "@/lib/server-locale";
+import { t } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Classements",
-  description: "Les titres, albums et artistes les plus écoutés en ce moment sur Deezer.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return {
+    title: t(locale, "charts"),
+    description:
+      locale === "fr"
+        ? "Les titres, albums et artistes les plus écoutés en ce moment sur Deezer."
+        : "The most listened-to tracks, albums, and artists on Deezer right now.",
+  };
+}
 
 export default async function ChartsPage({ searchParams }: PageProps<"/classements">) {
-  const { genre: rawGenre, zone, id } = await searchParams;
+  const [{ genre: rawGenre, zone, id }, locale] = await Promise.all([searchParams, getLocale()]);
+  const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const countries = await getCountryCharts();
   // Sans choix dans l'adresse : le classement « de chez toi » (ton pays, ou ton dernier choix ici).
   const mine = !zone && !rawGenre ? await getTrendScope() : null;
@@ -36,20 +45,28 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
       ? await getPlaylistChart(WORLD_PLAYLIST)
       : await getChart(genre.id);
   const tracks = chart.tracks;
-  const heading = country ? country.title : world ? "Top Monde" : genre.id ? `Top ${genre.name} France` : "Top France";
+  const heading =
+    country?.title ??
+    (world
+      ? tx("topWorld")
+      : genre.id
+        ? locale === "fr"
+          ? `Top ${genre.name} France`
+          : `Top ${genre.name} France`
+        : tx("topFrance"));
   const isMine = Boolean(mine) && mine?.kind !== "france";
 
   return (
     <>
-      <div className="eyebrow">Classements Deezer · mis à jour chaque jour</div>
+      <div className="eyebrow">{tx("chartUpdated")}</div>
       <h1 style={{ fontSize: 30, marginBottom: 14 }}>{heading}</h1>
       {isMine && (
         <p className="small" style={{ marginTop: -8, marginBottom: 14 }}>
-          Le classement de chez toi. Choisis-en un autre ci-dessous : Pépite s&apos;en souviendra pour tes tendances.
+          {tx("localChartHelp")}
         </p>
       )}
 
-      <div className="genres" role="navigation" aria-label="Choisir un classement">
+      <div className="genres" role="navigation" aria-label={tx("chooseChart")}>
         {CHART_GENRES.slice(1).map((g) => (
           <Link
             key={g.id}
@@ -61,16 +78,16 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
           </Link>
         ))}
         <Link href="/classements?zone=france" prefetch={false} className="chip" aria-current={france ? "page" : undefined}>
-          🇫🇷 France
+          {tx("countryFrance")}
         </Link>
         <Link href="/classements?zone=monde" prefetch={false} className="chip" aria-current={world ? "page" : undefined}>
-          🌍 Monde
+          {tx("countryWorld")}
         </Link>
-        {countries.length > 0 && <CountryPicker countries={countries} current={country?.id ?? null} />}
+        {countries.length > 0 && <CountryPicker countries={countries} current={country?.id ?? null} locale={locale} />}
       </div>
 
       {chart.albums.length > 0 && (
-        <Carousel eyebrow="Les plus écoutés" title="Top albums">
+        <Carousel eyebrow={tx("mostListened")} title={tx("topAlbums")}>
           {chart.albums.map((a, i) => (
             <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} badge={`#${i + 1}`} />
           ))}
@@ -79,8 +96,8 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
 
       {chart.artists.length > 0 && (
         <section className="carousel">
-          <div className="eyebrow">Les plus écoutés</div>
-          <h2 className="section-title">Top artistes</h2>
+          <div className="eyebrow">{tx("mostListened")}</div>
+          <h2 className="section-title">{tx("topArtists")}</h2>
           <div className="carousel-track artists-row">
             {chart.artists.map((a, i) => (
               <Link key={a.id} href={`/artiste/${a.id}`} className="artist-tile">
@@ -95,12 +112,12 @@ export default async function ChartsPage({ searchParams }: PageProps<"/classemen
       )}
 
       <section>
-        <h2 className="section-title">Top titres</h2>
+        <h2 className="section-title">{tx("topTracks")}</h2>
         {tracks.length ? (
           <ChartTracks tracks={tracks} />
         ) : (
           <div className="empty">
-            Le classement n&apos;est pas disponible pour l&apos;instant. Réessaie dans un moment.
+            {tx("chartUnavailable")}
           </div>
         )}
       </section>
