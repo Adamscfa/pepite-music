@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Quelles données Pépite garde, pourquoi, et comment les modifier ou les supprimer.",
 };
 
-const UPDATED = "1er novembre 2026";
+const UPDATED = "4 novembre 2026";
 
 // Politique de confidentialité. Base rédigée simplement ; à faire relire par un juriste si besoin.
 export default function PrivacyPage() {
@@ -22,9 +22,8 @@ export default function PrivacyPage() {
       <h2>Qui s&apos;occupe de tes données ?</h2>
       <p>
         Le responsable du traitement est l&apos;éditeur de Pépite, joignable depuis la page{" "}
-        <Link href="/contact">Contact</Link>. Pépite applique la loi ivoirienne n° 2013-450 du 19 juin 2013 relative à
-        la protection des données à caractère personnel, dont l&apos;ARTCI (Autorité de Régulation des
-        Télécommunications/TIC de Côte d&apos;Ivoire) contrôle le respect.
+        <Link href="/contact">Contact</Link>. Pépite s&apos;engage à protéger tes données et à respecter les règles
+        applicables en matière de protection des données personnelles.
       </p>
 
       <h2>Ce que l&apos;on garde</h2>
@@ -78,7 +77,10 @@ export default function PrivacyPage() {
           <b>Deezer</b> fournit les pochettes, les titres et les extraits. Il ne reçoit aucune donnée sur toi.
         </li>
       </ul>
-      <p>Certains de ces services sont situés hors de Côte d&apos;Ivoire (Europe, États-Unis).</p>
+      <p>
+        Certains de ces services peuvent traiter ou héberger des données dans un autre pays. Ils appliquent leurs
+        propres mesures de protection et de sécurité.
+      </p>
 
       <h2>Cookies</h2>
       <p>
@@ -102,7 +104,10 @@ export default function PrivacyPage() {
           (sujet « Mes données »).
         </li>
       </ul>
-      <p>Si tu n&apos;es pas satisfait de notre réponse, tu peux saisir l&apos;ARTCI.</p>
+      <p>
+        Si tu n&apos;es pas satisfait de notre réponse, tu peux contacter l&apos;autorité chargée de la protection des
+        données personnelles dans ton pays.
+      </p>
 
       <h2>Âge minimum</h2>
       <p>Pépite est réservé aux personnes d&apos;au moins 13 ans.</p>

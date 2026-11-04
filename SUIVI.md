@@ -143,6 +143,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 26. Studio TikTok (4 novembre 2026) : cliquer une image ou un paquet sur ordinateur
     télécharge les fichiers au lieu d’ouvrir le menu de partage. Sur téléphone,
     le partage natif reste disponible pour enregistrer dans la galerie.
+27. Confidentialité (4 novembre 2026) : la page présente désormais des
+    informations générales sur la protection des données, sans mentionner de
+    loi, d'autorité ni de pays en particulier.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -203,7 +206,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Compléter les traductions anglaise et espagnole des pages restantes (avis, albums, messages, notifications, modération et pages d'information)
 - [ ] Brancher Brevo pour les e-mails et coller les modèles en français (README)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
-- [ ] Faire relire les pages Confidentialité et Conditions, et vérifier la déclaration auprès de l'ARTCI
+- [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés
 - [ ] Quand assez de vrais membres sont inscrits : exécuter `demo-supprimer.sql`
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
 - [ ] **Nom de domaine** (plus tard) : `.ci` (environ 45 000 à 75 000 FCFA/an,
