@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { Fragment, isValidElement, type ReactElement, type ReactNode } from "react";
 import { getCurrentProfile } from "@/lib/data";
-import { getAlbum, getChart, getCountryCharts, getPlaylistTracks, getTrack } from "@/lib/deezer";
+import { getAlbum, getArtist, getChart, getCountryCharts, getPlaylistChart, getTrack } from "@/lib/deezer";
 import { deezerAt } from "@/lib/images";
 import { logoDataUri, siteLabel } from "@/lib/og";
 
@@ -15,6 +15,10 @@ const SIZE = { width: 1080, height: 1920, headers: { "Cache-Control": "private, 
 const BG = "linear-gradient(180deg, #0B1410 0%, #123326 55%, #2E9E6B 100%)";
 
 async function lookup(kind: string, id: number) {
+  if (kind === "artiste") {
+    const artist = await getArtist(id);
+    return artist ? { title: artist.name, artist: artist.name, sub: "Artiste", cover: artist.picture } : null;
+  }
   if (kind === "titre") {
     const t = await getTrack(id);
     return t ? { title: t.title, artist: t.artist, sub: t.albumTitle, cover: t.cover } : null;
@@ -54,7 +58,8 @@ const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` 
 export async function GET(request: Request) {
   const q = new URL(request.url).searchParams;
   const slide = q.get("s");
-  const kind = q.get("k") === "titre" ? "titre" : "album";
+  const requestedKind = q.get("k");
+  const kind = requestedKind === "titre" || requestedKind === "artiste" ? requestedKind : "album";
   // Tout en même temps : vérifier qu'on est admin, lire le logo, chercher l'album chez Deezer.
   const [me, logo, item] = await Promise.all([
     getCurrentProfile(),
@@ -69,8 +74,31 @@ export async function GET(request: Request) {
       ? (await getCountryCharts()).find((chart) => chart.id === countryId && chart.code)
       : null;
     if (countryId && !country) return new Response("Classement indisponible", { status: 404 });
-    const tracks = (country ? await getPlaylistTracks(country.id) : (await getChart(0)).tracks).slice(0, 10);
-    if (!tracks.length) return new Response("Classement Deezer indisponible", { status: 503 });
+    const requestedType = q.get("type");
+    const type = requestedType === "artistes" || requestedType === "albums" ? requestedType : "titres";
+    const chart = country ? await getPlaylistChart(country.id) : await getChart(0);
+    const entries =
+      type === "artistes"
+        ? chart.artists.slice(0, 10).map((artist) => ({
+            id: artist.id,
+            title: artist.name,
+            artist: "",
+            cover: artist.picture,
+          }))
+        : type === "albums"
+          ? chart.albums.slice(0, 10).map((album) => ({
+              id: album.id,
+              title: album.title,
+              artist: album.artist,
+              cover: album.cover,
+            }))
+          : chart.tracks.slice(0, 10).map((track) => ({
+              id: track.id,
+              title: track.title,
+              artist: track.artist,
+              cover: track.cover,
+            }));
+    if (!entries.length) return new Response("Classement Deezer indisponible", { status: 503 });
 
     const colors = {
       emeraude: { background: "#078652", accent: "#003F2E", dots: "#004B35" },
@@ -79,7 +107,8 @@ export async function GET(request: Request) {
     } as const;
     const palette = colors[q.get("couleur") as keyof typeof colors] ?? colors.emeraude;
     const place = country?.name ?? "France";
-    const text = `Top 10 du moment ${place} ${tracks.map((track) => `${track.title} ${track.artist}`).join(" ")}`;
+    const typeLabel = type === "artistes" ? "ARTISTES" : type === "albums" ? "ALBUMS" : "TITRES";
+    const text = `Top 10 ${typeLabel} ${place} ${entries.map((entry) => `${entry.title} ${entry.artist}`).join(" ")}`;
     return new ImageResponse(
       <div
         style={{
@@ -101,16 +130,18 @@ export async function GET(request: Request) {
             <img src={logo} width={52} height={36} alt="" />
             Pépite
           </div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: "rgba(255,255,255,.72)" }}>TOP 10 · DEEZER</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "rgba(255,255,255,.72)" }}>TOP 10 {typeLabel} · DEEZER</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 54 }}>
-          <div style={{ fontSize: 74, lineHeight: 0.98, fontWeight: 800, textAlign: "center" }}>TOP 10 DU MOMENT</div>
+          <div style={{ fontSize: 74, lineHeight: 0.98, fontWeight: 800, textAlign: "center" }}>
+            TOP 10 {typeLabel} DU MOMENT
+          </div>
           <div style={{ fontSize: 44, lineHeight: 1.1, fontWeight: 800, textAlign: "center", marginTop: 16 }}>
             {place.toLocaleUpperCase("fr")}
           </div>
         </div>
         <div style={{ display: "flex", gap: 42, flex: 1 }}>
-          {[tracks.slice(0, 5), tracks.slice(5, 10)].map((column, columnIndex) => (
+          {[entries.slice(0, 5), entries.slice(5, 10)].map((column, columnIndex) => (
             <div
               key={columnIndex}
               style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between" }}
@@ -129,9 +160,11 @@ export async function GET(request: Request) {
                     />
                     <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
                       <div style={{ fontSize: 27, fontWeight: 800, lineHeight: 1.12 }}>{cut(track.title, 30)}</div>
-                      <div style={{ fontSize: 22, fontWeight: 600, color: "#FFE54D", marginTop: 8, lineHeight: 1.1 }}>
-                        {cut(track.artist, 30)}
-                      </div>
+                      {track.artist && (
+                        <div style={{ fontSize: 22, fontWeight: 600, color: "#FFE54D", marginTop: 8, lineHeight: 1.1 }}>
+                          {cut(track.artist, 30)}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

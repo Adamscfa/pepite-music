@@ -151,6 +151,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     actuel d'un pays, avec les pochettes, titres et artistes, trois couleurs
     de fond et téléchargement prêt à publier. Deezer ne fournit pas les chiffres
     historiques d'écoutes hebdomadaires montrés dans certains exemples.
+29. Formats Studio (4 novembre 2026) : sélecteur explicite entre l'ancien
+    carrousel et la nouvelle affiche Top 10. Les deux formats permettent les
+    classements de titres, d'albums et d'artistes Deezer, avec choix du pays.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
