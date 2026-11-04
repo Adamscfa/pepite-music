@@ -14,9 +14,12 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
   const p = await searchParams;
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
   const theme = (THEMES.find((t) => t.id === one(p.theme))?.id ?? "pays") as StudioTheme;
-  const kind: StudioKind = theme === "notes" || theme === "sorties" ? "albums" : one(p.type) === "titres" ? "titres" : "albums";
-  const count = [5, 10].includes(Number(one(p.nombre))) ? Number(one(p.nombre)) : 10;
+  const kind: StudioKind =
+    theme === "affiche" ? "titres" : theme === "notes" || theme === "sorties" ? "albums" : one(p.type) === "titres" ? "titres" : "albums";
+  const count = theme === "affiche" ? 10 : [5, 10].includes(Number(one(p.nombre))) ? Number(one(p.nombre)) : 10;
   const seed = Number(one(p.graine)) || 1;
+  const palettes = ["emeraude", "rouge", "bleu"] as const;
+  const palette = palettes.find((value) => value === one(p.palette)) ?? "emeraude";
   const { heading, items, caption, country, countries } = await getStudio({
     theme,
     kind,
@@ -28,7 +31,15 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
 
   const k = kind === "titres" ? "titre" : "album";
   const enc = encodeURIComponent;
-  const slides = [
+  const slides = theme === "affiche"
+    ? [
+        {
+          src: `/studio/image?s=top10&pays=${country?.id ?? ""}&couleur=${palette}`,
+          name: `top-10-${(country?.code ?? "FR").toLowerCase()}`,
+          label: heading,
+        },
+      ]
+    : [
     {
       src: `/studio/image?s=intro&k=${k}&h=${enc(heading)}&c=${items
         .slice(0, 4)
@@ -43,13 +54,14 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
       label: `${i + 1}. ${item.title} · ${item.artist}`,
     })),
     { src: "/studio/image?s=fin", name: `${String(items.length + 1).padStart(2, "0")}-fin`, label: "Fin · lien en bio" },
-  ];
+    ];
   const remix = new URLSearchParams({
     theme,
     type: kind,
     nombre: String(count),
     graine: String(seed + 1),
     pays: country ? String(country.id) : "",
+    palette,
   });
 
   return (
@@ -84,20 +96,33 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
             ))}
           </select>
         </label>
-        <label>
-          Type
-          <select name="type" defaultValue={kind} className="select">
-            <option value="albums">Albums</option>
-            <option value="titres">Titres</option>
-          </select>
-        </label>
-        <label>
-          Nombre
-          <select name="nombre" defaultValue={count} className="select">
-            <option value="5">5</option>
-            <option value="10">10</option>
-          </select>
-        </label>
+        {theme === "affiche" ? (
+          <label>
+            Couleur
+            <select name="palette" defaultValue={palette} className="select">
+              <option value="emeraude">Vert émeraude</option>
+              <option value="rouge">Rouge</option>
+              <option value="bleu">Bleu</option>
+            </select>
+          </label>
+        ) : (
+          <>
+            <label>
+              Type
+              <select name="type" defaultValue={kind} className="select">
+                <option value="albums">Albums</option>
+                <option value="titres">Titres</option>
+              </select>
+            </label>
+            <label>
+              Nombre
+              <select name="nombre" defaultValue={count} className="select">
+                <option value="5">5</option>
+                <option value="10">10</option>
+              </select>
+            </label>
+          </>
+        )}
         <button className="btn">Préparer</button>
       </form>
 
@@ -113,7 +138,15 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
       </div>
 
       {items.length ? (
-        <StudioSlides slides={slides} caption={caption} />
+        <>
+          {theme === "affiche" && (
+            <p className="small">
+              Affiche créée à partir du Top Deezer actuel du pays choisi. Deezer fournit le classement des titres,
+              mais pas les chiffres d&apos;écoutes hebdomadaires affichés dans certains exemples.
+            </p>
+          )}
+          <StudioSlides slides={slides} caption={caption} />
+        </>
       ) : (
         <div className="empty">Rien à montrer pour ce choix (Deezer ne répond pas ou personne n&apos;a encore noté).</div>
       )}
