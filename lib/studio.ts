@@ -20,13 +20,7 @@ import { inCountry } from "./country-names";
 
 export type StudioTheme = "pays" | "monde" | "notes" | "sorties" | "hasard";
 export type StudioKind = "albums" | "titres" | "artistes";
-export type StudioItem = {
-  kind: "album" | "titre" | "artiste";
-  id: number;
-  title: string;
-  artist: string;
-  cover?: string;
-};
+export type StudioItem = { kind: "album" | "titre" | "artiste"; id: number; title: string; artist: string };
 
 export const THEMES: { id: StudioTheme; label: string }[] = [
   { id: "pays", label: "Top d'un pays" },
@@ -96,28 +90,10 @@ export async function getStudio(opts: {
   type Chart = { tracks: ChartTrack[]; albums: AlbumHit[]; artists?: ArtistHit[] };
   const fromChart = (chart: Chart): StudioItem[] =>
     opts.kind === "artistes"
-      ? (chart.artists ?? []).map((a) => ({
-          kind: "artiste" as const,
-          id: a.id,
-          title: a.name,
-          artist: a.name,
-          cover: a.picture,
-        }))
+      ? (chart.artists ?? []).map((a) => ({ kind: "artiste" as const, id: a.id, title: a.name, artist: a.name }))
       : asAlbums
-        ? chart.albums.map((a) => ({
-            kind: "album" as const,
-            id: a.id,
-            title: a.title,
-            artist: a.artist,
-            cover: a.cover,
-          }))
-        : chart.tracks.map((t) => ({
-            kind: "titre" as const,
-            id: t.id,
-            title: t.title,
-            artist: t.artist,
-            cover: t.cover,
-          }));
+        ? chart.albums.map((a) => ({ kind: "album" as const, id: a.id, title: a.title, artist: a.artist }))
+        : chart.tracks.map((t) => ({ kind: "titre" as const, id: t.id, title: t.title, artist: t.artist }));
 
   if (opts.theme === "pays") {
     const chart = country

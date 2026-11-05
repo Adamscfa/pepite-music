@@ -146,19 +146,11 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 27. Confidentialité (4 novembre 2026) : la page présente désormais des
     informations générales sur la protection des données, sans mentionner de
     loi, d'autorité ni de pays en particulier.
-28. Affiche Top 10 dans le Studio (4 novembre 2026) : nouvelle option pour
-    composer une affiche verticale à deux colonnes depuis le classement Deezer
-    actuel d'un pays, avec les pochettes, titres et artistes, trois couleurs
-    de fond et téléchargement prêt à publier. Deezer ne fournit pas les chiffres
-    historiques d'écoutes hebdomadaires montrés dans certains exemples.
-29. Formats Studio (4 novembre 2026) : sélecteur explicite entre l'ancien
-    carrousel et la nouvelle affiche Top 10. Les deux formats permettent les
-    classements de titres, d'albums et d'artistes Deezer, avec choix du pays.
-30. Affiches Studio (5 novembre 2026) : les pochettes et photos d'artistes sont
-    intégrées lors du rendu serveur. L'affiche est chargée séparément après
-    l'affichage du Studio pour qu'un délai de Deezer ou du rendu ne bloque pas
-    toute la page ; une image Deezer indisponible est remplacée.
-31. Supprimer messages et notifications (5 novembre 2026) : sur chaque message
+28. Ancienne version du Studio conservée (5 novembre 2026) : carrousel de
+    couvertures et tops Deezer d'albums, titres ou artistes, avec téléchargement.
+    La nouvelle option « affiche Top 10 » a été retirée après des erreurs
+    persistantes sur le site.
+29. Supprimer messages et notifications (5 novembre 2026) : sur chaque message
     qu'on a envoyé, un menu « ⋮ » apparaît au survol de la bulle, avec « Supprimer
     le message » (deux clics pour confirmer : il disparaît chez les deux, comme
     sur WhatsApp). Dans la liste des conversations, un bouton corbeille vide toute
@@ -196,9 +188,6 @@ Supabase : aucune requête SQL n’est à exécuter pour la langue. La détectio
 pays utilise Vercel ; en développement local, le navigateur reste prioritaire
 et l'espagnol se choisit dans les réglages.
 
-La génération de l'affiche directement dans la page Studio ne modifie pas la
-base Supabase : aucun SQL à exécuter.
-
 Remplacer « à vérifier » par « oui » une fois confirmé. Pour vérifier, dans
 Supabase, **Table Editor** :
 - fichier 01 : les tables `profiles` et `reviews` existent
@@ -234,8 +223,8 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés
 - [ ] Quand assez de vrais membres sont inscrits : exécuter `demo-supprimer.sql`
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
-- [ ] Après publication, vérifier que les affiches Top 10 du Studio chargent
-      leurs photos, notamment le Top artistes des États-Unis
+- [ ] Vérifier que le Studio en ligne permet toujours de préparer et télécharger
+      les carrousels d'albums, de titres et d'artistes
 - [ ] **Nom de domaine** (plus tard) : `.ci` (environ 45 000 à 75 000 FCFA/an,
   CNI demandée, 2 à 5 jours) ou `.com` (environ 10 à 15 $/an, immédiat, achat
   possible dans Vercel). Puis : Vercel > Settings > Domains ; Supabase > URL
