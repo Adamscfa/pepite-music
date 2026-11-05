@@ -1133,10 +1133,8 @@ main:has(.chat) { padding-top: 0; }
   /* Comme WhatsApp : en conversation, plein écran, sans le menu du bas */
   body:has(.chat) .bottom-nav { display: none; }
   main:has(.chat) { padding: 0 12px env(safe-area-inset-bottom); }
-  .chat { min-height: 100dvh; }
-  .chat-head { margin: 0 -12px 8px; padding: 10px 12px; }
-  .composer { bottom: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-  body.chat-keyboard-open .chat-head {
+  .chat { min-height: 100dvh; padding-top: 62px; padding-bottom: 86px; }
+  .chat-head {
     position: fixed;
     top: var(--chat-visual-top, 0px);
     left: 0;
@@ -1146,13 +1144,12 @@ main:has(.chat) { padding-top: 0; }
     background: var(--bg);
     z-index: 20;
   }
-  body.chat-keyboard-open .thread { padding-top: 68px; padding-bottom: 90px; }
-  body.chat-keyboard-open .composer {
+  .composer {
     position: fixed;
     left: 12px;
     right: 12px;
-    bottom: var(--chat-keyboard-height, 0px);
-    padding-bottom: 10px;
+    bottom: var(--chat-visual-bottom, 0px);
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
     background: var(--bg);
     z-index: 20;
   }
