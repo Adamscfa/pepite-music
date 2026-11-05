@@ -424,8 +424,9 @@ a:hover > .cover, .tile:hover .cover, a:hover > .tile-cover .cover { transform: 
 .bubble-album small { font-size: 11px; opacity: 0.75; }
 .message-form textarea { min-height: 70px; resize: vertical; }
 details.reco { margin-top: 12px; }
-details.reco summary { list-style: none; display: inline-block; }
-details.reco summary::-webkit-details-marker { display: none; }
+details.reco > summary { display: inline-flex; align-items: center; justify-content: flex-start; gap: 9px; list-style: none; text-align: left; cursor: pointer; }
+details.reco > summary::marker { content: ""; }
+details.reco > summary::-webkit-details-marker { display: none; }
 
 /* ---------- Réactions, coup de cœur, signalement ---------- */
 .reactions { display: inline-flex; gap: 4px; }
@@ -886,7 +887,13 @@ main:has(.chat) { padding-bottom: 0; }
 .year-link { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; color: var(--gold); font-weight: 700; font-size: 14px; }
 .year-link svg { width: 22px; height: 22px; flex: none; }
 .recommendation-icon { width: 19px; height: 19px; flex: none; }
-.reco summary { display: inline-flex; align-items: center; gap: 8px; }
+.reco summary > span { min-width: 0; }
+.reco[open] > summary { color: var(--gold); border-color: var(--gold); background: var(--gold-soft); }
+.favorite-action { display: inline-flex; align-items: center; gap: 8px; transition: color .15s ease, background .15s ease, border-color .15s ease; }
+.favorite-icon { width: 19px; height: 19px; flex: none; color: var(--muted); transition: color .15s ease, transform .15s ease; }
+.favorite-action.is-favorite { color: var(--ink); border-color: #E0457B; background: color-mix(in srgb, #E0457B 10%, var(--surface)); }
+.favorite-action.is-favorite .favorite-icon { color: #E0457B; transform: scale(1.08); }
+.favorite-action:disabled.is-favorite { cursor: default; opacity: 1; }
 .wrapped { max-width: 820px; margin: 0 auto; }
 .wrapped-hero { display: flex; align-items: center; gap: 22px; margin: 14px 0 18px; padding: 28px; border-radius: 22px; color: #fff; background: radial-gradient(circle at 85% 10%, rgb(61 245 160 / .45), transparent 55%), linear-gradient(135deg, #06110c, #0d2a1e 50%, #1f6b4a); }
 .wrapped-hero .eyebrow { color: #b9e8d2; }
