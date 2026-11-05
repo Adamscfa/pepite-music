@@ -61,6 +61,63 @@ export default function ThreadView({
     setReady(true);
   }, []);
 
+  // Keep the conversation header and composer inside the visible area above mobile keyboards.
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    let blurTimer: ReturnType<typeof setTimeout> | undefined;
+    const updateKeyboardLayout = () => {
+      const active = document.activeElement;
+      const isEditable =
+        active instanceof HTMLTextAreaElement ||
+        (active instanceof HTMLInputElement &&
+          !["button", "checkbox", "file", "hidden", "submit"].includes(active.type));
+      const keyboardHeight = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      const keyboardOpen =
+        window.matchMedia("(max-width: 760px)").matches &&
+        isEditable &&
+        window.innerHeight - viewport.height > 120;
+      const root = document.documentElement;
+
+      document.body.classList.toggle("chat-keyboard-open", keyboardOpen);
+      if (keyboardOpen) {
+        root.style.setProperty("--chat-visual-top", `${viewport.offsetTop}px`);
+        root.style.setProperty("--chat-keyboard-height", `${keyboardHeight}px`);
+      } else {
+        root.style.removeProperty("--chat-visual-top");
+        root.style.removeProperty("--chat-keyboard-height");
+      }
+    };
+    const onFocusIn = () => {
+      clearTimeout(blurTimer);
+      updateKeyboardLayout();
+    };
+    const onFocusOut = () => {
+      clearTimeout(blurTimer);
+      blurTimer = setTimeout(updateKeyboardLayout, 100);
+    };
+
+    viewport.addEventListener("resize", updateKeyboardLayout);
+    viewport.addEventListener("scroll", updateKeyboardLayout);
+    window.addEventListener("resize", updateKeyboardLayout);
+    document.addEventListener("focusin", onFocusIn);
+    document.addEventListener("focusout", onFocusOut);
+    updateKeyboardLayout();
+
+    return () => {
+      clearTimeout(blurTimer);
+      viewport.removeEventListener("resize", updateKeyboardLayout);
+      viewport.removeEventListener("scroll", updateKeyboardLayout);
+      window.removeEventListener("resize", updateKeyboardLayout);
+      document.removeEventListener("focusin", onFocusIn);
+      document.removeEventListener("focusout", onFocusOut);
+      document.body.classList.remove("chat-keyboard-open");
+      document.documentElement.style.removeProperty("--chat-visual-top");
+      document.documentElement.style.removeProperty("--chat-keyboard-height");
+    };
+  }, []);
+
   // Canal « en train d'écrire » partagé par les deux personnes de la conversation.
   useEffect(() => {
     const supabase = getBrowserClient();
