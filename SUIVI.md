@@ -189,6 +189,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 37. Menu du compte (5 novembre 2026) : retrait du raccourci « Messages » (déjà
     disponible dans la barre du bas) et du choix de langue (déjà dans Paramètres).
     Les liens Messages et Langue dans leurs emplacements habituels restent actifs.
+38. Barre du haut sur téléphone (5 novembre 2026) : pour les visiteurs non
+    connectés, le logo et la recherche restent sur la première ligne ; paramètres,
+    langue et thème sont alignés sur une deuxième ligne. Le bouton d'inscription
+    du haut est masqué car l'inscription est déjà dans la barre du bas.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -216,6 +220,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (visuel) | Boutons de recommandation et de favoris | Aucun SQL à exécuter |
 | Aucun (performance) | Chargement parallèle des pages album | Aucun SQL à exécuter |
 | Aucun (interface mobile) | Conversation façon WhatsApp : en-tête, fil défilant et saisie au-dessus du clavier | Aucun SQL à exécuter |
+| Aucun (interface mobile) | Réalignement de la barre du haut pour les visiteurs | Aucun SQL à exécuter |
 | `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | non (à faire) |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
@@ -261,6 +266,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Garder le nom de l'ami en haut, les messages défilants au milieu et la barre d'écriture au-dessus du clavier, comme WhatsApp
 - [x] Garder le cadre fixe sur téléphone et réserver le défilement aux messages
 - [x] Retirer les doublons Messages et Langue du menu du compte
+- [x] Réaligner les commandes du haut sur téléphone pour éviter leur chevauchement
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés

@@ -106,7 +106,7 @@ export default async function Header() {
         </div>
       </aside>
 
-      <header className="top">
+      <header className={me ? "top" : "top guest"}>
         <Link href="/" className="top-logo" aria-label="Pépite, accueil">
           <img src="/logo-mark.png" alt="" width={38} height={26} className="logo-mark" />
           <span className="top-word">Pépite</span>
