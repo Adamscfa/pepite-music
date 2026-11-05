@@ -186,6 +186,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     (`/.well-known/assetlinks.json`) prêtes. La publication attend le compte Play
     Console du propriétaire, la clé de signature et son empreinte SHA-256 dans
     Vercel. Voir `android/LISEZ-MOI.md`.
+37. Menu du compte (5 novembre 2026) : retrait du raccourci « Messages » (déjà
+    disponible dans la barre du bas) et du choix de langue (déjà dans Paramètres).
+    Les liens Messages et Langue dans leurs emplacements habituels restent actifs.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -257,6 +260,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Préparer la configuration Android pour le Play Store ; le propriétaire doit encore créer son compte Play Console, sa clé de signature et renseigner l'empreinte dans Vercel
 - [x] Garder le nom de l'ami en haut, les messages défilants au milieu et la barre d'écriture au-dessus du clavier, comme WhatsApp
 - [x] Garder le cadre fixe sur téléphone et réserver le défilement aux messages
+- [x] Retirer les doublons Messages et Langue du menu du compte
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés

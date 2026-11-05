@@ -132,7 +132,6 @@ export default async function Header() {
                   <b>{me.display_name}</b>
                   <small>@{me.username}</small>
                   <Link href={profile}>{tx("myProfile")}</Link>
-                  <Link href="/messages">{tx("messages")}{unread.messages ? ` (${unread.messages})` : ""}</Link>
                   <Link href={`${profile}#favoris`}>{tx("favorites")}</Link>
                   <Link href={`${profile}/annee`}>{tx("myYear")}</Link>
                   <Link href={`${profile}#inviter`}>{tx("inviteFriends")}</Link>
@@ -145,7 +144,6 @@ export default async function Header() {
                   <div className="me-pop-theme">
                     <ThemeToggle initial={theme} withLabel locale={locale} />
                   </div>
-                  <LanguageSelector locale={locale} compact />
                   <form action={signOut}>
                     <button type="submit">{tx("logout")}</button>
                   </form>
