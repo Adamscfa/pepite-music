@@ -584,14 +584,24 @@ export async function getTopContributors(limit = 3): Promise<Contributor[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("reviews")
-    .select(REVIEW_FIELDS)
+    .select("user_id, hidden, profile:profiles!reviews_user_id_fkey!inner(username, display_name, avatar_url, is_demo)")
     .order("updated_at", { ascending: false })
     .limit(3000)
-    .returns<{ user_id: string; hidden?: boolean; profile: Profile }[]>();
+    .returns<{
+      user_id: string;
+      hidden?: boolean;
+      profile: Pick<Profile, "username" | "display_name" | "avatar_url" | "is_demo">;
+    }[]>();
   const byUser = new Map<string, Contributor>();
   for (const r of data ?? []) {
     if (r.hidden) continue;
-    const c = byUser.get(r.user_id) ?? { ...author(r.profile), count: 0 };
+    const c = byUser.get(r.user_id) ?? {
+      username: r.profile.username,
+      display_name: r.profile.display_name,
+      avatar_url: r.profile.avatar_url,
+      is_demo: Boolean(r.profile.is_demo),
+      count: 0,
+    };
     c.count += 1;
     byUser.set(r.user_id, c);
   }
