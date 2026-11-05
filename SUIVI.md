@@ -193,6 +193,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     connectés, le logo et la recherche restent sur la première ligne ; paramètres,
     langue et thème sont alignés sur une deuxième ligne. Le bouton d'inscription
     du haut est masqué car l'inscription est déjà dans la barre du bas.
+39. Barre mobile des visiteurs (5 novembre 2026) : masquage de toute la rangée
+    Paramètres / Langue / Thème sur téléphone pour garder un en-tête compact.
+    Les réglages restent disponibles sur ordinateur et dans Paramètres.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -267,6 +270,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Garder le cadre fixe sur téléphone et réserver le défilement aux messages
 - [x] Retirer les doublons Messages et Langue du menu du compte
 - [x] Réaligner les commandes du haut sur téléphone pour éviter leur chevauchement
+- [x] Masquer la rangée Paramètres / Langue / Thème du haut sur téléphone
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés
