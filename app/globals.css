@@ -988,9 +988,7 @@ main:has(.chat) { padding-bottom: 0; }
   .top-actions .btn.violet { padding: 7px 12px; font-size: 13px; }
   .top.guest { flex-wrap: wrap; }
   .top.guest .search { flex: 1 1 0; min-width: 0; }
-  .top.guest .top-actions { flex: 1 0 100%; justify-content: space-between; margin-left: 0; }
-  .top.guest .top-actions > .btn.violet { display: none; }
-  .top.guest .mobile-preferences { width: 100%; justify-content: space-between; }
+  .top.guest .top-actions { display: none; }
   .me-pop { position: fixed; top: 58px; right: 10px; left: auto; width: min(270px, calc(100vw - 20px)); }
 
   main { padding: 12px 12px calc(84px + env(safe-area-inset-bottom)); }
