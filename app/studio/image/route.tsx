@@ -1,8 +1,7 @@
 import { ImageResponse } from "next/og";
 import { Fragment, isValidElement, type ReactElement, type ReactNode } from "react";
 import { getCurrentProfile } from "@/lib/data";
-import { getAlbum, getArtist, getChart, getCountryCharts, getPlaylistChart, getTrack } from "@/lib/deezer";
-import { deezerAt } from "@/lib/images";
+import { getAlbum, getArtist, getTrack } from "@/lib/deezer";
 import { logoDataUri, siteLabel } from "@/lib/og";
 
 // Une image du Studio TikTok (1080 × 1920, format vertical) :
@@ -52,23 +51,8 @@ async function options(text: string) {
   return fonts.length ? { ...SIZE, fonts } : SIZE;
 }
 
-const big = (url: string, px = 1000) => deezerAt(url, px);
+const big = (url: string, px = 1000) => url.replace(/\/\d+x\d+-/, `/${px}x${px}-`);
 const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
-
-async function imageDataUri(url: string): Promise<string | null> {
-  try {
-    const response = await fetch(url, { cache: "force-cache" });
-    const contentType = response.headers.get("content-type") ?? "";
-    if (!response.ok || !contentType.startsWith("image/")) {
-      console.error(`Image Deezer non disponible (${response.status}) : ${url}`);
-      return null;
-    }
-    return `data:${contentType};base64,${Buffer.from(await response.arrayBuffer()).toString("base64")}`;
-  } catch (error) {
-    console.error(`Image Deezer inaccessible : ${url}`, error);
-    return null;
-  }
-}
 
 export async function GET(request: Request) {
   const q = new URL(request.url).searchParams;
@@ -82,149 +66,6 @@ export async function GET(request: Request) {
     slide === "item" ? lookup(kind, Number(q.get("id"))) : Promise.resolve(null),
   ]);
   if (!me?.is_admin) return new Response("Réservé aux admins", { status: 404 });
-
-  if (slide === "top10") {
-    const countryId = Number(q.get("pays"));
-    const country = countryId
-      ? (await getCountryCharts()).find((chart) => chart.id === countryId && chart.code)
-      : null;
-    if (countryId && !country) return new Response("Classement indisponible", { status: 404 });
-    const requestedType = q.get("type");
-    const type = requestedType === "artistes" || requestedType === "albums" ? requestedType : "titres";
-    const chart = country ? await getPlaylistChart(country.id) : await getChart(0);
-    const chartEntries =
-      type === "artistes"
-        ? chart.artists.slice(0, 10).map((artist) => ({
-            id: artist.id,
-            title: artist.name,
-            artist: "",
-            cover: artist.picture,
-          }))
-        : type === "albums"
-          ? chart.albums.slice(0, 10).map((album) => ({
-              id: album.id,
-              title: album.title,
-              artist: album.artist,
-              cover: album.cover,
-            }))
-          : chart.tracks.slice(0, 10).map((track) => ({
-              id: track.id,
-              title: track.title,
-              artist: track.artist,
-              cover: track.cover,
-            }));
-    const entries = await Promise.all(
-      chartEntries.map(async (entry) => ({
-        ...entry,
-        cover: await imageDataUri(big(entry.cover, 500)),
-      })),
-    );
-    if (!entries.length) return new Response("Classement Deezer indisponible", { status: 503 });
-
-    const colors = {
-      emeraude: { background: "#078652", accent: "#003F2E", dots: "#004B35" },
-      rouge: { background: "#C90812", accent: "#71030B", dots: "#79050D" },
-      bleu: { background: "#111C9A", accent: "#071053", dots: "#0A145E" },
-    } as const;
-    const palette = colors[q.get("couleur") as keyof typeof colors] ?? colors.emeraude;
-    const place = country?.name ?? "France";
-    const typeLabel = type === "artistes" ? "ARTISTES" : type === "albums" ? "ALBUMS" : "TITRES";
-    const text = `Top 10 ${typeLabel} ${place} ${entries.map((entry) => `${entry.title} ${entry.artist}`).join(" ")}`;
-    return new ImageResponse(
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          padding: "90px 70px 70px",
-          color: "#FFFFFF",
-          fontFamily: "Inter",
-          backgroundColor: palette.background,
-          backgroundImage: `radial-gradient(circle, ${palette.dots} 2px, transparent 2px), linear-gradient(145deg, transparent 40%, ${palette.accent} 100%)`,
-          backgroundSize: "24px 24px, 100% 100%",
-          backgroundPosition: "0 0, 0 0",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 52 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 28, fontWeight: 800 }}>
-            <img src={logo} width={52} height={36} alt="" />
-            Pépite
-          </div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: "rgba(255,255,255,.72)" }}>TOP 10 {typeLabel} · DEEZER</div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 54 }}>
-          <div style={{ fontSize: 74, lineHeight: 0.98, fontWeight: 800, textAlign: "center" }}>
-            TOP 10 {typeLabel} DU MOMENT
-          </div>
-          <div style={{ fontSize: 44, lineHeight: 1.1, fontWeight: 800, textAlign: "center", marginTop: 16 }}>
-            {place.toLocaleUpperCase("fr")}
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 42, flex: 1 }}>
-          {[entries.slice(0, 5), entries.slice(5, 10)].map((column, columnIndex) => (
-            <div
-              key={columnIndex}
-              style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between" }}
-            >
-              {column.map((track, rowIndex) => {
-                const rank = columnIndex * 5 + rowIndex + 1;
-                return (
-                  <div key={track.id} style={{ display: "flex", alignItems: "center", gap: 14, height: 190 }}>
-                    <div style={{ fontSize: 30, width: 42, fontWeight: 800 }}>{rank}.</div>
-                    {track.cover ? (
-                      <img src={track.cover} width={148} height={148} style={{ borderRadius: 4, flexShrink: 0 }} alt="" />
-                    ) : (
-                      <div
-                        style={{
-                          width: 148,
-                          height: 148,
-                          borderRadius: 4,
-                          flexShrink: 0,
-                          backgroundColor: "rgba(0,0,0,.18)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 44,
-                          color: "rgba(255,255,255,.72)",
-                        }}
-                      >
-                        ♪
-                      </div>
-                    )}
-                    <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
-                      <div style={{ fontSize: 27, fontWeight: 800, lineHeight: 1.12 }}>{cut(track.title, 30)}</div>
-                      {track.artist && (
-                        <div style={{ fontSize: 22, fontWeight: 600, color: "#FFE54D", marginTop: 8, lineHeight: 1.1 }}>
-                          {cut(track.artist, 30)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderTop: "2px solid #FFFFFF66",
-            paddingTop: 22,
-            marginTop: 22,
-            fontSize: 20,
-            color: "rgba(255,255,255,.82)",
-          }}
-        >
-          <div>Classement actuel fourni par Deezer</div>
-          <div>{siteLabel}</div>
-        </div>
-      </div>,
-      await options(text),
-    );
-  }
 
   const brand = (
     <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 40, fontWeight: 800 }}>
