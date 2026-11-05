@@ -1158,7 +1158,9 @@ main:has(.chat) { padding-top: 0; }
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
+  .chat .thread > * { flex-shrink: 0; }
   .composer {
     position: absolute;
     left: 12px;
