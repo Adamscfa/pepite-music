@@ -175,6 +175,8 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 34. Défilement de la conversation (5 novembre 2026) : sur téléphone, l'en-tête,
     les messages et la saisie occupent trois rangées distinctes. Le fil a sa
     propre zone défilante et le clavier redimensionne toujours la conversation.
+    La page elle-même reste verrouillée pendant la conversation : seul le fil
+    défile, sans déplacer le cadre.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -243,7 +245,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Aligner l'icône de recommandation à gauche et colorer les boutons ouverts/sélectionnés
 - [x] Réduire l'attente sur les pages album en chargeant Deezer, avis et session en parallèle, sans modifier l'interface
 - [x] Garder le nom de l'ami en haut, les messages défilants au milieu et la barre d'écriture au-dessus du clavier, comme WhatsApp
-- [x] Séparer l'en-tête, le fil défilant et la saisie en rangées sur téléphone
+- [x] Garder le cadre fixe sur téléphone et réserver le défilement aux messages
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés

@@ -1131,6 +1131,12 @@ main:has(.chat) { padding-top: 0; }
 .chat-who:hover b { text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 760px) {
   /* Comme WhatsApp : en conversation, plein écran, sans le menu du bas */
+  html:has(.chat), body:has(.chat) {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  body:has(.chat) { position: fixed; inset: 0; width: 100%; }
   body:has(.chat) .bottom-nav { display: none; }
   main:has(.chat) { padding: 0 12px env(safe-area-inset-bottom); }
   .chat {
