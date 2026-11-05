@@ -7,6 +7,7 @@ import { toggleFollow } from "@/app/social-actions";
 import { getCurrentProfile, getSuggestedMembers } from "@/lib/data";
 import { getChart, getGenres, getTopAlbums, type AlbumHit } from "@/lib/deezer";
 import { finishOnboarding, saveGenres } from "./actions";
+import ClaimInvite from "./ClaimInvite";
 import RateStep from "./RateStep";
 import { sharpImage } from "@/lib/images";
 
@@ -22,6 +23,7 @@ export default async function WelcomePage({ searchParams }: PageProps<"/bienvenu
 
   return (
     <div className="onboard">
+      <ClaimInvite />
       <div className="eyebrow">Bienvenue sur Pépite, {me.display_name} !</div>
       <ol className="onboard-steps">
         {STEPS.map((label, i) => (

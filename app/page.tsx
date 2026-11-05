@@ -2,43 +2,51 @@ import Link from "next/link";
 import HeroSlider, { type Slide } from "@/components/HeroSlider";
 import Icon from "@/components/Icon";
 import LoadMore from "@/components/LoadMore";
+import MobileHighlights from "@/components/MobileHighlights";
 import ReviewCard from "@/components/ReviewCard";
 import RightRail from "@/components/RightRail";
 import { getCurrentProfile, getRecentReviews } from "@/lib/data";
-import { getNewReleases, getTopAlbums } from "@/lib/deezer";
+import { getNewReleases } from "@/lib/deezer";
+import { getHomeTrends } from "@/lib/home";
+import { Suspense } from "react";
+import { MobileHighlightsSkeleton, RightRailSkeleton } from "@/components/HomeSkeletons";
+import { t } from "@/lib/i18n";
+import { getLocale } from "@/lib/server-locale";
 
 export default async function FeedPage({ searchParams }: PageProps<"/">) {
-  const me = await getCurrentProfile();
+  const [me, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
+  const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const params = await searchParams;
   const followingOnly = Boolean(me) && params.fil === "abonnements";
   // Le fil se charge par paquets de 15 avis (plus léger sur une connexion 4G).
   const PAGE = 15;
   const shown = Math.min(150, Math.max(PAGE, Number(params.n) || PAGE));
-  const [reviews, topAlbums, newReleases] = await Promise.all([
+  const [reviews, trends, newReleases] = await Promise.all([
     getRecentReviews({ followedBy: followingOnly ? me!.id : undefined, limit: shown }),
-    getTopAlbums(10),
+    getHomeTrends(),
     getNewReleases(6),
   ]);
 
+  const topAlbums = trends.albums;
   const slides: Slide[] = [
     {
-      title: "Bienvenue sur Pépite !",
-      text: "Découvre, note et commente tes albums et titres préférés, et vois ce que la communauté écoute.",
+      title: tx("welcome"),
+      text: tx("welcomeText"),
       cta: me
-        ? { href: "/explorer", label: "Explorer maintenant" }
-        : { href: "/connexion?mode=inscription", label: "Créer mon compte" },
+        ? { href: "/explorer", label: tx("exploreNow") }
+        : { href: "/connexion?mode=inscription", label: tx("createAccount") },
       covers: topAlbums.slice(0, 5).map((a) => a.cover),
     },
     {
-      title: "Les sorties de la semaine",
-      text: "Les albums qui viennent d'arriver. Sois parmi les premiers à donner ton avis.",
-      cta: { href: "/explorer#nouveautes", label: "Voir les nouveautés" },
+      title: tx("weeklyReleases"),
+      text: tx("weeklyReleasesText"),
+      cta: { href: "/explorer#nouveautes", label: tx("seeNewReleases") },
       covers: newReleases.slice(0, 5).map((a) => a.cover),
     },
     {
-      title: "Les tops du moment",
-      text: "Ce qui s'écoute le plus en France et dans le monde, genre par genre.",
-      cta: { href: "/classements", label: "Voir les classements" },
+      title: tx("trendingNow"),
+      text: tx("trendingText").replace("{place}", trends.label),
+      cta: { href: "/classements", label: tx("seeCharts") },
       covers: topAlbums.slice(5, 10).map((a) => a.cover),
     },
     // Le premier bandeau reste toujours ; les autres seulement si Deezer a répondu.
@@ -51,25 +59,29 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
           <Link href="/bienvenue" className="onboard-banner">
             <Icon name="sparkle" size={24} />
             <span>
-              <b>Termine ton arrivée sur Pépite</b>
-              <small>Choisis tes genres, note 3 albums et trouve des membres à suivre. Ça prend une minute.</small>
+              <b>{tx("finishOnboarding")}</b>
+              <small>{tx("finishOnboardingText")}</small>
             </span>
-            <span className="more-link">C&apos;est parti →</span>
+            <span className="more-link">{tx("start")}</span>
           </Link>
         )}
         {slides.length > 0 && <HeroSlider slides={slides} />}
+        {/* Ces blocs arrivent juste après le reste de la page, sans la retarder. */}
+        <Suspense fallback={<MobileHighlightsSkeleton />}>
+          <MobileHighlights />
+        </Suspense>
 
         <div className="feed-head">
           <h2 className="section-title" style={{ margin: 0 }}>
-            {followingOnly ? "Ce que tes abonnements écoutent" : "Ce que la communauté écoute"}
+            {followingOnly ? tx("followingFeed") : tx("communityFeed")}
           </h2>
           {me && (
             <div className="tabs" style={{ margin: 0 }}>
               <Link href="/" aria-current={followingOnly ? undefined : "page"}>
-                Tout le monde
+                {tx("everyone")}
               </Link>
               <Link href="/?fil=abonnements" aria-current={followingOnly ? "page" : undefined}>
-                Mes abonnements
+                {tx("myFollowing")}
               </Link>
             </div>
           )}
@@ -87,12 +99,14 @@ export default async function FeedPage({ searchParams }: PageProps<"/">) {
         ) : (
           <div className="empty">
             {followingOnly
-              ? "Rien pour l'instant. Abonne-toi à des membres depuis leur profil pour voir leurs avis ici."
-              : "Aucun avis pour l'instant. Cherche un album en haut de la page, ou va dans Explorer, et donne la première note !"}
+              ? tx("emptyFollowing")
+              : tx("emptyFeed")}
           </div>
         )}
       </div>
-      <RightRail />
+      <Suspense fallback={<RightRailSkeleton />}>
+        <RightRail />
+      </Suspense>
     </div>
   );
 }

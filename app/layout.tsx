@@ -2,11 +2,14 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { JetBrains_Mono, Noto_Color_Emoji, Plus_Jakarta_Sans } from "next/font/google";
 import { ServiceWorker } from "@/components/AppPanel";
+import CloseMenus from "@/components/CloseMenus";
 import ErrorReporter from "@/components/ErrorReporter";
 import Header from "@/components/Header";
 import PlayerProvider from "@/components/Player";
 import SetupNotice from "@/components/SetupNotice";
 import "./globals.css";
+import { getLocale } from "@/lib/server-locale";
+import { t } from "@/lib/i18n";
 
 // Une seule police ronde et nette pour tout le site (titres et texte), comme sur la maquette.
 const sans = Plus_Jakarta_Sans({ variable: "--font-sans", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
@@ -22,14 +25,17 @@ const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
   : "http://localhost:3000";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  openGraph: { siteName: "Pépite", locale: "fr_FR", type: "website" },
-  title: { default: "Pépite", template: "%s · Pépite" },
-  description: "Note et critique les albums que tu écoutes, et découvre ce que la communauté écoute.",
-  // Installée sur iPhone, Pépite s'ouvre comme une appli.
-  appleWebApp: { capable: true, title: "Pépite", statusBarStyle: "default" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return {
+    metadataBase: new URL(siteUrl),
+    openGraph: { siteName: "Pépite", locale: { fr: "fr_FR", en: "en_US", es: "es_ES" }[locale], type: "website" },
+    title: { default: "Pépite", template: "%s · Pépite" },
+    description:
+      t(locale, "siteDescription"),
+    appleWebApp: { capable: true, title: "Pépite", statusBarStyle: "default" },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -40,16 +46,18 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Thème choisi avec le bouton ☀/☾ ; sans choix, on suit le réglage du téléphone.
-  const theme = (await cookies()).get("theme")?.value;
+  const [cookieStore, locale] = await Promise.all([cookies(), getLocale()]);
+  const theme = cookieStore.get("theme")?.value;
   return (
     <html
-      lang="fr"
+      lang={locale}
       className={`${sans.variable} ${mono.variable} ${emoji.variable}`}
       data-theme={theme === "light" || theme === "dark" ? theme : undefined}
     >
       <body>
         <ServiceWorker />
         <ErrorReporter />
+        <CloseMenus />
         <PlayerProvider>
           <div className="shell">
             <Header />

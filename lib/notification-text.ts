@@ -15,6 +15,8 @@ export function describe(n: Notification): { text: string; href: string } {
       return { text: `t'a mentionné·e dans un commentaire sur ${n.review ? what : "un avis"}`, href: `${review}#commentaires` };
     case "reaction":
       return { text: `a réagi ${n.emoji ?? ""} à ton avis sur ${what}`, href: review };
+    case "invite":
+      return { text: "a rejoint Pépite grâce à ton invitation 🎉", href: `/profil/${n.actor.username}` };
     case "follow":
       return { text: "s'est abonné·e à toi", href: `/profil/${n.actor.username}` };
     case "recommend":

@@ -1,20 +1,20 @@
 import Link from "next/link";
-import { getCurrentProfile, getReviewCounts, getTopContributors, getWeeklyPepite } from "@/lib/data";
-import { getTopAlbums } from "@/lib/deezer";
+import { getCurrentProfile } from "@/lib/data";
+import { getHomeExtras } from "@/lib/home";
 import Avatar from "./Avatar";
 import Cover from "./Cover";
 import DemoBadge from "./DemoBadge";
 import Icon from "./Icon";
+import TrendingTracks from "./TrendingTracks";
 
 // Colonne de droite de l'accueil : albums tendance, meilleurs contributeurs, et un encart.
 export default async function RightRail() {
-  const me = await getCurrentProfile();
-  const [albums, contributors, weekly] = await Promise.all([
-    getTopAlbums(5),
-    getTopContributors(3),
-    getWeeklyPepite(me?.id),
-  ]);
-  const counts = await getReviewCounts(albums.map((a) => a.id));
+  const [me, extras] = await Promise.all([getCurrentProfile(), getHomeExtras()]);
+  const albums = extras.trends.albums.slice(0, 5);
+  const tracks = extras.trends.tracks.slice(0, 5);
+  const label = extras.trends.label;
+  const contributors = extras.contributors.slice(0, 3);
+  const { weekly, albumCounts: counts, trackCounts } = extras;
   const pepite = weekly.current[0] ?? weekly.lastWinner;
 
   return (
@@ -25,7 +25,9 @@ export default async function RightRail() {
             <span className="flame">
               <Icon name="flame" size={22} filled />
             </span>
-            Albums tendance
+            <span>
+              Albums tendance <small className="trend-where">{label}</small>
+            </span>
           </h2>
           <ol className="rank-list">
             {albums.map((a, i) => (
@@ -47,6 +49,23 @@ export default async function RightRail() {
           </ol>
           <Link href="/explorer" className="more-link rail-more">
             Explorer les tendances →
+          </Link>
+        </section>
+      )}
+
+      {tracks.length > 0 && (
+        <section className="rail-box">
+          <h2 className="rail-title">
+            <span className="flame">
+              <Icon name="music" size={22} />
+            </span>
+            <span>
+              Titres tendance <small className="trend-where">{label}</small>
+            </span>
+          </h2>
+          <TrendingTracks tracks={tracks} counts={Object.fromEntries(trackCounts)} variant="rail" />
+          <Link href="/classements" className="more-link rail-more">
+            Tous les classements →
           </Link>
         </section>
       )}

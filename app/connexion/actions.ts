@@ -46,6 +46,15 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const supabase = await createClient();
   const { data: taken } = await supabase.from("profiles").select("id").eq("username", username).maybeSingle();
   if (taken) return { error: "Ce pseudo est déjà pris." };
+  const { data: previousUsername, error: previousUsernameError } = await supabase
+    .from("profile_username_aliases")
+    .select("username")
+    .eq("username", username)
+    .maybeSingle();
+  if (previousUsernameError) {
+    return { error: "La gestion des pseudos n'est pas encore activée. Demande à la personne qui gère Pépite d'exécuter le fichier 12 dans Supabase." };
+  }
+  if (previousUsername) return { error: "Ce pseudo est déjà pris." };
 
   const h = await headers();
   const origin = h.get("origin") ?? `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;

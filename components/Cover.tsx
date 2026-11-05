@@ -3,8 +3,8 @@ import { sharpImage } from "@/lib/images";
 // Largeur affichée de chaque taille de pochette (voir globals.css), pour choisir la bonne image.
 const SIZES = {
   s: "64px",
-  m: "96px",
-  l: "(max-width: 760px) 100vw, 300px",
+  m: "100px",
+  l: "(max-width: 760px) 100vw, 340px",
 };
 
 // Pochette d'album. Sans image, on affiche un dégradé aux couleurs de Pépite.

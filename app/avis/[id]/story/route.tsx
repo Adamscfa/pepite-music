@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getReview } from "@/lib/data";
-import { logoDataUri, OgStars } from "@/lib/og";
+import { logoDataUri, OgStars, siteLabel } from "@/lib/og";
 
 // Image verticale (format story Instagram) d'un avis : pochette, étoiles et texte.
 export async function GET(_request: Request, { params }: RouteContext<"/avis/[id]/story">) {
@@ -25,7 +25,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/avis/[id
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 18, fontSize: 44, fontWeight: 800 }}>
-        <img src={logo} width={72} height={72} alt="" />
+        <img src={logo} width={104} height={72} alt="" />
         Pépite
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 34 }}>
@@ -60,7 +60,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/avis/[id
           <div style={{ fontSize: 38, lineHeight: 1.4, textAlign: "center", maxWidth: 900 }}>{`« ${body} »`}</div>
         )}
       </div>
-      <div style={{ fontSize: 30, color: "#D8F3E6" }}>pepite-music.vercel.app</div>
+      <div style={{ fontSize: 30, color: "#D8F3E6" }}>{siteLabel}</div>
     </div>,
     { width: 1080, height: 1920 },
   );

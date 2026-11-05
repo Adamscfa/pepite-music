@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import AppPanel from "@/components/AppPanel";
+import InviteCard from "@/components/InviteCard";
 import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
 import DemoBadge from "@/components/DemoBadge";
@@ -14,6 +15,7 @@ import {
   getFavorites,
   getFollowStats,
   getBlockedIds,
+  getMyReferrals,
   getProfileByUsername,
   getSharedRatings,
   getUserLists,
@@ -23,10 +25,13 @@ import { formatScore } from "@/lib/format";
 import EditProfile from "../EditProfile";
 import DeleteAccount from "../DeleteAccount";
 import NewList from "../NewList";
+import { getLocale } from "@/lib/server-locale";
 
 async function loadProfile(params: PageProps<"/profil/[username]">["params"]) {
-  const profile = await getProfileByUsername(decodeURIComponent((await params).username));
+  const requestedUsername = decodeURIComponent((await params).username);
+  const profile = await getProfileByUsername(requestedUsername);
   if (!profile) notFound();
+  if (requestedUsername !== profile.username) redirect(`/profil/${profile.username}`);
   return profile;
 }
 
@@ -38,7 +43,7 @@ export async function generateMetadata({ params }: PageProps<"/profil/[username]
 
 export default async function ProfilePage({ params }: PageProps<"/profil/[username]">) {
   const profile = await loadProfile(params);
-  const me = await getCurrentProfile();
+  const [me, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
   const isMe = me?.id === profile.id;
   // Membre que j'ai bloqué : ses avis sont cachés, on propose de le débloquer.
   const iBlock = !isMe && (await getBlockedIds()).has(profile.id);
@@ -56,23 +61,38 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
 
   return (
     <>
-      <div className="prof">
-        <Avatar user={profile} big />
-        <div className="prof-id">
-          <div className="eyebrow">@{profile.username}</div>
-          <h1>
-            {profile.display_name} <DemoBadge show={profile.is_demo} />
-          </h1>
-        </div>
-        <div className="prof-more">
-          {profile.bio ? <p>{profile.bio}</p> : isMe && <p>Ajoute une bio et une photo pour te présenter.</p>}
-          {profile.is_demo && (
-            <p className="small">Membre de démonstration : ce compte et ses avis sont imaginaires.</p>
-          )}
-          <Link href={`/profil/${profile.username}/annee`} className="year-link">
-            🎁 {isMe ? "Mon" : "Son"} année {new Date().getFullYear()} en musique →
-          </Link>
-        </div>
+      <div className={`prof ${isMe ? "prof-owner" : ""}`}>
+        {isMe ? (
+          <>
+            <EditProfile user={profile} bio={profile.bio} locale={locale} />
+            <div className="prof-owner-meta">
+              <h1 className="sr-only">{profile.display_name}</h1>
+              <div className="eyebrow">@{profile.username}</div>
+              <Link href={`/profil/${profile.username}/annee`} className="year-link">
+                🎁 Mon année {new Date().getFullYear()} en musique →
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <Avatar user={profile} big />
+            <div className="prof-id">
+              <div className="eyebrow">@{profile.username}</div>
+              <h1>
+                {profile.display_name} <DemoBadge show={profile.is_demo} />
+              </h1>
+            </div>
+            <div className="prof-more">
+              {profile.bio && <p>{profile.bio}</p>}
+              {profile.is_demo && (
+                <p className="small">Membre de démonstration : ce compte et ses avis sont imaginaires.</p>
+              )}
+              <Link href={`/profil/${profile.username}/annee`} className="year-link">
+                🎁 Son année {new Date().getFullYear()} en musique →
+              </Link>
+            </div>
+          </>
+        )}
         {me && !isMe && iBlock && (
           <div className="prof-actions">
             <form action={toggleBlock}>
@@ -199,7 +219,9 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
       )}
 
       {isMe && (
-        <EditProfile displayName={profile.display_name} bio={profile.bio} hasAvatar={Boolean(profile.avatar_url)} />
+        <div style={{ marginTop: 20 }}>
+          <InviteCard username={profile.username} displayName={profile.display_name} invited={await getMyReferrals(profile.id)} />
+        </div>
       )}
       {isMe && (
         <div style={{ marginTop: 20 }}>

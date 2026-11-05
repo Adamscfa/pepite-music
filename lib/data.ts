@@ -86,7 +86,7 @@ type RawReview = Omit<Review, "likes" | "liked" | "comments" | "reactions" | "pr
   hidden?: boolean;
 };
 
-const author = (p: Profile): Author => ({
+export const author = (p: Profile): Author => ({
   username: p.username,
   display_name: p.display_name,
   avatar_url: p.avatar_url ?? null,
@@ -266,8 +266,16 @@ export async function getComments(reviewId: number): Promise<Comment[]> {
 export const getProfileByUsername = cache(async (username: string): Promise<Profile | null> => {
   if (!hasSupabaseConfig) return null;
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select("*").eq("username", username).maybeSingle();
-  return data ? { ...data, avatar_url: data.avatar_url ?? null } : null;
+  const normalized = username.toLowerCase();
+  const { data } = await supabase.from("profiles").select("*").eq("username", normalized).maybeSingle();
+  if (data) return { ...data, avatar_url: data.avatar_url ?? null };
+  const { data: alias } = await supabase
+    .from("profile_username_aliases")
+    .select("profile:profiles!profile_username_aliases_profile_id_fkey(*)")
+    .eq("username", normalized)
+    .maybeSingle();
+  const profile = alias?.profile as Profile | null | undefined;
+  return profile ? { ...profile, avatar_url: profile.avatar_url ?? null } : null;
 });
 
 export async function getFavorites(userId: string): Promise<Favorite[]> {
@@ -357,7 +365,7 @@ export async function getTopRatedAlbums(limit = 12): Promise<RankedAlbum[]> {
 
 export type Notification = {
   id: number;
-  kind: "like" | "comment" | "reply" | "mention" | "follow" | "reaction" | "message" | "recommend";
+  kind: "like" | "comment" | "reply" | "mention" | "follow" | "reaction" | "message" | "recommend" | "invite";
   review_id: number | null;
   emoji: string | null;
   read_at: string | null;
@@ -695,4 +703,27 @@ export async function getBlockedMembers(): Promise<(Author & { id: string })[]> 
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select("*").in("id", ids);
   return ((data ?? []) as Profile[]).map((p) => ({ id: p.id, ...author(p) }));
+}
+
+// Nombre d'avis Pépite par titre, pour une liste de titres.
+export async function getTrackReviewCounts(trackIds: number[]): Promise<Map<number, number>> {
+  const counts = new Map<number, number>();
+  if (!hasSupabaseConfig || !trackIds.length) return counts;
+  const supabase = await createClient();
+  const { data } = await supabase.from("reviews").select("track_id").in("track_id", trackIds);
+  for (const r of data ?? []) counts.set(r.track_id, (counts.get(r.track_id) ?? 0) + 1);
+  return counts;
+}
+
+// Les personnes qu'un membre a fait venir avec son lien d'invitation (fichier SQL 11).
+export async function getMyReferrals(meId: string): Promise<Author[]> {
+  if (!hasSupabaseConfig) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("referrals")
+    .select("invited_id, created_at, invited:profiles!referrals_invited_id_fkey(*)")
+    .eq("inviter_id", meId)
+    .order("created_at", { ascending: false })
+    .returns<{ invited: Profile }[]>();
+  return (data ?? []).filter((r) => r.invited).map((r) => author(r.invited));
 }

@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import Icon from "./Icon";
+import { type Locale, t } from "@/lib/i18n";
 
 // « Publier un avis » : on commence par chercher l'album ou le titre à noter.
-export default function PublishButton({ loggedIn }: { loggedIn: boolean }) {
+export default function PublishButton({ loggedIn, locale }: { loggedIn: boolean; locale: Locale }) {
   if (!loggedIn) {
     return (
       <Link href="/connexion?mode=inscription" className="publish">
-        <Icon name="pen" size={18} /> Publier un avis
+        <Icon name="pen" size={18} /> {t(locale, "publishReview")}
       </Link>
     );
   }
@@ -20,12 +21,12 @@ export default function PublishButton({ loggedIn }: { loggedIn: boolean }) {
         const box = document.getElementById("recherche") as HTMLInputElement | null;
         window.scrollTo({ top: 0, behavior: "smooth" });
         if (box) {
-          box.placeholder = "Quel album ou titre veux-tu noter ?";
+          box.placeholder = t(locale, "publishPrompt");
           box.focus();
         }
       }}
     >
-      <Icon name="pen" size={18} /> Publier un avis
+      <Icon name="pen" size={18} /> {t(locale, "publishReview")}
     </button>
   );
 }

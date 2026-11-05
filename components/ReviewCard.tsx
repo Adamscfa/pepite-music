@@ -8,11 +8,9 @@ import DemoBadge from "./DemoBadge";
 import MentionText from "./MentionText";
 import Icon from "./Icon";
 import LikeButton from "./LikeButton";
-import Reactions from "./Reactions";
 import ReportButton from "./ReportButton";
 import ShareButton from "./ShareButton";
 import Stars from "./Stars";
-import WhatsAppButton from "./WhatsAppButton";
 
 // Un avis publié : l'auteur, la pochette, la note, le texte, puis les actions.
 // Dans le fil (withComments), on montre aussi les derniers commentaires et un champ pour répondre.
@@ -116,7 +114,7 @@ export default async function ReviewCard({
   );
 }
 
-// Barre d'actions d'un avis : j'aime, commentaires, réactions, partage.
+// Barre d'actions d'un avis : j'aime, commentaires, partage (qui propose aussi WhatsApp).
 export function ReviewMeta({ review, canLike }: { review: Review; canLike: boolean }) {
   const page = `/avis/${review.id}`;
   return (
@@ -125,11 +123,6 @@ export function ReviewMeta({ review, canLike }: { review: Review; canLike: boole
       <Link href={`${page}#commentaires`} className="action">
         <Icon name="comment" size={20} /> {review.comments}
       </Link>
-      <Reactions reviewId={review.id} reactions={review.reactions} canReact={canLike} />
-      <WhatsAppButton
-        path={page}
-        text={`${review.profile.display_name} a donné ${"★".repeat(review.rating)} à « ${review.track_title ?? review.album_title} » de ${review.artist_name} sur Pépite 🎧`}
-      />
       <ShareButton title={review.track_title ?? review.album_title} path={page} compact />
     </div>
   );

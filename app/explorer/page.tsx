@@ -12,41 +12,47 @@ import {
   getGenres,
   getLocalScene,
   getNewReleases,
-  getTopAlbums,
   LOCAL_SCENES,
 } from "@/lib/deezer";
 import { formatScore } from "@/lib/format";
 import { getForYou } from "@/lib/recommend";
+import { getTrends } from "@/lib/trends";
 import { sharpImage } from "@/lib/images";
+import { getLocale } from "@/lib/server-locale";
+import { t, type Locale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Explorer",
-  description: "Nouveaux artistes, albums tendance, genres musicaux et titres les plus commentés sur Pépite.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return {
+    title: t(locale, "explore"),
+    description: t(locale, "exploreDescription"),
+  };
+}
 
 export default async function ExplorePage({ searchParams }: PageProps<"/explorer">) {
-  const { genre: rawGenre, scene: rawScene } = await searchParams;
+  const [{ genre: rawGenre, scene: rawScene }, locale] = await Promise.all([searchParams, getLocale()]);
   const genres = await getGenres();
   const genre = genres.find((g) => String(g.id) === rawGenre) ?? null;
   const scene = LOCAL_SCENES.find((s) => s.slug === rawScene) ?? null;
+  const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
 
   return (
     <>
       <header className="explore-head">
-        <div className="eyebrow">Explorer</div>
-        <h1>{scene ? scene.name : genre ? genre.name : "Trouve ta prochaine pépite"}</h1>
+        <div className="eyebrow">{tx("explore")}</div>
+        <h1>{scene ? scene.name : genre ? genre.name : tx("findNextGem")}</h1>
         <p>
           {scene
-            ? "Les sons d'ici qui tournent en ce moment. Touche le bouton de lecture pour écouter un extrait."
+            ? tx("sceneDescription")
             : genre
-              ? `Les albums, artistes et titres ${genre.name} les plus écoutés en ce moment.`
-              : "Nouveaux artistes, albums tendance, genres musicaux et titres dont tout le monde parle."}
+              ? tx("genreDescription").replace("{genre}", genre.name)
+              : tx("exploreDescription")}
         </p>
       </header>
 
-      <nav className="genres" aria-label="Choisir un genre">
+      <nav className="genres" aria-label={tx("chooseGenre")}>
         <Link href="/explorer" className="chip" aria-current={genre || scene ? undefined : "page"}>
-          Tout
+          {tx("all")}
         </Link>
         {LOCAL_SCENES.map((s) => (
           <Link
@@ -71,17 +77,18 @@ export default async function ExplorePage({ searchParams }: PageProps<"/explorer
         ))}
       </nav>
 
-      {scene ? <SceneView slug={scene.slug} /> : genre ? <GenreView id={genre.id} /> : <Overview genres={genres} />}
+      {scene ? <SceneView slug={scene.slug} locale={locale} /> : genre ? <GenreView id={genre.id} locale={locale} /> : <Overview genres={genres} locale={locale} />}
     </>
   );
 }
 
-async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenres>> }) {
+async function Overview({ genres, locale }: { genres: Awaited<ReturnType<typeof getGenres>>; locale: Locale }) {
+  const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const me = await getCurrentProfile();
   const [forYou, local, trending, fresh, releases, topRated, tracks, albums] = await Promise.all([
     me ? getForYou(me) : Promise.resolve([]),
     getLocalScene("cote-divoire"),
-    getTopAlbums(15),
+    getTrends(15),
     getFreshArtists(14),
     getNewReleases(15),
     getTopRatedAlbums(12),
@@ -92,7 +99,7 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
   return (
     <>
       {forYou.length > 0 && (
-        <Carousel eyebrow="Recommandé d'après tes notes" title="Pour toi">
+        <Carousel eyebrow={tx("recommendedFromRatings")} title={tx("forYou")}>
           {forYou.map((a) => (
             <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={`${a.artist} · ${a.because}`} cover={a.cover} />
           ))}
@@ -105,11 +112,11 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
             <div>
               <div className="eyebrow">🇨🇮 Made in Côte d&apos;Ivoire</div>
               <h2 className="section-title" style={{ margin: 0 }}>
-                Ce qui tourne ici
+                {tx("madeInIvoryCoast")}
               </h2>
             </div>
             <Link href="/explorer?scene=cote-divoire" className="more-link">
-              Tout le top →
+              {tx("seeTop")}
             </Link>
           </div>
           <div className="genres" style={{ marginBottom: 12 }}>
@@ -123,9 +130,13 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
         </section>
       )}
 
-      {trending.length > 0 && (
-        <Carousel eyebrow="Classement Deezer" title="Albums tendance" more={{ href: "/classements", label: "Classements →" }}>
-          {trending.map((a, i) => (
+      {trending.albums.length > 0 && (
+        <Carousel
+          eyebrow={`Deezer ${tx("chartLabel")} ${trending.label}`}
+          title={tx("trendingAlbums")}
+          more={{ href: "/classements", label: tx("chartsArrow") }}
+        >
+          {trending.albums.map((a, i) => (
             <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} badge={`#${i + 1}`} />
           ))}
         </Carousel>
@@ -133,8 +144,8 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
 
       {fresh.length > 0 && (
         <section className="carousel">
-          <div className="eyebrow">Ils viennent de sortir quelque chose</div>
-          <h2 className="section-title">Nouveaux artistes à découvrir</h2>
+          <div className="eyebrow">{tx("newArtistsEyebrow")}</div>
+          <h2 className="section-title">{tx("newArtists")}</h2>
           <div className="carousel-track artists-row">
             {fresh.map((a) => (
               <Link key={a.id} href={`/artiste/${a.id}`} className="artist-tile">
@@ -149,8 +160,8 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
 
       {genres.length > 0 && (
         <section className="carousel">
-          <div className="eyebrow">Par style</div>
-          <h2 className="section-title">Genres musicaux</h2>
+          <div className="eyebrow">{tx("byStyle")}</div>
+          <h2 className="section-title">{tx("musicGenres")}</h2>
           <div className="genre-grid">
             {genres.map((g) => (
               <Link key={g.id} href={`/explorer?genre=${g.id}`} className="genre-card">
@@ -163,22 +174,22 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
       )}
 
       <div className="two-cols">
-        <Discussion title="Titres les plus commentés" items={tracks} tracks />
-        <Discussion title="Albums les plus commentés" items={albums} tracks={false} />
+        <Discussion title={tx("mostDiscussedTracks")} items={tracks} tracks locale={locale} />
+        <Discussion title={tx("mostDiscussedAlbums")} items={albums} tracks={false} locale={locale} />
       </div>
 
       {releases.length > 0 && (
         <div id="nouveautes">
-          <Carousel eyebrow="Tout juste sortis" title="Nouveautés de la semaine">
+          <Carousel eyebrow={tx("justReleased")} title={tx("freshThisWeek")}>
             {releases.map((a) => (
-              <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} badge="Nouveau" />
+              <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} badge={tx("new")} />
             ))}
           </Carousel>
         </div>
       )}
 
       {topRated.length > 0 && (
-        <Carousel eyebrow="Classement des membres" title="Les mieux notés sur Pépite">
+        <Carousel eyebrow={tx("memberCharts")} title={tx("bestRated")}>
           {topRated.map((a, i) => (
             <AlbumTile
               key={a.album_id}
@@ -200,7 +211,7 @@ async function Overview({ genres }: { genres: Awaited<ReturnType<typeof getGenre
 }
 
 // Liste « les plus commentés » : on y voit le nombre de commentaires et d'avis.
-function Discussion({ title, items, tracks }: { title: string; items: Discussed[]; tracks: boolean }) {
+function Discussion({ title, items, tracks, locale }: { title: string; items: Discussed[]; tracks: boolean; locale: Locale }) {
   return (
     <section className="rail-box discussed">
       <h2 className="rail-title">
@@ -223,7 +234,7 @@ function Discussion({ title, items, tracks }: { title: string; items: Discussed[
                     <small>{it.artist_name}</small>
                   </span>
                 </Link>
-                <span className="rank-stat" title={`${it.reviews} avis`}>
+                <span className="rank-stat" title={`${it.reviews} ${t(locale, "reviews")}`}>
                   <Icon name="comment" size={15} />
                   {it.comments}
                 </span>
@@ -233,14 +244,15 @@ function Discussion({ title, items, tracks }: { title: string; items: Discussed[
         </ol>
       ) : (
         <p className="small">
-          Pas encore de discussion. Note un {tracks ? "titre" : "album"} et lance la conversation !
+          {t(locale, "noDiscussion").replace("{item}", tracks ? t(locale, "tracks").toLowerCase() : t(locale, "albums").toLowerCase())}
         </p>
       )}
     </section>
   );
 }
 
-async function SceneView({ slug }: { slug: string }) {
+async function SceneView({ slug, locale }: { slug: string; locale: Locale }) {
+  const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const scene = await getLocalScene(slug);
   const tracks = scene?.tracks ?? [];
   // Les albums d'où viennent ces titres, sans doublon.
@@ -248,30 +260,31 @@ async function SceneView({ slug }: { slug: string }) {
   return (
     <>
       {albums.length > 0 && (
-        <Carousel eyebrow="D'où viennent ces sons" title="Albums">
+        <Carousel eyebrow={tx("whereSoundsComeFrom")} title={tx("albums")}>
           {albums.map((t) => (
             <AlbumTile key={t.albumId} id={t.albumId} title={t.albumTitle} subtitle={t.artist} cover={t.cover} />
           ))}
         </Carousel>
       )}
       <section>
-        <h2 className="section-title">Titres</h2>
+        <h2 className="section-title">{tx("tracks")}</h2>
         {tracks.length ? (
           <ChartTracks tracks={tracks.slice(0, 30)} />
         ) : (
-          <div className="empty">Rien à afficher pour l&apos;instant. Réessaie dans un moment.</div>
+          <div className="empty">{tx("nothingToShow")}</div>
         )}
       </section>
     </>
   );
 }
 
-async function GenreView({ id }: { id: number }) {
+async function GenreView({ id, locale }: { id: number; locale: Locale }) {
+  const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const chart = await getChart(id);
   return (
     <>
       {chart.albums.length > 0 && (
-        <Carousel eyebrow="Les plus écoutés" title="Albums tendance">
+        <Carousel eyebrow={tx("mostListened")} title={tx("trendingAlbums")}>
           {chart.albums.map((a, i) => (
             <AlbumTile key={a.id} id={a.id} title={a.title} subtitle={a.artist} cover={a.cover} badge={`#${i + 1}`} />
           ))}
@@ -279,7 +292,7 @@ async function GenreView({ id }: { id: number }) {
       )}
       {chart.artists.length > 0 && (
         <section className="carousel">
-          <h2 className="section-title">Artistes du moment</h2>
+          <h2 className="section-title">{tx("trendingArtists")}</h2>
           <div className="carousel-track artists-row">
             {chart.artists.map((a) => (
               <Link key={a.id} href={`/artiste/${a.id}`} className="artist-tile">
@@ -291,11 +304,11 @@ async function GenreView({ id }: { id: number }) {
         </section>
       )}
       <section>
-        <h2 className="section-title">Titres les plus écoutés</h2>
+        <h2 className="section-title">{tx("mostListenedTracks")}</h2>
         {chart.tracks.length ? (
           <ChartTracks tracks={chart.tracks.slice(0, 20)} />
         ) : (
-          <div className="empty">Rien à afficher pour ce genre pour l&apos;instant. Réessaie dans un moment.</div>
+          <div className="empty">{tx("nothingToShow")}</div>
         )}
       </section>
     </>

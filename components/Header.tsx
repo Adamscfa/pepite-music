@@ -11,6 +11,9 @@ import NavLink from "./NavLink";
 import PublishButton from "./PublishButton";
 import SearchBox from "./SearchBox";
 import ThemeToggle, { type Theme } from "./ThemeToggle";
+import LanguageSelector from "./LanguageSelector";
+import { getLocale } from "@/lib/server-locale";
+import { t } from "@/lib/i18n";
 
 const Badge = ({ n }: { n: number }) => (n > 0 ? <i className="dot">{n > 99 ? "99+" : n}</i> : null);
 
@@ -35,44 +38,47 @@ function Item({ href, match, icon, label, count = 0 }: { href: string; match: st
 
 // Barre latérale (ordinateur), barre du haut, et menu du bas (téléphone).
 export default async function Header() {
-  const me = await getCurrentProfile();
+  const [me, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
   const unread = me ? await getUnreadCounts(me.id) : { notifications: 0, messages: 0 };
   const theme = ((await cookies()).get("theme")?.value ?? "auto") as Theme;
+  const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const profile = me ? `/profil/${me.username}` : "/connexion";
 
   return (
     <>
       <aside className="sidebar">
         <Link href="/" className="side-logo">
-          <img src="/logo.png" alt="" width={48} height={48} />
+          <img src="/logo-mark.png" alt="" width={58} height={40} className="logo-mark" />
           <span>
             Pépite
-            <small>Écoute · Note · Partage</small>
+            <small>{tx("siteTagline")}</small>
           </span>
         </Link>
 
-        <nav className="side-nav" aria-label="Menu principal">
-          <Item href="/" match="/" icon="home" label="Accueil" />
-          <Item href="/explorer" match="/explorer" icon="explore" label="Explorer" />
-          <Item href="/classements" match="/classements" icon="chart" label="Classements" />
+        <nav className="side-nav" aria-label={tx("mainMenu")}>
+          <Item href="/" match="/" icon="home" label={tx("home")} />
+          <Item href="/explorer" match="/explorer" icon="explore" label={tx("explore")} />
+          <Item href="/classements" match="/classements" icon="chart" label={tx("charts")} />
           {me ? (
             <>
-              <Item href={`${profile}#notes`} match="/mes-albums" icon="disc" label="Mes albums" />
-              <Item href={`${profile}#favoris`} match="/mes-favoris" icon="heart" label="Mes favoris" />
-              <Item href="/notifications" match="/notifications" icon="bell" label="Notifications" count={unread.notifications} />
-              <Item href="/messages" match="/messages" icon="mail" label="Messages" count={unread.messages} />
-              <Item href={profile} match={profile} icon="user" label="Profil" />
-              {me.is_admin && <Item href="/moderation" match="/moderation" icon="shield" label="Modération" />}
+              <Item href={`${profile}#notes`} match="/mes-albums" icon="disc" label={tx("myAlbums")} />
+              <Item href={`${profile}#favoris`} match="/mes-favoris" icon="heart" label={tx("favorites")} />
+              <Item href="/notifications" match="/notifications" icon="bell" label={tx("notifications")} count={unread.notifications} />
+              <Item href="/messages" match="/messages" icon="mail" label={tx("messages")} count={unread.messages} />
+              <Item href={profile} match={profile} icon="user" label={tx("profile")} />
+              {me.is_admin && <Item href="/moderation" match="/moderation" icon="shield" label={tx("moderation")} />}
+              {me.is_admin && <Item href="/tableau-de-bord" match="/tableau-de-bord" icon="chart" label={tx("dashboard")} />}
+              {me.is_admin && <Item href="/studio" match="/studio" icon="sparkle" label={tx("studio")} />}
             </>
           ) : (
-            <Item href="/connexion" match="/connexion" icon="user" label="Connexion" />
+            <Item href="/connexion" match="/connexion" icon="user" label={tx("login")} />
           )}
         </nav>
 
-        <PublishButton loggedIn={Boolean(me)} />
+        <PublishButton loggedIn={Boolean(me)} locale={locale} />
 
         <div className="side-trends">
-          <h2>Tendances</h2>
+          <h2>{tx("trends")}</h2>
           {TRENDS.map((t) => (
             <Link key={t.tag} href={t.href}>
               # {t.tag}
@@ -82,34 +88,37 @@ export default async function Header() {
 
         <div className="side-bottom">
           <AppPanel variant="side" loggedIn={Boolean(me)} />
-          <ThemeToggle initial={theme} withLabel />
+          <LanguageSelector locale={locale} />
+          <ThemeToggle initial={theme} withLabel locale={locale} />
           {me && (
             <form action={signOut}>
               <button type="submit" className="side-logout">
-                <Icon name="logout" size={18} /> Déconnexion
+                <Icon name="logout" size={18} /> {tx("logout")}
               </button>
             </form>
           )}
-          <nav className="side-links" aria-label="Informations">
-            <Link href="/confidentialite">Confidentialité</Link>
-            <Link href="/conditions">Conditions</Link>
-            <Link href="/contact">Contact</Link>
+          <nav className="side-links" aria-label={tx("information")}>
+            <Link href="/reglages">{tx("settings")}</Link>
+            <Link href="/confidentialite">{tx("privacy")}</Link>
+            <Link href="/conditions">{tx("terms")}</Link>
+            <Link href="/contact">{tx("contact")}</Link>
           </nav>
         </div>
       </aside>
 
       <header className="top">
         <Link href="/" className="top-logo" aria-label="Pépite, accueil">
-          <img src="/logo.png" alt="" width={34} height={34} />
+          <img src="/logo-mark.png" alt="" width={38} height={26} className="logo-mark" />
+          <span className="top-word">Pépite</span>
         </Link>
-        <SearchBox />
+        <SearchBox locale={locale} />
         <div className="top-actions">
           {me ? (
             <>
               <Link
                 href="/notifications"
                 className="top-icon"
-                aria-label={`Notifications${unread.notifications ? `, ${unread.notifications} non lues` : ""}`}
+                aria-label={`${tx("notifications")}${unread.notifications ? `, ${unread.notifications} ${tx("unread")}` : ""}`}
               >
                 <Icon name="bell" size={24} />
                 <Badge n={unread.notifications} />
@@ -122,18 +131,23 @@ export default async function Header() {
                 <div className="me-pop">
                   <b>{me.display_name}</b>
                   <small>@{me.username}</small>
-                  <Link href={profile}>Mon profil</Link>
-                  <Link href="/messages">Messages{unread.messages ? ` (${unread.messages})` : ""}</Link>
-                  <Link href={`${profile}#favoris`}>Mes favoris</Link>
-                  <Link href={`${profile}/annee`}>Mon année en musique</Link>
-                  <Link href="/classements">Classements</Link>
-                  {me.is_admin && <Link href="/moderation">Modération</Link>}
-                  <Link href="/contact">Contact</Link>
+                  <Link href={profile}>{tx("myProfile")}</Link>
+                  <Link href="/messages">{tx("messages")}{unread.messages ? ` (${unread.messages})` : ""}</Link>
+                  <Link href={`${profile}#favoris`}>{tx("favorites")}</Link>
+                  <Link href={`${profile}/annee`}>{tx("myYear")}</Link>
+                  <Link href={`${profile}#inviter`}>{tx("inviteFriends")}</Link>
+                  <Link href="/reglages">{tx("settings")}</Link>
+                  <Link href="/classements">{tx("charts")}</Link>
+                  {me.is_admin && <Link href="/moderation">{tx("moderation")}</Link>}
+                  {me.is_admin && <Link href="/tableau-de-bord">{tx("dashboard")}</Link>}
+                  {me.is_admin && <Link href="/studio">{tx("studio")}</Link>}
+                  <Link href="/contact">{tx("contact")}</Link>
                   <div className="me-pop-theme">
-                    <ThemeToggle initial={theme} withLabel />
+                    <ThemeToggle initial={theme} withLabel locale={locale} />
                   </div>
+                  <LanguageSelector locale={locale} compact />
                   <form action={signOut}>
-                    <button type="submit">Déconnexion</button>
+                    <button type="submit">{tx("logout")}</button>
                   </form>
                 </div>
               </details>
@@ -141,22 +155,24 @@ export default async function Header() {
           ) : (
             <>
               <Link href="/connexion" className="btn ghost top-login">
-                Connexion
+                {tx("login")}
               </Link>
               <Link href="/connexion?mode=inscription" className="btn violet">
-                S&apos;inscrire
+                {tx("signUp")}
               </Link>
             </>
           )}
           {!me && (
-            <span className="mobile-only">
-              <ThemeToggle initial={theme} />
+            <span className="mobile-only mobile-preferences">
+              <Link href="/reglages">{tx("settings")}</Link>
+              <LanguageSelector locale={locale} compact />
+              <ThemeToggle initial={theme} locale={locale} />
             </span>
           )}
         </div>
       </header>
       {me && <LiveUpdates userId={me.id} />}
-      <BottomNav username={me?.username ?? null} notifications={unread.notifications} messages={unread.messages} />
+      <BottomNav username={me?.username ?? null} notifications={unread.notifications} messages={unread.messages} locale={locale} />
     </>
   );
 }

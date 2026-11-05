@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { type Locale, t } from "@/lib/i18n";
 
 export type Theme = "auto" | "light" | "dark";
 
 const NEXT: Record<Theme, Theme> = { auto: "dark", dark: "light", light: "auto" };
-const LABEL: Record<Theme, string> = { auto: "Thème automatique", dark: "Thème sombre", light: "Thème clair" };
 const ICON: Record<Theme, React.ReactNode> = {
   auto: (
     <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
@@ -27,14 +27,27 @@ const ICON: Record<Theme, React.ReactNode> = {
 };
 
 // Change le thème tout de suite et le retient un an (cookie lu par le serveur, sans clignotement).
-export default function ThemeToggle({ initial, withLabel = false }: { initial: Theme; withLabel?: boolean }) {
+export default function ThemeToggle({
+  initial,
+  withLabel = false,
+  locale,
+}: {
+  initial: Theme;
+  withLabel?: boolean;
+  locale: Locale;
+}) {
   const [theme, setTheme] = useState(initial);
+  const label = {
+    auto: t(locale, "automaticTheme"),
+    dark: t(locale, "darkTheme"),
+    light: t(locale, "lightTheme"),
+  }[theme];
   return (
     <button
       type="button"
       className={withLabel ? "theme-switch" : "icon-btn"}
-      title={`${LABEL[theme]} (cliquer pour changer)`}
-      aria-label={`${LABEL[theme]}. Changer de thème`}
+      title={`${label} (${t(locale, "clickToChange")})`}
+      aria-label={`${label}. ${t(locale, "changeTheme")}`}
       onClick={() => {
         const next = NEXT[theme];
         setTheme(next);
@@ -46,7 +59,7 @@ export default function ThemeToggle({ initial, withLabel = false }: { initial: T
       {ICON[theme]}
       {withLabel && (
         <>
-          <span>{LABEL[theme]}</span>
+          <span>{label}</span>
           <i className="switch" data-on={theme === "dark" ? "" : undefined} />
         </>
       )}
