@@ -55,6 +55,21 @@ async function options(text: string) {
 const big = (url: string, px = 1000) => deezerAt(url, px);
 const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
+async function imageDataUri(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url, { cache: "force-cache" });
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!response.ok || !contentType.startsWith("image/")) {
+      console.error(`Image Deezer non disponible (${response.status}) : ${url}`);
+      return null;
+    }
+    return `data:${contentType};base64,${Buffer.from(await response.arrayBuffer()).toString("base64")}`;
+  } catch (error) {
+    console.error(`Image Deezer inaccessible : ${url}`, error);
+    return null;
+  }
+}
+
 export async function GET(request: Request) {
   const q = new URL(request.url).searchParams;
   const slide = q.get("s");
@@ -77,7 +92,7 @@ export async function GET(request: Request) {
     const requestedType = q.get("type");
     const type = requestedType === "artistes" || requestedType === "albums" ? requestedType : "titres";
     const chart = country ? await getPlaylistChart(country.id) : await getChart(0);
-    const entries =
+    const chartEntries =
       type === "artistes"
         ? chart.artists.slice(0, 10).map((artist) => ({
             id: artist.id,
@@ -98,6 +113,12 @@ export async function GET(request: Request) {
               artist: track.artist,
               cover: track.cover,
             }));
+    const entries = await Promise.all(
+      chartEntries.map(async (entry) => ({
+        ...entry,
+        cover: await imageDataUri(big(entry.cover, 500)),
+      })),
+    );
     if (!entries.length) return new Response("Classement Deezer indisponible", { status: 503 });
 
     const colors = {
@@ -151,13 +172,26 @@ export async function GET(request: Request) {
                 return (
                   <div key={track.id} style={{ display: "flex", alignItems: "center", gap: 14, height: 190 }}>
                     <div style={{ fontSize: 30, width: 42, fontWeight: 800 }}>{rank}.</div>
-                    <img
-                      src={big(track.cover, 260)}
-                      width={148}
-                      height={148}
-                      style={{ borderRadius: 4, flexShrink: 0 }}
-                      alt=""
-                    />
+                    {track.cover ? (
+                      <img src={track.cover} width={148} height={148} style={{ borderRadius: 4, flexShrink: 0 }} alt="" />
+                    ) : (
+                      <div
+                        style={{
+                          width: 148,
+                          height: 148,
+                          borderRadius: 4,
+                          flexShrink: 0,
+                          backgroundColor: "rgba(0,0,0,.18)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 44,
+                          color: "rgba(255,255,255,.72)",
+                        }}
+                      >
+                        ♪
+                      </div>
+                    )}
                     <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
                       <div style={{ fontSize: 27, fontWeight: 800, lineHeight: 1.12 }}>{cut(track.title, 30)}</div>
                       {track.artist && (
