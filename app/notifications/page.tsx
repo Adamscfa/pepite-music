@@ -3,7 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import Avatar from "@/components/Avatar";
 import MarkRead from "@/components/MarkRead";
-import { deleteNotification, markNotificationsRead } from "@/app/social-actions";
+import { markNotificationsRead } from "@/app/social-actions";
+import DeleteNotification from "./DeleteNotification";
 import { getCurrentProfile, getNotifications } from "@/lib/data";
 import { describe } from "@/lib/notification-text";
 import { timeAgo } from "@/lib/format";
@@ -33,12 +34,7 @@ export default async function NotificationsPage() {
                     <small>{timeAgo(n.created_at)}</small>
                   </span>
                 </Link>
-                <form action={deleteNotification} className="notif-del">
-                  <input type="hidden" name="notification_id" value={n.id} />
-                  <button type="submit" aria-label="Supprimer cette notification" title="Supprimer">
-                    ✕
-                  </button>
-                </form>
+                <DeleteNotification notificationId={n.id} />
               </div>
             );
           })}

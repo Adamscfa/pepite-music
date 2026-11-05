@@ -3,7 +3,7 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { deleteMessage } from "@/app/social-actions";
+import DeleteMessage from "@/app/messages/DeleteMessage";
 import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
 import DemoBadge from "@/components/DemoBadge";
@@ -163,22 +163,7 @@ export default function ThreadView({
                       <summary aria-label="Plus d'actions" title="Plus d'actions">
                         <Icon name="dots" size={14} />
                       </summary>
-                      <form
-                        action={deleteMessage}
-                        className="comment-pop"
-                        onSubmit={(e) => {
-                          // Le message part pour les deux : un premier clic demande de confirmer.
-                          const f = e.currentTarget;
-                          if (!f.hasAttribute("data-confirm")) {
-                            e.preventDefault();
-                            f.setAttribute("data-confirm", "1");
-                          }
-                        }}
-                      >
-                        <input type="hidden" name="message_id" value={m.id} />
-                        <button type="submit">Supprimer le message</button>
-                        <small className="confirm-hint">Il part aussi chez ton ami. Cliquer encore.</small>
-                      </form>
+                      <DeleteMessage messageId={m.id} />
                     </details>
                   )}
                   <time dateTime={m.created_at} suppressHydrationWarning>
