@@ -218,7 +218,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Exécuter `12-pseudos-modifiables.sql` après le fichier 11 (nécessaire pour changer de pseudo et garder les anciens liens)
 - [ ] Exécuter `13-suppressions.sql` après le fichier 12 (sans lui, supprimer un message ou une notification ne marche pas)
 - [ ] Compléter les traductions anglaise et espagnole des pages restantes (avis, albums, messages, notifications, modération et pages d'information)
-- [ ] Brancher Brevo pour les e-mails et coller les modèles en français (README)
+- [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés
 - [ ] Quand assez de vrais membres sont inscrits : exécuter `demo-supprimer.sql`
