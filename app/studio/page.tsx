@@ -13,15 +13,24 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
   if (!me?.is_admin) notFound();
   const p = await searchParams;
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
-  const theme = (THEMES.find((t) => t.id === one(p.theme))?.id ?? "pays") as StudioTheme;
+  const requestedTheme = one(p.theme);
+  const format = one(p.format) === "affiche" || requestedTheme === "affiche" ? "affiche" : "carrousel";
+  const theme = (THEMES.find((t) => t.id === requestedTheme)?.id ?? "pays") as StudioTheme;
+  const rawKind = one(p.type);
   const kind: StudioKind =
-    theme === "affiche" ? "titres" : theme === "notes" || theme === "sorties" ? "albums" : one(p.type) === "titres" ? "titres" : "albums";
-  const count = theme === "affiche" ? 10 : [5, 10].includes(Number(one(p.nombre))) ? Number(one(p.nombre)) : 10;
+    theme === "notes" || theme === "sorties"
+      ? "albums"
+      : rawKind === "titres" || rawKind === "artistes"
+        ? rawKind
+        : format === "affiche"
+          ? "titres"
+          : "albums";
+  const count = [5, 10].includes(Number(one(p.nombre))) ? Number(one(p.nombre)) : 10;
   const seed = Number(one(p.graine)) || 1;
   const palettes = ["emeraude", "rouge", "bleu"] as const;
   const palette = palettes.find((value) => value === one(p.palette)) ?? "emeraude";
   const { heading, items, caption, country, countries } = await getStudio({
-    theme,
+    theme: format === "affiche" ? "pays" : theme,
     kind,
     // pays vide = la France choisie dans le menu ; absent = le pays du visiteur.
     countryId: p.pays === undefined ? undefined : Number(one(p.pays)) || -1,
@@ -29,13 +38,13 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
     seed,
   });
 
-  const k = kind === "titres" ? "titre" : "album";
+  const k = kind === "titres" ? "titre" : kind === "artistes" ? "artiste" : "album";
   const enc = encodeURIComponent;
-  const slides = theme === "affiche"
+  const slides = format === "affiche"
     ? [
         {
-          src: `/studio/image?s=top10&pays=${country?.id ?? ""}&couleur=${palette}`,
-          name: `top-10-${(country?.code ?? "FR").toLowerCase()}`,
+          src: `/studio/image?s=top10&type=${kind}&pays=${country?.id ?? ""}&couleur=${palette}`,
+          name: `top-10-${kind}-${(country?.code ?? "FR").toLowerCase()}`,
           label: heading,
         },
       ]
@@ -57,6 +66,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
     ];
   const remix = new URLSearchParams({
     theme,
+    format,
     type: kind,
     nombre: String(count),
     graine: String(seed + 1),
@@ -76,17 +86,26 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
 
       <form className="studio-form">
         <label>
-          Thème
-          <select name="theme" defaultValue={theme} className="select">
-            {THEMES.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
+          Format
+          <select name="format" defaultValue={format} className="select">
+            <option value="carrousel">Ancien · carrousel</option>
+            <option value="affiche">Nouveau · affiche Top 10</option>
           </select>
         </label>
+        {format === "carrousel" && (
+          <label>
+            Thème
+            <select name="theme" defaultValue={theme} className="select">
+              {THEMES.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label>
-          Pays (pour « Top d&apos;un pays »)
+          Pays {format === "affiche" ? "(classement Deezer)" : "(pour « Top d'un pays »)"}
           <select name="pays" defaultValue={country?.id ?? ""} className="select">
             <option value="">France</option>
             {countries.map((c) => (
@@ -96,15 +115,25 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
             ))}
           </select>
         </label>
-        {theme === "affiche" ? (
-          <label>
-            Couleur
-            <select name="palette" defaultValue={palette} className="select">
-              <option value="emeraude">Vert émeraude</option>
-              <option value="rouge">Rouge</option>
-              <option value="bleu">Bleu</option>
-            </select>
-          </label>
+        {format === "affiche" ? (
+          <>
+            <label>
+              Classement
+              <select name="type" defaultValue={kind} className="select">
+                <option value="titres">Titres</option>
+                <option value="albums">Albums</option>
+                <option value="artistes">Artistes</option>
+              </select>
+            </label>
+            <label>
+              Couleur
+              <select name="palette" defaultValue={palette} className="select">
+                <option value="emeraude">Vert émeraude</option>
+                <option value="rouge">Rouge</option>
+                <option value="bleu">Bleu</option>
+              </select>
+            </label>
+          </>
         ) : (
           <>
             <label>
@@ -112,6 +141,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
               <select name="type" defaultValue={kind} className="select">
                 <option value="albums">Albums</option>
                 <option value="titres">Titres</option>
+                {["pays", "monde"].includes(theme) && <option value="artistes">Artistes</option>}
               </select>
             </label>
             <label>
@@ -139,10 +169,10 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
 
       {items.length ? (
         <>
-          {theme === "affiche" && (
+          {format === "affiche" && (
             <p className="small">
-              Affiche créée à partir du Top Deezer actuel du pays choisi. Deezer fournit le classement des titres,
-              mais pas les chiffres d&apos;écoutes hebdomadaires affichés dans certains exemples.
+              Affiche créée à partir du classement Deezer actuel du pays choisi. Deezer ne fournit pas les chiffres
+              d&apos;écoutes hebdomadaires affichés dans certains exemples.
             </p>
           )}
           <StudioSlides slides={slides} caption={caption} />

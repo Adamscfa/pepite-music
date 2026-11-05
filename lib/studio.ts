@@ -3,12 +3,14 @@ import { getTopRatedAlbums } from "./data";
 import {
   getChart,
   getCountryCharts,
+  getPlaylistChart,
   getNewReleases,
   getPlaylistTracks,
   type AlbumHit,
   type ChartTrack,
   WORLD_PLAYLIST,
   type CountryChart,
+  type ArtistHit,
 } from "./deezer";
 import { getTrendScope } from "./trends";
 import { inCountry } from "./country-names";
@@ -16,9 +18,9 @@ import { inCountry } from "./country-names";
 // Studio TikTok (réservé aux admins) : une série d'images verticales prêtes à poster
 // en carrousel, avec le texte et les hashtags qui vont avec.
 
-export type StudioTheme = "pays" | "monde" | "notes" | "sorties" | "hasard" | "affiche";
-export type StudioKind = "albums" | "titres";
-export type StudioItem = { kind: "album" | "titre"; id: number; title: string; artist: string };
+export type StudioTheme = "pays" | "monde" | "notes" | "sorties" | "hasard";
+export type StudioKind = "albums" | "titres" | "artistes";
+export type StudioItem = { kind: "album" | "titre" | "artiste"; id: number; title: string; artist: string };
 
 export const THEMES: { id: StudioTheme; label: string }[] = [
   { id: "pays", label: "Top d'un pays" },
@@ -26,7 +28,6 @@ export const THEMES: { id: StudioTheme; label: string }[] = [
   { id: "notes", label: "Les mieux notés sur Pépite" },
   { id: "sorties", label: "Sorties de la semaine" },
   { id: "hasard", label: "Au hasard" },
-  { id: "affiche", label: "Affiche Top 10 du moment" },
 ];
 
 // Titres d'un top et albums dont ils viennent, sans chercher les photos des artistes
@@ -73,7 +74,7 @@ export async function getStudio(opts: {
 }): Promise<{ heading: string; items: StudioItem[]; caption: string; country: CountryChart | null; countries: CountryChart[] }> {
   const countries = (await getCountryCharts()).filter((c) => c.code);
   let country: CountryChart | null = null;
-  if (opts.theme === "pays" || opts.theme === "affiche") {
+  if (opts.theme === "pays") {
     country = countries.find((c) => c.id === opts.countryId) ?? null;
     if (!country && opts.countryId !== -1) {
       const scope = await getTrendScope();
@@ -81,28 +82,33 @@ export async function getStudio(opts: {
     }
   }
   const asAlbums = opts.kind === "albums";
-  const word = asAlbums ? "albums" : "titres";
+  const word = opts.kind === "albums" ? "albums" : opts.kind === "artistes" ? "artistes" : "titres";
   let items: StudioItem[] = [];
   let heading = "";
   let tags: string[] = [];
 
-  type Chart = { tracks: ChartTrack[]; albums: AlbumHit[] };
+  type Chart = { tracks: ChartTrack[]; albums: AlbumHit[]; artists?: ArtistHit[] };
   const fromChart = (chart: Chart): StudioItem[] =>
-    asAlbums
-      ? chart.albums.map((a) => ({ kind: "album" as const, id: a.id, title: a.title, artist: a.artist }))
-      : chart.tracks.map((t) => ({ kind: "titre" as const, id: t.id, title: t.title, artist: t.artist }));
+    opts.kind === "artistes"
+      ? (chart.artists ?? []).map((a) => ({ kind: "artiste" as const, id: a.id, title: a.name, artist: a.name }))
+      : asAlbums
+        ? chart.albums.map((a) => ({ kind: "album" as const, id: a.id, title: a.title, artist: a.artist }))
+        : chart.tracks.map((t) => ({ kind: "titre" as const, id: t.id, title: t.title, artist: t.artist }));
 
-  if (opts.theme === "pays" || opts.theme === "affiche") {
-    const chart = country ? await lightChart(country.id) : await getChart(0);
+  if (opts.theme === "pays") {
+    const chart = country
+      ? opts.kind === "artistes"
+        ? await getPlaylistChart(country.id)
+        : await lightChart(country.id)
+      : await getChart(0);
     const where = country?.name ? inCountry(country.name) : "en France";
-    items = opts.theme === "affiche" ? fromChart({ tracks: chart.tracks, albums: [] }) : fromChart(chart);
-    heading =
-      opts.theme === "affiche"
-        ? `Top 10 du moment ${country?.name ? `· ${country.name}` : "· France"}`
-        : `Top ${opts.count} des ${word} ${where} cette semaine`;
-    tags = [country?.name ? tag(country.name) : "#france", "#top" + (opts.theme === "affiche" ? 10 : opts.count)];
+    items = fromChart(chart);
+    heading = `Top ${opts.count} des ${word} ${where} cette semaine`;
+    tags = [country?.name ? tag(country.name) : "#france", "#top" + opts.count];
   } else if (opts.theme === "monde") {
-    items = fromChart(await lightChart(WORLD_PLAYLIST));
+    const chart =
+      opts.kind === "artistes" ? await getPlaylistChart(WORLD_PLAYLIST) : await lightChart(WORLD_PLAYLIST);
+    items = fromChart(chart);
     heading = `Top ${opts.count} des ${word} dans le monde cette semaine`;
     tags = ["#topmonde", "#top" + opts.count];
   } else if (opts.theme === "notes") {
@@ -122,8 +128,12 @@ export async function getStudio(opts: {
     // Au hasard : un mélange du top du pays, du Top Monde et des sorties.
     const scope = await getTrendScope();
     const [local, world, fresh] = await Promise.all([
-      scope.kind === "pays" ? lightChart(scope.chart.id) : getChart(0),
-      lightChart(WORLD_PLAYLIST),
+      scope.kind === "pays"
+        ? opts.kind === "artistes"
+          ? getPlaylistChart(scope.chart.id)
+          : lightChart(scope.chart.id)
+        : getChart(0),
+      opts.kind === "artistes" ? getPlaylistChart(WORLD_PLAYLIST) : lightChart(WORLD_PLAYLIST),
       getNewReleases(20),
     ]);
     const pool = [
@@ -137,12 +147,10 @@ export async function getStudio(opts: {
     tags = ["#decouverte", "#pepite"];
   }
 
-  items = items.slice(0, opts.theme === "affiche" ? 10 : opts.count);
+  items = items.slice(0, opts.count);
   const caption = [
     `${heading} 🔥`,
-    opts.theme === "affiche"
-      ? "Le Top 10 du moment selon les classements Deezer. Lequel tu écoutes en boucle ? 👇"
-      : "Lequel tu écoutes en boucle ? Dis-le en commentaire 👇",
+    "Lequel tu écoutes en boucle ? Dis-le en commentaire 👇",
     "Note-les et donne ton avis sur Pépite (lien en bio).",
     "",
     [...tags, "#musique", "#musiquetiktok", "#pepitemusic", "#fyp"].join(" "),
