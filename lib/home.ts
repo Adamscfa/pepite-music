@@ -2,7 +2,7 @@ import "server-only";
 import { createClient as createAnonClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
-import { author, tally, weekStart, type Contributor, type Profile, type WeeklyAlbum } from "./data";
+import { tally, weekStart, type Contributor, type Profile, type WeeklyAlbum } from "./data";
 import { hasSupabaseConfig, supabaseKey, supabaseUrl } from "./supabase/config";
 import { getTrends, type Trends } from "./trends";
 
@@ -15,7 +15,8 @@ const KEEP = 300; // secondes
 
 const anon = () => createAnonClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
 
-const REVIEW_AUTHORS = "*, profile:profiles!reviews_user_id_fkey!inner(*)";
+const REVIEW_AUTHORS =
+  "user_id, hidden, profile:profiles!reviews_user_id_fkey!inner(username, display_name, avatar_url, is_demo)";
 
 const topContributors = unstable_cache(
   async (): Promise<Contributor[]> => {
@@ -25,11 +26,21 @@ const topContributors = unstable_cache(
       .select(REVIEW_AUTHORS)
       .order("updated_at", { ascending: false })
       .limit(3000)
-      .returns<{ user_id: string; hidden?: boolean; profile: Profile }[]>();
+      .returns<{
+        user_id: string;
+        hidden?: boolean;
+        profile: Pick<Profile, "username" | "display_name" | "avatar_url" | "is_demo">;
+      }[]>();
     const byUser = new Map<string, Contributor>();
     for (const r of data ?? []) {
       if (r.hidden || !r.profile) continue;
-      const c = byUser.get(r.user_id) ?? { ...author(r.profile), count: 0 };
+      const c = byUser.get(r.user_id) ?? {
+        username: r.profile.username,
+        display_name: r.profile.display_name,
+        avatar_url: r.profile.avatar_url,
+        is_demo: Boolean(r.profile.is_demo),
+        count: 0,
+      };
       c.count += 1;
       byUser.set(r.user_id, c);
     }

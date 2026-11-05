@@ -177,6 +177,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     propre zone défilante et le clavier redimensionne toujours la conversation.
     La page elle-même reste verrouillée pendant la conversation : seul le fil
     défile, sans déplacer le cadre.
+35. Requêtes des contributeurs (5 novembre 2026) : l'accueil et Explorer ne
+    récupèrent plus toutes les colonnes de 3 000 avis pour compter les membres ;
+    seules les données de comptage et les champs de profil affichés sont lus.
+    Aucun changement visuel ou SQL.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -244,6 +248,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Corriger la largeur de l'éditeur de profil sur téléphone et remplacer les icônes de recommandation et de l'année musicale
 - [x] Aligner l'icône de recommandation à gauche et colorer les boutons ouverts/sélectionnés
 - [x] Réduire l'attente sur les pages album en chargeant Deezer, avis et session en parallèle, sans modifier l'interface
+- [x] Réduire les données chargées pour les classements de contributeurs, sans changer l'interface
 - [x] Garder le nom de l'ami en haut, les messages défilants au milieu et la barre d'écriture au-dessus du clavier, comme WhatsApp
 - [x] Garder le cadre fixe sur téléphone et réserver le défilement aux messages
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
