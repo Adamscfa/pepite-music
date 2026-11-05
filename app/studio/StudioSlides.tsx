@@ -10,11 +10,7 @@ type Slide = { src: string; name: string; label: string };
 const BATCH = 4;
 
 async function toJpeg(slide: Slide): Promise<File> {
-  const response = await fetch(slide.src, { cache: "no-store" });
-  if (!response.ok) throw new Error("poster");
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.startsWith("image/")) throw new Error("poster");
-  const png = await response.blob();
+  const png = await (await fetch(slide.src, { cache: "force-cache" })).blob();
   const bitmap = await createImageBitmap(png);
   const canvas = document.createElement("canvas");
   canvas.width = bitmap.width;
@@ -103,14 +99,7 @@ export default function StudioSlides({ slides, caption }: { slides: Slide[]; cap
         {slides.map((s, i) => (
           <figure key={s.src}>
             <button type="button" className="studio-one" onClick={() => save([s], -1 - i)} title="Enregistrer cette image">
-              <img
-                src={s.src}
-                alt={s.label}
-                loading={i < 6 ? "eager" : "lazy"}
-                width={1080}
-                height={1920}
-                onError={() => setStatus("L’affiche n’a pas pu être chargée. Réessaie dans un instant.")}
-              />
+              <img src={s.src} alt={s.label} loading={i < 6 ? "eager" : "lazy"} width={1080} height={1920} />
             </button>
             <figcaption>{s.label}</figcaption>
           </figure>
