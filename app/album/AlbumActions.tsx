@@ -8,21 +8,29 @@ export default function AlbumActions({
   albumId,
   lists,
   friends,
+  isFavorite,
 }: {
   albumId: number;
   lists: { id: number; title: string }[];
   friends: { username: string; display_name: string }[];
+  isFavorite: boolean;
 }) {
   const [favState, favAction, favPending] = useActionState<FormState, FormData>(addFavorite, {});
   const [listState, listAction, listPending] = useActionState<FormState, FormData>(addToList, {});
   const [recoState, recoAction, recoPending] = useActionState<FormState, FormData>(sendMessage, {});
+  const favoriteSaved = isFavorite || Boolean(favState.done);
 
   return (
     <div className="box" style={{ marginTop: 14 }}>
       <form action={favAction}>
         <input type="hidden" name="album_id" value={albumId} />
-        <button className="btn ghost" disabled={favPending}>
-          ♥ Ajouter à mes 4 favoris
+        <button
+          className={`btn ghost favorite-action${favoriteSaved ? " is-favorite" : ""}`}
+          disabled={favPending || favoriteSaved}
+          aria-pressed={favoriteSaved}
+        >
+          <FavoriteIcon />
+          <span>Ajouter à mes 4 favoris</span>
         </button>
         {favState.error && <p className="error">{favState.error}</p>}
         {favState.done && !favPending && <p className="success">Ajouté à tes favoris.</p>}
@@ -53,7 +61,7 @@ export default function AlbumActions({
       <details className="reco">
         <summary className="btn ghost">
           <EnvelopeAtIcon />
-          Recommander à un ami
+          <span>Recommander à un ami</span>
         </summary>
         {friends.length ? (
           <form action={recoAction} style={{ marginTop: 10 }}>
@@ -85,6 +93,19 @@ export default function AlbumActions({
         )}
       </details>
     </div>
+  );
+}
+
+function FavoriteIcon() {
+  return (
+    <svg
+      className="favorite-icon"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12 21s-8.5-5.2-8.5-11.4A4.6 4.6 0 0 1 12 6.8a4.6 4.6 0 0 1 8.5 2.8C20.5 15.8 12 21 12 21Z" />
+    </svg>
   );
 }
 

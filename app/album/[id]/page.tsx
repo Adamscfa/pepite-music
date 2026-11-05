@@ -5,7 +5,7 @@ import Cover from "@/components/Cover";
 import CoverHero from "@/components/CoverHero";
 import ListenLinks from "@/components/ListenLinks";
 import { MemberReviews, RatePanel, ScoreSummary } from "@/components/Ratings";
-import { getAlbumReviews, getCurrentProfile, getFriends, getUserLists, getWeeklyPepite } from "@/lib/data";
+import { getAlbumReviews, getCurrentProfile, getFavorites, getFriends, getUserLists, getWeeklyPepite } from "@/lib/data";
 import { getAlbum } from "@/lib/deezer";
 import AlbumActions from "../AlbumActions";
 import TrackList from "../TrackList";
@@ -27,9 +27,9 @@ export async function generateMetadata({ params }: PageProps<"/album/[id]">): Pr
 export default async function AlbumPage({ params }: PageProps<"/album/[id]">) {
   const album = await loadAlbum(params);
   const [reviews, me] = await Promise.all([getAlbumReviews(album.id), getCurrentProfile()]);
-  const [myLists, friends, weekly] = me
-    ? await Promise.all([getUserLists(me.id), getFriends(me.id), getWeeklyPepite(me.id)])
-    : [[], [], null];
+  const [myLists, friends, weekly, favorites] = me
+    ? await Promise.all([getUserLists(me.id), getFriends(me.id), getWeeklyPepite(me.id), getFavorites(me.id)])
+    : [[], [], null, []];
 
   return (
     <>
@@ -63,6 +63,7 @@ export default async function AlbumPage({ params }: PageProps<"/album/[id]">) {
               albumId={album.id}
               lists={myLists.map((l) => ({ id: l.id, title: l.title }))}
               friends={friends}
+              isFavorite={favorites.some((favorite) => favorite.album_id === album.id)}
             />
           )}
           {weekly && (
