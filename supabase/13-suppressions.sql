@@ -6,10 +6,12 @@
 -- notifications.
 
 -- 1. Messages : on ne supprime que ceux qu'on a envoyés.
+drop policy if exists "Chacun supprime ses messages envoyés" on public.messages;
 create policy "Chacun supprime ses messages envoyés" on public.messages for delete
   using ((select auth.uid()) = sender_id);
 
 -- 2. Notifications : chacun supprime les siennes.
+drop policy if exists "Chacun supprime ses notifications" on public.notifications;
 create policy "Chacun supprime ses notifications" on public.notifications for delete
   using ((select auth.uid()) = user_id);
 
@@ -18,7 +20,7 @@ create policy "Chacun supprime ses notifications" on public.notifications for de
 alter table public.messages replica identity full;
 
 -- 4. Vider une conversation : les échanges des deux côtés partent d'un coup.
-create function public.delete_thread(friend uuid)
+create or replace function public.delete_thread(friend uuid)
 returns boolean
 language plpgsql
 security definer set search_path = ''
