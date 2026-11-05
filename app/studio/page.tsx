@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/data";
 import { getStudio, THEMES, type StudioKind, type StudioTheme } from "@/lib/studio";
+import { createStudioPoster } from "@/lib/studio-poster";
 import StudioSlides from "./StudioSlides";
 
 export const metadata: Metadata = { title: "Studio TikTok" };
@@ -40,10 +41,14 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
 
   const k = kind === "titres" ? "titre" : kind === "artistes" ? "artiste" : "album";
   const enc = encodeURIComponent;
+  const poster =
+    format === "affiche" && items.length
+      ? await createStudioPoster(items, country?.name ?? "France", kind, palette)
+      : null;
   const slides = format === "affiche"
     ? [
         {
-          src: `/studio/image?s=top10&type=${kind}&pays=${country?.id ?? ""}&couleur=${palette}`,
+          src: poster ?? "",
           name: `top-10-${kind}-${(country?.code ?? "FR").toLowerCase()}`,
           label: heading,
         },
@@ -171,7 +176,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
         <>
           {format === "affiche" && (
             <p className="small">
-              Affiche créée à partir du classement Deezer actuel du pays choisi. Deezer ne fournit pas les chiffres
+              Affiche créée avec le classement Deezer actuel du pays choisi. Deezer ne fournit pas les chiffres
               d&apos;écoutes hebdomadaires affichés dans certains exemples.
             </p>
           )}
