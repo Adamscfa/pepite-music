@@ -155,15 +155,17 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     carrousel et la nouvelle affiche Top 10. Les deux formats permettent les
     classements de titres, d'albums et d'artistes Deezer, avec choix du pays.
 30. Affiches Studio (5 novembre 2026) : les pochettes et photos d'artistes sont
-    maintenant chargées par le serveur et intégrées à l'affiche avant le rendu ;
-    une image Deezer indisponible ne bloque plus toute la génération.
+    intégrées lors du rendu serveur. L'affiche est chargée séparément après
+    l'affichage du Studio pour qu'un délai de Deezer ou du rendu ne bloque pas
+    toute la page ; une image Deezer indisponible est remplacée.
 31. Supprimer messages et notifications (5 novembre 2026) : sur chaque message
     qu'on a envoyé, un menu « ⋮ » apparaît au survol de la bulle, avec « Supprimer
     le message » (deux clics pour confirmer : il disparaît chez les deux, comme
     sur WhatsApp). Dans la liste des conversations, un bouton corbeille vide toute
     la conversation avec un ami (🗑 puis clic de confirmation). Sur chaque
     notification, une croix « ✕ » pour l'effacer. Fichier `13-suppressions.sql`
-    (après le 12) : droits de suppression dans la base + fonction `delete_thread`.
+    à exécuter après le 12 : il autorise la suppression dans la base et ajoute la
+    fonction `delete_thread`.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -194,8 +196,8 @@ Supabase : aucune requête SQL n’est à exécuter pour la langue. La détectio
 pays utilise Vercel ; en développement local, le navigateur reste prioritaire
 et l'espagnol se choisit dans les réglages.
 
-La correction du chargement des images d'affiche dans le Studio ne modifie pas
-la base Supabase : aucun SQL à exécuter.
+La génération de l'affiche directement dans la page Studio ne modifie pas la
+base Supabase : aucun SQL à exécuter.
 
 Remplacer « à vérifier » par « oui » une fois confirmé. Pour vérifier, dans
 Supabase, **Table Editor** :

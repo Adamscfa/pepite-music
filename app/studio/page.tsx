@@ -171,7 +171,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
         <>
           {format === "affiche" && (
             <p className="small">
-              Affiche créée à partir du classement Deezer actuel du pays choisi. Deezer ne fournit pas les chiffres
+              Affiche créée avec le classement Deezer actuel du pays choisi. Deezer ne fournit pas les chiffres
               d&apos;écoutes hebdomadaires affichés dans certains exemples.
             </p>
           )}
