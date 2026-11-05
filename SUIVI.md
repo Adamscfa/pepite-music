@@ -171,6 +171,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 33. Clavier des messages (5 novembre 2026) : sur téléphone, l'en-tête avec le
     nom de l'ami et la barre d'écriture restent fixés dans la partie visible
     au-dessus du clavier. Aucun changement de présentation clavier fermé ni SQL.
+34. Clavier Android (5 novembre 2026) : ne dépend plus d'une différence de
+    hauteur minimale entre la page et la zone visible pour garder les barres
+    fixes pendant la saisie; certains téléphones ne signalent pas cette différence.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -198,6 +201,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (visuel) | Boutons de recommandation et de favoris | Aucun SQL à exécuter |
 | Aucun (performance) | Chargement parallèle des pages album | Aucun SQL à exécuter |
 | Aucun (interface mobile) | Barres de conversation visibles avec le clavier | Aucun SQL à exécuter |
+| Aucun (correctif clavier) | Détection robuste de la saisie sur téléphone | Aucun SQL à exécuter |
 | `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | non (à faire) |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
@@ -239,6 +243,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Aligner l'icône de recommandation à gauche et colorer les boutons ouverts/sélectionnés
 - [x] Réduire l'attente sur les pages album en chargeant Deezer, avis et session en parallèle, sans modifier l'interface
 - [x] Garder le nom de l'ami et la barre d'écriture visibles au-dessus du clavier sur téléphone
+- [x] Corriger la détection du clavier sur les téléphones dont la hauteur de page ne change pas
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés

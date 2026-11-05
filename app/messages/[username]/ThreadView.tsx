@@ -73,11 +73,9 @@ export default function ThreadView({
         active instanceof HTMLTextAreaElement ||
         (active instanceof HTMLInputElement &&
           !["button", "checkbox", "file", "hidden", "submit"].includes(active.type));
-      const keyboardHeight = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
-      const keyboardOpen =
-        window.matchMedia("(max-width: 760px)").matches &&
-        isEditable &&
-        window.innerHeight - viewport.height > 120;
+      const layoutHeight = document.documentElement.clientHeight || window.innerHeight;
+      const keyboardHeight = Math.max(0, layoutHeight - viewport.height - viewport.offsetTop);
+      const keyboardOpen = window.matchMedia("(max-width: 760px)").matches && isEditable;
       const root = document.documentElement;
 
       document.body.classList.toggle("chat-keyboard-open", keyboardOpen);
