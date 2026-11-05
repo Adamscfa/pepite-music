@@ -3,9 +3,11 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import DeleteMessage from "@/app/messages/DeleteMessage";
 import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
 import DemoBadge from "@/components/DemoBadge";
+import Icon from "@/components/Icon";
 import ReadTicks from "@/components/ReadTicks";
 import type { Author, Message } from "@/lib/data";
 import { emojiCount } from "@/lib/format";
@@ -156,6 +158,14 @@ export default function ThreadView({
                 )}
                 {m.body && <p>{m.body}</p>}
                 <small className="when">
+                  {mine && (
+                    <details className="comment-more bubble-more">
+                      <summary aria-label="Plus d'actions" title="Plus d'actions">
+                        <Icon name="dots" size={14} />
+                      </summary>
+                      <DeleteMessage messageId={m.id} />
+                    </details>
+                  )}
                   <time dateTime={m.created_at} suppressHydrationWarning>
                     {ready ? time(date) : ""}
                   </time>

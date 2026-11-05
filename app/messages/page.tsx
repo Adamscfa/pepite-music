@@ -5,6 +5,7 @@ import Avatar from "@/components/Avatar";
 import ReadTicks from "@/components/ReadTicks";
 import { getConversations, getCurrentProfile, getFriends } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
+import DeleteConversation from "./DeleteConversation";
 
 export const metadata: Metadata = { title: "Messages" };
 
@@ -26,23 +27,22 @@ export default async function MessagesPage() {
       {conversations.length > 0 && (
         <div className="notifs">
           {conversations.map((c) => (
-            <Link
-              key={c.friend.id}
-              href={`/messages/${c.friend.username}`}
-              className={c.unread ? "notif unread" : "notif"}
-            >
-              <Avatar user={c.friend} />
-              <span>
-                <b>{c.friend.display_name}</b>
-                {c.unread > 0 && <i className="dot inline">{c.unread}</i>}
-                <small>
-                  {c.last.sender_id === me.id && <ReadTicks read={Boolean(c.last.read_at)} />}
-                  {c.last.sender_id === me.id ? "Toi : " : ""}
-                  {c.last.album_title ? `💿 ${c.last.album_title}` : c.last.body.slice(0, 80)} ·{" "}
-                  {timeAgo(c.last.created_at)}
-                </small>
-              </span>
-            </Link>
+            <div key={c.friend.id} className={c.unread ? "notif unread" : "notif"}>
+              <Link href={`/messages/${c.friend.username}`} className="notif-main">
+                <Avatar user={c.friend} />
+                <span>
+                  <b>{c.friend.display_name}</b>
+                  {c.unread > 0 && <i className="dot inline">{c.unread}</i>}
+                  <small>
+                    {c.last.sender_id === me.id && <ReadTicks read={Boolean(c.last.read_at)} />}
+                    {c.last.sender_id === me.id ? "Toi : " : ""}
+                    {c.last.album_title ? `💿 ${c.last.album_title}` : c.last.body.slice(0, 80)} ·{" "}
+                    {timeAgo(c.last.created_at)}
+                  </small>
+                </span>
+              </Link>
+              <DeleteConversation friendId={c.friend.id} friendName={c.friend.display_name} />
+            </div>
           ))}
         </div>
       )}

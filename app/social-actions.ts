@@ -300,6 +300,46 @@ export async function markThreadRead(friendId: string) {
   revalidatePath("/", "layout");
 }
 
+// Règle de sécurité « fichier 13 » : on ne supprime que ses propres messages envoyés,
+// et ils disparaissent pour les deux personnes (comme sur WhatsApp).
+export async function deleteMessage(_prev: FormState, formData: FormData): Promise<FormState> {
+  const me = await getCurrentProfile();
+  if (!me) return { error: LOGIN };
+  const messageId = Number(formData.get("message_id"));
+  if (!Number.isSafeInteger(messageId) || messageId < 1) return { error: "Message introuvable." };
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("messages")
+    .delete()
+    .eq("id", messageId)
+    .eq("sender_id", me.id)
+    .select("id");
+  if (error) return { error: "La suppression a échoué. Vérifie que le fichier 13 a été exécuté dans Supabase." };
+  if (!data?.length) return { error: "Message introuvable ou tu n'as pas le droit de le supprimer." };
+  revalidatePath("/", "layout");
+  return { done: true };
+}
+
+// Vider toute une conversation, des deux côtés (bouton « Supprimer la conversation »).
+export async function deleteConversation(_prev: FormState, formData: FormData): Promise<FormState> {
+  const me = await getCurrentProfile();
+  if (!me) return { error: LOGIN };
+  const friendId = String(formData.get("friend_id"));
+  if (!friendId || friendId === me.id) return { error: "Choisis une conversation." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("delete_thread", { friend: friendId });
+  if (error) {
+    return {
+      error:
+        error.code === "PGRST202" || error.code === "42883"
+          ? "Il manque la règle de suppression (fichier 13 à exécuter dans Supabase)."
+          : FAILED,
+    };
+  }
+  revalidatePath("/", "layout");
+  return { done: true };
+}
+
 // ---- Notifications ----
 
 export async function markNotificationsRead() {
@@ -312,6 +352,24 @@ export async function markNotificationsRead() {
     .eq("user_id", me.id)
     .is("read_at", null);
   revalidatePath("/", "layout");
+}
+
+export async function deleteNotification(_prev: FormState, formData: FormData): Promise<FormState> {
+  const me = await getCurrentProfile();
+  if (!me) return { error: LOGIN };
+  const notificationId = Number(formData.get("notification_id"));
+  if (!Number.isSafeInteger(notificationId) || notificationId < 1) return { error: "Notification introuvable." };
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("id", notificationId)
+    .eq("user_id", me.id)
+    .select("id");
+  if (error) return { error: "La suppression a échoué. Vérifie que le fichier 13 a été exécuté dans Supabase." };
+  if (!data?.length) return { error: "Notification introuvable ou tu n'as pas le droit de la supprimer." };
+  revalidatePath("/", "layout");
+  return { done: true };
 }
 
 // ---- Pépite de la semaine ----
