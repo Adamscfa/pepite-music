@@ -1,0 +1,28 @@
+{
+  "packageId": "com.adamscfa.pepite",
+  "host": "pepite-music.vercel.app",
+  "name": "Pépite",
+  "launcherName": "Pépite",
+  "display": "standalone",
+  "themeColor": "#0D1A14",
+  "themeColorDark": "#080B0A",
+  "navigationColor": "#0D1A14",
+  "navigationColorDark": "#080B0A",
+  "backgroundColor": "#F3F2F7",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://pepite-music.vercel.app/icons/icon-512.png",
+  "maskableIconUrl": "https://pepite-music.vercel.app/icons/maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "appVersionCode": 1,
+  "appVersion": "1.0.0",
+  "webManifestUrl": "https://pepite-music.vercel.app/manifest.webmanifest",
+  "generatorApp": "bubblewrap-cli",
+  "fallbackType": "customtabs",
+  "minSdkVersion": 23,
+  "fingerprints": []
+}

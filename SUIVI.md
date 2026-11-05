@@ -181,6 +181,11 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     récupèrent plus toutes les colonnes de 3 000 avis pour compter les membres ;
     seules les données de comptage et les champs de profil affichés sont lus.
     Aucun changement visuel ou SQL.
+36. Préparation Play Store (5 novembre 2026) : configuration Android en Trusted
+    Web Activity (`android/twa-manifest.json`) et route d'association au domaine
+    (`/.well-known/assetlinks.json`) prêtes. La publication attend le compte Play
+    Console du propriétaire, la clé de signature et son empreinte SHA-256 dans
+    Vercel. Voir `android/LISEZ-MOI.md`.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -249,6 +254,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Aligner l'icône de recommandation à gauche et colorer les boutons ouverts/sélectionnés
 - [x] Réduire l'attente sur les pages album en chargeant Deezer, avis et session en parallèle, sans modifier l'interface
 - [x] Réduire les données chargées pour les classements de contributeurs, sans changer l'interface
+- [x] Préparer la configuration Android pour le Play Store ; le propriétaire doit encore créer son compte Play Console, sa clé de signature et renseigner l'empreinte dans Vercel
 - [x] Garder le nom de l'ami en haut, les messages défilants au milieu et la barre d'écriture au-dessus du clavier, comme WhatsApp
 - [x] Garder le cadre fixe sur téléphone et réserver le défilement aux messages
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
