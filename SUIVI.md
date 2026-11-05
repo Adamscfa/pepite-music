@@ -150,7 +150,11 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     couvertures et tops Deezer d'albums, titres ou artistes, avec téléchargement.
     La nouvelle option « affiche Top 10 » a été retirée après des erreurs
     persistantes sur le site.
-29. Supprimer messages et notifications (5 novembre 2026) : sur chaque message
+29. Profil et icônes (5 novembre 2026) : l'éditeur de profil garde toute sa
+    largeur sur téléphone au lieu d'être tassé dans une colonne. La recommandation
+    d'album utilise une enveloppe avec @ et le lien « Mon année en musique »
+    affiche une icône de profil avec graphique.
+30. Supprimer messages et notifications (5 novembre 2026) : sur chaque message
     qu'on a envoyé, un menu « ⋮ » apparaît au survol de la bulle, avec « Supprimer
     le message » (deux clics pour confirmer : il disparaît chez les deux, comme
     sur WhatsApp). Dans la liste des conversations, un bouton corbeille vide toute
@@ -181,6 +185,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `10-lancement.sql` | Contact, suppression de compte, blocage, anti-spam, annonces | à vérifier |
 | `11-invitations.sql` | Liens d'invitation (parrainage) | non (à faire) |
 | `12-pseudos-modifiables.sql` | Changement de pseudo, anciennes adresses et mentions conservées | non (à faire) |
+| Aucun (visuel) | Mise en page du profil et icônes | Aucun SQL à exécuter |
 | `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | non (à faire) |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
@@ -218,6 +223,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Exécuter `12-pseudos-modifiables.sql` après le fichier 11 (nécessaire pour changer de pseudo et garder les anciens liens)
 - [ ] Exécuter `13-suppressions.sql` après le fichier 12 (sans lui, supprimer un message ou une notification ne marche pas)
 - [ ] Compléter les traductions anglaise et espagnole des pages restantes (avis, albums, messages, notifications, modération et pages d'information)
+- [x] Corriger la largeur de l'éditeur de profil sur téléphone et remplacer les icônes de recommandation et de l'année musicale
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés

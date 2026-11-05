@@ -69,7 +69,9 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
               <h1 className="sr-only">{profile.display_name}</h1>
               <div className="eyebrow">@{profile.username}</div>
               <Link href={`/profil/${profile.username}/annee`} className="year-link">
-                🎁 Mon année {new Date().getFullYear()} en musique →
+                <MusicYearIcon />
+                <span>Mon année {new Date().getFullYear()} en musique</span>
+                <span aria-hidden="true">→</span>
               </Link>
             </div>
           </>
@@ -88,7 +90,9 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
                 <p className="small">Membre de démonstration : ce compte et ses avis sont imaginaires.</p>
               )}
               <Link href={`/profil/${profile.username}/annee`} className="year-link">
-                🎁 Son année {new Date().getFullYear()} en musique →
+                <MusicYearIcon />
+                <span>Son année {new Date().getFullYear()} en musique</span>
+                <span aria-hidden="true">→</span>
               </Link>
             </div>
           </>
@@ -241,6 +245,7 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
                 </div>
               );
             }
+
             return (
               <div key={position} className="fav">
                 <Link href={`/album/${fav.album_id}`}>
@@ -309,5 +314,26 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
         </section>
       )}
     </>
+  );
+}
+
+function MusicYearIcon() {
+  return (
+    <svg
+      viewBox="0 0 28 28"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="9" cy="7" r="5" />
+      <circle cx="9" cy="5.6" r="1.5" fill="currentColor" stroke="none" />
+      <path d="M5.5 10.2c.4-1.6 1.5-2.5 3.5-2.5s3.1.9 3.5 2.5" fill="currentColor" stroke="none" />
+      <path d="M2.5 24h23" />
+      <path d="M5 22v-4h3v4m3 0v-7h3v7m3 0v-5h3v5" />
+      <path d="m4 16 6-4 4 2 7-7m-4 0h4v4" />
+    </svg>
   );
 }
