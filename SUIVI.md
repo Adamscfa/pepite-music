@@ -4,7 +4,7 @@ Ce fichier sert de mémoire au projet. Il dit où on en est et quoi faire ensuit
 pour pouvoir reprendre le travail depuis n'importe quel compte ou n'importe quelle
 conversation. **À mettre à jour à chaque nouvelle étape.**
 
-Dernière mise à jour : 4 novembre 2026
+Dernière mise à jour : 5 novembre 2026
 
 ## Le projet en bref
 
@@ -154,6 +154,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 29. Formats Studio (4 novembre 2026) : sélecteur explicite entre l'ancien
     carrousel et la nouvelle affiche Top 10. Les deux formats permettent les
     classements de titres, d'albums et d'artistes Deezer, avec choix du pays.
+30. Affiches Studio (5 novembre 2026) : les pochettes et photos d'artistes sont
+    maintenant chargées par le serveur et intégrées à l'affiche avant le rendu ;
+    une image Deezer indisponible ne bloque plus toute la génération.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -182,6 +185,9 @@ La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
 pays utilise Vercel ; en développement local, le navigateur reste prioritaire
 et l'espagnol se choisit dans les réglages.
+
+La correction du chargement des images d'affiche dans le Studio ne modifie pas
+la base Supabase : aucun SQL à exécuter.
 
 Remplacer « à vérifier » par « oui » une fois confirmé. Pour vérifier, dans
 Supabase, **Table Editor** :
@@ -217,6 +223,8 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés
 - [ ] Quand assez de vrais membres sont inscrits : exécuter `demo-supprimer.sql`
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
+- [ ] Après publication, vérifier que les affiches Top 10 du Studio chargent
+      leurs photos, notamment le Top artistes des États-Unis
 - [ ] **Nom de domaine** (plus tard) : `.ci` (environ 45 000 à 75 000 FCFA/an,
   CNI demandée, 2 à 5 jours) ou `.com` (environ 10 à 15 $/an, immédiat, achat
   possible dans Vercel). Puis : Vercel > Settings > Domains ; Supabase > URL
