@@ -196,6 +196,8 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 39. Barre mobile des visiteurs (5 novembre 2026) : masquage de toute la rangée
     Paramètres / Langue / Thème sur téléphone pour garder un en-tête compact.
     Les réglages restent disponibles sur ordinateur et dans Paramètres.
+40. Thème sur téléphone (5 novembre 2026) : l'icône de changement de thème est
+    placée à côté de la recherche pour tous les visiteurs, connectés ou non.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -224,6 +226,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (performance) | Chargement parallèle des pages album | Aucun SQL à exécuter |
 | Aucun (interface mobile) | Conversation façon WhatsApp : en-tête, fil défilant et saisie au-dessus du clavier | Aucun SQL à exécuter |
 | Aucun (interface mobile) | Réalignement de la barre du haut pour les visiteurs | Aucun SQL à exécuter |
+| Aucun (interface mobile) | Icône de changement de thème près de la recherche | Aucun SQL à exécuter |
 | `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | non (à faire) |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
@@ -271,6 +274,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Retirer les doublons Messages et Langue du menu du compte
 - [x] Réaligner les commandes du haut sur téléphone pour éviter leur chevauchement
 - [x] Masquer la rangée Paramètres / Langue / Thème du haut sur téléphone
+- [x] Placer l'icône de thème à côté de la recherche sur téléphone
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés
