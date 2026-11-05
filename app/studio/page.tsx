@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/data";
 import { getStudio, THEMES, type StudioKind, type StudioTheme } from "@/lib/studio";
-import { createStudioPoster } from "@/lib/studio-poster";
 import StudioSlides from "./StudioSlides";
 
 export const metadata: Metadata = { title: "Studio TikTok" };
@@ -41,14 +40,10 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
 
   const k = kind === "titres" ? "titre" : kind === "artistes" ? "artiste" : "album";
   const enc = encodeURIComponent;
-  const poster =
-    format === "affiche" && items.length
-      ? await createStudioPoster(items, country?.name ?? "France", kind, palette)
-      : null;
   const slides = format === "affiche"
     ? [
         {
-          src: poster ?? "",
+          src: `/studio/image?s=top10&type=${kind}&pays=${country?.id ?? ""}&couleur=${palette}`,
           name: `top-10-${kind}-${(country?.code ?? "FR").toLowerCase()}`,
           label: heading,
         },

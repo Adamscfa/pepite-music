@@ -155,9 +155,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     carrousel et la nouvelle affiche Top 10. Les deux formats permettent les
     classements de titres, d'albums et d'artistes Deezer, avec choix du pays.
 30. Affiches Studio (5 novembre 2026) : les pochettes et photos d'artistes sont
-    intégrées lors du rendu serveur. L'affiche est incluse directement dans la
-    page Studio déjà authentifiée, sans requête d'image séparée du navigateur ;
-    une image Deezer indisponible est remplacée sans bloquer toute l'affiche.
+    intégrées lors du rendu serveur. L'affiche est chargée séparément après
+    l'affichage du Studio pour qu'un délai de Deezer ou du rendu ne bloque pas
+    toute la page ; une image Deezer indisponible est remplacée.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.

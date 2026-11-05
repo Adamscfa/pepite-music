@@ -44,7 +44,7 @@ export async function createStudioPoster(
   country: string,
   type: PosterType,
   color: PaletteName,
-): Promise<string> {
+): Promise<ImageResponse> {
   const entries = await Promise.all(
     items.slice(0, 10).map(async (item) => ({
       ...item,
@@ -68,7 +68,7 @@ export async function createStudioPoster(
     ...(bold ? [{ name: "Inter", data: bold, weight: 800 as const, style: "normal" as const }] : []),
     ...(medium ? [{ name: "Inter", data: medium, weight: 500 as const, style: "normal" as const }] : []),
   ];
-  const image = new ImageResponse(
+  return new ImageResponse(
     <div
       style={{
         width: "100%",
@@ -160,7 +160,6 @@ export async function createStudioPoster(
         <div>{siteLabel}</div>
       </div>
     </div>,
-    { ...SIZE, ...(fonts.length ? { fonts } : {}) },
+    { ...SIZE, ...(fonts.length ? { fonts } : {}), headers: { "Cache-Control": "private, max-age=86400" } },
   );
-  return `data:image/png;base64,${Buffer.from(await image.arrayBuffer()).toString("base64")}`;
 }
