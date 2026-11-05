@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Avatar from "@/components/Avatar";
 import MarkRead from "@/components/MarkRead";
 import { markNotificationsRead } from "@/app/social-actions";
+import DeleteNotification from "./DeleteNotification";
 import { getCurrentProfile, getNotifications } from "@/lib/data";
 import { describe } from "@/lib/notification-text";
 import { timeAgo } from "@/lib/format";
@@ -25,13 +26,16 @@ export default async function NotificationsPage() {
           {notifications.map((n) => {
             const { text, href } = describe(n);
             return (
-              <Link key={n.id} href={href} className={n.read_at ? "notif" : "notif unread"}>
+              <div key={n.id} className={n.read_at ? "notif" : "notif unread"}>
                 <Avatar user={n.actor} />
-                <span>
-                  <b>{n.actor.display_name}</b> {text}
-                  <small>{timeAgo(n.created_at)}</small>
-                </span>
-              </Link>
+                <Link href={href} className="notif-main">
+                  <span>
+                    <b>{n.actor.display_name}</b> {text}
+                    <small>{timeAgo(n.created_at)}</small>
+                  </span>
+                </Link>
+                <DeleteNotification notificationId={n.id} />
+              </div>
             );
           })}
         </div>

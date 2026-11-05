@@ -386,6 +386,30 @@ a:hover > .cover, .tile:hover .cover, a:hover > .tile-cover .cover { transform: 
 .notif.unread { border-color: var(--gold); background: linear-gradient(90deg, var(--gold-soft), var(--surface) 60%); }
 .notif .avatar { width: 38px; height: 38px; font-size: 15px; }
 .notif small { display: block; color: var(--muted); font-size: 12px; }
+/* Ligne de notification ou de conversation : toute la carte est cliquable, sauf le bouton supprimer. */
+.notif-main { position: relative; display: flex; gap: 12px; align-items: center; flex: 1; min-width: 0; color: inherit; }
+.notif-main::after { content: ""; position: absolute; inset: -12px -14px; }
+.notif-del, .conv-del { position: relative; z-index: 1; }
+.notif-del button, .conv-del button {
+  flex: none; background: none; border: 0; cursor: pointer;
+  color: var(--muted); opacity: 0.35; font-size: 14px; line-height: 1;
+  width: 28px; height: 28px; border-radius: 50%; transition: opacity 0.15s ease, color 0.15s ease;
+}
+.notif-del button:hover, .conv-del button:hover { opacity: 1; color: var(--danger); }
+.conv-del { flex: none; }
+.conv-del button.confirm {
+  opacity: 1; color: var(--danger); background: color-mix(in srgb, var(--danger) 14%, transparent);
+  width: auto; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;
+}
+.conv-del .error { position: absolute; right: 0; top: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; font-size: 12px; }
+/* Menu « ⋮ » sur les bulles : visible au survol ou au toucher. */
+.bubble { position: relative; }
+.bubble-more summary { opacity: 0.4; }
+.bubble:hover .bubble-more summary, .bubble-more[open] summary { opacity: 1; }
+.bubble-more .comment-pop { left: auto; right: 0; }
+.bubble-more button { font-size: 12px; padding: 6px 8px; }
+.confirm-hint { display: none; padding: 2px 8px 6px; color: var(--danger); font-size: 11px; }
+.bubble-more form[data-confirm] .confirm-hint { display: block; }
 .friends { display: flex; gap: 10px; flex-wrap: wrap; }
 .friend { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px 5px 5px; font-weight: 600; font-size: 14px; }
 .friend:hover { border-color: var(--gold); }

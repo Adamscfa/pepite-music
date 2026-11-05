@@ -60,6 +60,12 @@ export default function LiveUpdates({ userId }: { userId: string }) {
               if (path.current.startsWith("/messages")) refresh();
             },
           )
+          // Un message effacé par son auteur disparaît aussi ici.
+          .on(
+            "postgres_changes",
+            { event: "DELETE", schema: "public", table: "messages", filter: `recipient_id=eq.${userId}` },
+            refresh,
+          )
           .subscribe();
       });
     }
