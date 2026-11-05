@@ -61,7 +61,7 @@ export default function ThreadView({
     setReady(true);
   }, []);
 
-  // Keep the conversation header and composer anchored to the visible viewport on phones.
+  // Make the conversation area follow the visible viewport, including the keyboard.
   useEffect(() => {
     const viewport = window.visualViewport;
     if (!viewport) return;
@@ -69,7 +69,8 @@ export default function ThreadView({
     const updateVisibleViewport = () => {
       if (!window.matchMedia("(max-width: 760px)").matches) return;
       const root = document.documentElement;
-      const bottom = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      const layoutHeight = root.clientHeight || window.innerHeight;
+      const bottom = Math.max(0, layoutHeight - viewport.height - viewport.offsetTop);
       root.style.setProperty("--chat-visual-top", `${viewport.offsetTop}px`);
       root.style.setProperty("--chat-visual-bottom", `${bottom}px`);
     };
