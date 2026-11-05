@@ -157,6 +157,13 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 30. Affiches Studio (5 novembre 2026) : les pochettes et photos d'artistes sont
     maintenant chargées par le serveur et intégrées à l'affiche avant le rendu ;
     une image Deezer indisponible ne bloque plus toute la génération.
+31. Supprimer messages et notifications (5 novembre 2026) : sur chaque message
+    qu'on a envoyé, un menu « ⋮ » apparaît au survol de la bulle, avec « Supprimer
+    le message » (deux clics pour confirmer : il disparaît chez les deux, comme
+    sur WhatsApp). Dans la liste des conversations, un bouton corbeille vide toute
+    la conversation avec un ami (🗑 puis clic de confirmation). Sur chaque
+    notification, une croix « ✕ » pour l'effacer. Fichier `13-suppressions.sql`
+    (après le 12) : droits de suppression dans la base + fonction `delete_thread`.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -180,6 +187,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `10-lancement.sql` | Contact, suppression de compte, blocage, anti-spam, annonces | à vérifier |
 | `11-invitations.sql` | Liens d'invitation (parrainage) | non (à faire) |
 | `12-pseudos-modifiables.sql` | Changement de pseudo, anciennes adresses et mentions conservées | non (à faire) |
+| `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | non (à faire) |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -217,6 +225,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Se mettre administrateur (`is_admin` dans la table `profiles`)
 - [ ] Exécuter `10-lancement.sql`, puis `11-invitations.sql`
 - [ ] Exécuter `12-pseudos-modifiables.sql` après le fichier 11 (nécessaire pour changer de pseudo et garder les anciens liens)
+- [ ] Exécuter `13-suppressions.sql` après le fichier 12 (sans lui, supprimer un message ou une notification ne marche pas)
 - [ ] Compléter les traductions anglaise et espagnole des pages restantes (avis, albums, messages, notifications, modération et pages d'information)
 - [ ] Brancher Brevo pour les e-mails et coller les modèles en français (README)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)

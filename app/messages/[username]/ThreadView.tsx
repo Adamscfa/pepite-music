@@ -3,9 +3,11 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { deleteMessage } from "@/app/social-actions";
 import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
 import DemoBadge from "@/components/DemoBadge";
+import Icon from "@/components/Icon";
 import ReadTicks from "@/components/ReadTicks";
 import type { Author, Message } from "@/lib/data";
 import { emojiCount } from "@/lib/format";
@@ -156,6 +158,29 @@ export default function ThreadView({
                 )}
                 {m.body && <p>{m.body}</p>}
                 <small className="when">
+                  {mine && (
+                    <details className="comment-more bubble-more">
+                      <summary aria-label="Plus d'actions" title="Plus d'actions">
+                        <Icon name="dots" size={14} />
+                      </summary>
+                      <form
+                        action={deleteMessage}
+                        className="comment-pop"
+                        onSubmit={(e) => {
+                          // Le message part pour les deux : un premier clic demande de confirmer.
+                          const f = e.currentTarget;
+                          if (!f.hasAttribute("data-confirm")) {
+                            e.preventDefault();
+                            f.setAttribute("data-confirm", "1");
+                          }
+                        }}
+                      >
+                        <input type="hidden" name="message_id" value={m.id} />
+                        <button type="submit">Supprimer le message</button>
+                        <small className="confirm-hint">Il part aussi chez ton ami. Cliquer encore.</small>
+                      </form>
+                    </details>
+                  )}
                   <time dateTime={m.created_at} suppressHydrationWarning>
                     {ready ? time(date) : ""}
                   </time>

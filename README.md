@@ -94,6 +94,14 @@ Colle [`supabase/11-invitations.sql`](supabase/11-invitations.sql) dans **SQL Ed
 
 Colle [`supabase/12-pseudos-modifiables.sql`](supabase/12-pseudos-modifiables.sql) dans **SQL Editor** (une seule fois, après `11-invitations.sql`). Le membre peut ensuite modifier son identifiant `@pseudo` depuis son profil. Les anciennes adresses de profil et d'invitation continuent de fonctionner et redirigent vers le nouveau pseudo ; les anciennes mentions restent associées au même compte. Les liens partagés récemment affichent automatiquement le nouveau pseudo.
 
+### Supprimer ses messages et ses notifications
+
+Colle [`supabase/13-suppressions.sql`](supabase/13-suppressions.sql) dans **SQL Editor** (une seule fois, après `12-pseudos-modifiables.sql`). Sans lui, les boutons de suppression ne font rien. Ensuite :
+
+- dans une conversation, le menu « ⋮ » sur un message que **tu** as envoyé permet de le supprimer (deux clics pour confirmer) ; il disparaît aussi chez ton ami ;
+- sur la page Messages, la corbeille 🗑 à droite d'une conversation la vide entièrement, pour vous deux ;
+- sur la page Notifications, la croix ✕ efface la notification.
+
 ### E-mails d'inscription fiables, en français
 
 L'expéditeur fourni par Supabase n'envoie que quelques e-mails par heure. On branche **Brevo** (gratuit jusqu'à 300 e-mails par jour) :
@@ -151,4 +159,4 @@ Si tu le laisses activé, va dans **Authentication > URL Configuration** et mets
 | `components/` | Les morceaux réutilisés : barre du haut, étoiles, carte d'avis… |
 | `lib/deezer.ts` | Les appels à l'API Deezer |
 | `lib/data.ts` | Les lectures dans Supabase |
-| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, `04-ameliorations.sql`, `05-reponses-commentaires.sql`, (facultatif) `06-comptes-demo.sql`, `07-temps-reel.sql`, `08-grande-mise-a-jour.sql`, `09-corriger-demo.sql`, `10-lancement.sql`, `11-invitations.sql`, puis `12-pseudos-modifiables.sql` ; `demo-supprimer.sql` efface les membres de démo |
+| `supabase/` | La structure de la base et ses règles de sécurité, dans l'ordre : `schema.sql`, `02-reseau-social.sql`, `03-chansons.sql`, `04-ameliorations.sql`, `05-reponses-commentaires.sql`, (facultatif) `06-comptes-demo.sql`, `07-temps-reel.sql`, `08-grande-mise-a-jour.sql`, `09-corriger-demo.sql`, `10-lancement.sql`, `11-invitations.sql`, `12-pseudos-modifiables.sql`, puis `13-suppressions.sql` ; `demo-supprimer.sql` efface les membres de démo |

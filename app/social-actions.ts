@@ -300,6 +300,31 @@ export async function markThreadRead(friendId: string) {
   revalidatePath("/", "layout");
 }
 
+// Règle de sécurité « fichier 13 » : on ne supprime que ses propres messages envoyés,
+// et ils disparaissent pour les deux personnes (comme sur WhatsApp).
+export async function deleteMessage(formData: FormData) {
+  const me = await getCurrentProfile();
+  if (!me) return;
+  const supabase = await createClient();
+  await supabase.from("messages").delete().eq("id", Number(formData.get("message_id"))).eq("sender_id", me.id);
+  revalidatePath("/", "layout");
+}
+
+// Vider toute une conversation, des deux côtés (bouton « Supprimer la conversation »).
+export async function deleteConversation(_prev: FormState, formData: FormData): Promise<FormState> {
+  const me = await getCurrentProfile();
+  if (!me) return { error: LOGIN };
+  const friendId = String(formData.get("friend_id"));
+  if (!friendId || friendId === me.id) return { error: "Choisis une conversation." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("delete_thread", { friend: friendId });
+  if (error) {
+    return { error: "Il manque la règle de suppression (fichier 13 à exécuter dans Supabase)." };
+  }
+  revalidatePath("/", "layout");
+  return { done: true };
+}
+
 // ---- Notifications ----
 
 export async function markNotificationsRead() {
@@ -311,6 +336,14 @@ export async function markNotificationsRead() {
     .update({ read_at: new Date().toISOString() })
     .eq("user_id", me.id)
     .is("read_at", null);
+  revalidatePath("/", "layout");
+}
+
+export async function deleteNotification(formData: FormData) {
+  const me = await getCurrentProfile();
+  if (!me) return;
+  const supabase = await createClient();
+  await supabase.from("notifications").delete().eq("id", Number(formData.get("notification_id"))).eq("user_id", me.id);
   revalidatePath("/", "layout");
 }
 
