@@ -1,8 +1,10 @@
 import { ImageResponse } from "next/og";
 import { Fragment, isValidElement, type ReactElement, type ReactNode } from "react";
 import { getCurrentProfile } from "@/lib/data";
-import { getAlbum, getArtist, getTrack } from "@/lib/deezer";
+import { getAlbum, getArtist, getCountryCharts, getTrack } from "@/lib/deezer";
 import { logoDataUri, siteLabel } from "@/lib/og";
+import { createStudioPoster } from "@/lib/studio-poster";
+import { getStudio, type StudioKind } from "@/lib/studio";
 
 // Une image du Studio TikTok (1080 × 1920, format vertical) :
 //   s=intro : titre de la série et 4 pochettes ;
@@ -57,15 +59,39 @@ const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` 
 export async function GET(request: Request) {
   const q = new URL(request.url).searchParams;
   const slide = q.get("s");
+  const me = await getCurrentProfile();
+  if (!me?.is_admin) return new Response("Réservé aux admins", { status: 404 });
+
+  if (slide === "top10") {
+    const rawCountryId = q.get("pays") ?? "";
+    const countryId = Number(rawCountryId) || -1;
+    const country = countryId === -1
+      ? null
+      : (await getCountryCharts()).find((chart) => chart.id === countryId && chart.code);
+    if (countryId !== -1 && !country) return new Response("Classement indisponible", { status: 404 });
+    const requestedType = q.get("type");
+    const kind: StudioKind =
+      requestedType === "artistes" || requestedType === "albums" ? requestedType : "titres";
+    const { items } = await getStudio({ theme: "pays", kind, countryId, count: 10, seed: 1 });
+    if (!items.length) return new Response("Classement Deezer indisponible", { status: 503 });
+    const colors = ["emeraude", "rouge", "bleu"] as const;
+    const requestedColor = q.get("couleur");
+    const color = colors.find((value) => value === requestedColor) ?? "emeraude";
+    try {
+      return await createStudioPoster(items, country?.name ?? "France", kind, color);
+    } catch (error) {
+      console.error("Génération de l'affiche Studio impossible", error);
+      return new Response("Impossible de générer l'affiche", { status: 500 });
+    }
+  }
+
   const requestedKind = q.get("k");
   const kind = requestedKind === "titre" || requestedKind === "artiste" ? requestedKind : "album";
   // Tout en même temps : vérifier qu'on est admin, lire le logo, chercher l'album chez Deezer.
-  const [me, logo, item] = await Promise.all([
-    getCurrentProfile(),
+  const [logo, item] = await Promise.all([
     logoDataUri(),
     slide === "item" ? lookup(kind, Number(q.get("id"))) : Promise.resolve(null),
   ]);
-  if (!me?.is_admin) return new Response("Réservé aux admins", { status: 404 });
 
   const brand = (
     <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 40, fontWeight: 800 }}>
