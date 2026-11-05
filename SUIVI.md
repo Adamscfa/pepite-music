@@ -150,6 +150,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     couvertures et tops Deezer d'albums, titres ou artistes, avec téléchargement.
     La nouvelle option « affiche Top 10 » a été retirée après des erreurs
     persistantes sur le site.
+29. Profil et icônes (5 novembre 2026) : l'éditeur de profil garde toute sa
+    largeur sur téléphone au lieu d'être tassé dans une colonne. La recommandation
+    d'album utilise une enveloppe avec @ et le lien « Mon année en musique »
+    affiche une icône de profil avec graphique.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -173,6 +177,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `10-lancement.sql` | Contact, suppression de compte, blocage, anti-spam, annonces | à vérifier |
 | `11-invitations.sql` | Liens d'invitation (parrainage) | non (à faire) |
 | `12-pseudos-modifiables.sql` | Changement de pseudo, anciennes adresses et mentions conservées | non (à faire) |
+| Aucun (visuel) | Mise en page du profil et icônes | Aucun SQL à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -208,6 +213,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Exécuter `10-lancement.sql`, puis `11-invitations.sql`
 - [ ] Exécuter `12-pseudos-modifiables.sql` après le fichier 11 (nécessaire pour changer de pseudo et garder les anciens liens)
 - [ ] Compléter les traductions anglaise et espagnole des pages restantes (avis, albums, messages, notifications, modération et pages d'information)
+- [x] Corriger la largeur de l'éditeur de profil sur téléphone et remplacer les icônes de recommandation et de l'année musicale
 - [ ] Brancher Brevo pour les e-mails et coller les modèles en français (README)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés

@@ -859,7 +859,10 @@ main:has(.chat) { padding-bottom: 0; }
 .local-box { background: linear-gradient(135deg, color-mix(in srgb, #F77F00 10%, var(--surface)), var(--surface) 45%, color-mix(in srgb, #009E60 10%, var(--surface))); border: 1px solid var(--line); border-radius: 18px; padding: 18px 18px 10px; box-shadow: var(--shadow); }
 
 /* Ton année en musique */
-.year-link { display: inline-block; margin-top: 8px; color: var(--gold); font-weight: 700; font-size: 14px; }
+.year-link { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; color: var(--gold); font-weight: 700; font-size: 14px; }
+.year-link svg { width: 22px; height: 22px; flex: none; }
+.recommendation-icon { width: 19px; height: 19px; flex: none; }
+.reco summary { display: inline-flex; align-items: center; gap: 8px; }
 .wrapped { max-width: 820px; margin: 0 auto; }
 .wrapped-hero { display: flex; align-items: center; gap: 22px; margin: 14px 0 18px; padding: 28px; border-radius: 22px; color: #fff; background: radial-gradient(circle at 85% 10%, rgb(61 245 160 / .45), transparent 55%), linear-gradient(135deg, #06110c, #0d2a1e 50%, #1f6b4a); }
 .wrapped-hero .eyebrow { color: #b9e8d2; }
@@ -1055,6 +1058,8 @@ main:has(.chat) { padding-bottom: 0; }
    En-tête du profil : photo, nom, puis bio et boutons
    ===================================================================== */
 .prof { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "photo id actions" "photo more actions"; column-gap: 20px; row-gap: 2px; align-items: center; }
+.prof.prof-owner { display: block; }
+.prof-owner-meta { width: 100%; }
 .prof > .avatar { grid-area: photo; }
 .prof-id { grid-area: id; min-width: 0; align-self: end; }
 .prof-id h1 { overflow-wrap: anywhere; }
