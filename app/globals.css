@@ -532,6 +532,7 @@ main { grid-column: 2; width: 100%; max-width: 1240px; margin: 0 auto; padding: 
 /* --- Barre du haut --- */
 .top { grid-column: 2; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 18px; padding: 14px 28px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(14px); }
 .top-logo { display: none; }
+.mobile-theme { display: none; }
 .top-logo img { border-radius: 10px; background: #fff; display: block; }
 .top .search { flex: 0 1 720px; }
 .top .search input { padding: 13px 18px 13px 50px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font-size: 15px; box-shadow: var(--shadow); }
@@ -987,7 +988,8 @@ main:has(.chat) { padding-bottom: 0; }
   .top-actions { gap: 4px; }
   .top-actions .btn.violet { padding: 7px 12px; font-size: 13px; }
   .top.guest { flex-wrap: wrap; }
-  .top.guest .search { flex: 1 1 0; min-width: 0; }
+  .top .search { flex: 1 1 0; min-width: 0; }
+  .mobile-theme { display: grid; flex: none; }
   .top.guest .top-actions { display: none; }
   .me-pop { position: fixed; top: 58px; right: 10px; left: auto; width: min(270px, calc(100vw - 20px)); }
 

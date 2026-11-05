@@ -112,6 +112,9 @@ export default async function Header() {
           <span className="top-word">Pépite</span>
         </Link>
         <SearchBox locale={locale} />
+        <span className="mobile-theme">
+          <ThemeToggle initial={theme} locale={locale} />
+        </span>
         <div className="top-actions">
           {me ? (
             <>
@@ -159,13 +162,6 @@ export default async function Header() {
                 {tx("signUp")}
               </Link>
             </>
-          )}
-          {!me && (
-            <span className="mobile-only mobile-preferences">
-              <Link href="/reglages">{tx("settings")}</Link>
-              <LanguageSelector locale={locale} compact />
-              <ThemeToggle initial={theme} locale={locale} />
-            </span>
           )}
         </div>
       </header>
