@@ -38,6 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
+  interactiveWidget: "resizes-content",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#F3F2F7" },
     { media: "(prefers-color-scheme: dark)", color: "#080B0A" },
