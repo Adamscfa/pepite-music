@@ -25,8 +25,14 @@ export async function generateMetadata({ params }: PageProps<"/album/[id]">): Pr
 }
 
 export default async function AlbumPage({ params }: PageProps<"/album/[id]">) {
-  const album = await loadAlbum(params);
-  const [reviews, me] = await Promise.all([getAlbumReviews(album.id), getCurrentProfile()]);
+  const albumId = Number((await params).id);
+  if (!Number.isInteger(albumId) || albumId <= 0) notFound();
+  const [album, reviews, me] = await Promise.all([
+    getAlbum(albumId),
+    getAlbumReviews(albumId),
+    getCurrentProfile(),
+  ]);
+  if (!album) notFound();
   const [myLists, friends, weekly, favorites] = me
     ? await Promise.all([getUserLists(me.id), getFriends(me.id), getWeeklyPepite(me.id), getFavorites(me.id)])
     : [[], [], null, []];
