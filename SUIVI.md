@@ -198,11 +198,8 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     Les réglages restent disponibles sur ordinateur et dans Paramètres.
 40. Thème sur téléphone (5 novembre 2026) : l'icône de changement de thème est
     placée à côté de la recherche pour tous les visiteurs, connectés ou non.
-41. Vidéos hebdomadaires (10 novembre 2026) : ajout des requêtes SQL qui excluent
-    les profils Démo, de la file privée, d'un prompt éditorial et d'un modèle
-    Remotion. Cette fonction a ensuite été retirée à la demande ; le fichier
-    `supabase/16-retirer-videos.sql` nettoie la base si les anciens scripts ont
-    été exécutés.
+41. Prototype vidéo hebdomadaire (10 novembre 2026) : un premier squelette SQL,
+    Remotion et une page admin ont été ajoutés, puis retirés à la demande.
 42. Retrait de la file vidéo (10 novembre 2026) : suppression de la page d'envoi
     et de validation, des liens admin et des sources Remotion. Si les SQL 14 ou
     15 ont été exécutés, supprimer d'abord les MP4 dans **Supabase > Storage >
@@ -238,7 +235,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (interface mobile) | Réalignement de la barre du haut pour les visiteurs | Aucun SQL à exécuter |
 | Aucun (interface mobile) | Icône de changement de thème près de la recherche | Aucun SQL à exécuter |
 | `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | oui (confirmé avec le fichier 14) |
-| `14-video-queue.sql` et `15-video-review.sql` | Anciens scripts vidéo, conservés comme historique ; ne plus exécuter | retirés |
+| `14-video-queue.sql` et `15-video-review.sql` | Anciens scripts vidéo ; retirés du dépôt, ne plus exécuter | retirés |
 | `16-retirer-videos.sql` | Supprimer les anciennes fonctions et tables vidéo (après avoir vidé le bucket dans Storage) | à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
