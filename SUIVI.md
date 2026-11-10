@@ -4,7 +4,7 @@ Ce fichier sert de mémoire au projet. Il dit où on en est et quoi faire ensuit
 pour pouvoir reprendre le travail depuis n'importe quel compte ou n'importe quelle
 conversation. **À mettre à jour à chaque nouvelle étape.**
 
-Dernière mise à jour : 5 novembre 2026
+Dernière mise à jour : 10 novembre 2026
 
 ## Le projet en bref
 
@@ -198,6 +198,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     Les réglages restent disponibles sur ordinateur et dans Paramètres.
 40. Thème sur téléphone (5 novembre 2026) : l'icône de changement de thème est
     placée à côté de la recherche pour tous les visiteurs, connectés ou non.
+41. Squelette vidéo hebdomadaire (10 novembre 2026) : ajout des requêtes SQL
+    filtrant les profils Démo, d'une file vidéo privée, d'un prompt éditorial
+    JSON et d'un modèle de duel Remotion isolé du site. Le worker planifié, la
+    page d'approbation et la publication restent à construire.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -228,6 +232,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (interface mobile) | Réalignement de la barre du haut pour les visiteurs | Aucun SQL à exécuter |
 | Aucun (interface mobile) | Icône de changement de thème près de la recherche | Aucun SQL à exécuter |
 | `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | non (à faire) |
+| `14-video-queue.sql` | File privée de vidéos, bucket privé, données hebdomadaires et duels (après `13-suppressions.sql`) | à faire |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -275,6 +280,9 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Réaligner les commandes du haut sur téléphone pour éviter leur chevauchement
 - [x] Masquer la rangée Paramètres / Langue / Thème du haut sur téléphone
 - [x] Placer l'icône de thème à côté de la recherche sur téléphone
+- [x] Préparer le squelette vidéo (requêtes, validation, prompt et composition Remotion)
+- [ ] Exécuter `14-video-queue.sql` dans Supabase si le projet vidéo est lancé
+- [ ] Créer le worker qui génère, rend et dépose une vidéo dans la file ; garder la validation manuelle avant toute publication
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés

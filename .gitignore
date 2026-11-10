@@ -19,6 +19,8 @@
 
 # production
 /build
+/video/remotion/node_modules/
+/video/remotion/out/
 /android/android.keystore
 /android/*.aab
 /android/*.apk
