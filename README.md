@@ -149,6 +149,15 @@ Par défaut, Supabase envoie un e-mail de confirmation à chaque inscription. Pe
 
 Si tu le laisses activé, va dans **Authentication > URL Configuration** et mets `http://localhost:3000` dans **Site URL** (et plus tard l'adresse en ligne de ton site), sinon le lien de l'e-mail ne ramènera pas au bon endroit.
 
+### Squelette de vidéos hebdomadaires
+
+Le dossier [`video/`](video/README.md) contient un premier modèle pour préparer
+des vidéos de duel musical : requêtes Supabase sans profils Démo, consigne pour
+l'API Claude et composition Remotion. C'est un squelette, pas encore une
+publication automatisée. Pour activer les tables, il faut exécuter
+[`supabase/14-video-queue.sql`](supabase/14-video-queue.sql) dans Supabase ; la
+validation humaine reste obligatoire avant toute publication.
+
 ## Comment le code est rangé
 
 | Dossier | Ce qu'il contient |
