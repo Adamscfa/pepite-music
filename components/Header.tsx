@@ -69,7 +69,6 @@ export default async function Header() {
               {me.is_admin && <Item href="/moderation" match="/moderation" icon="shield" label={tx("moderation")} />}
               {me.is_admin && <Item href="/tableau-de-bord" match="/tableau-de-bord" icon="chart" label={tx("dashboard")} />}
               {me.is_admin && <Item href="/studio" match="/studio" icon="sparkle" label={tx("studio")} />}
-              {me.is_admin && <Item href="/admin/videos" match="/admin/videos" icon="sparkle" label="Vidéos à valider" />}
             </>
           ) : (
             <Item href="/connexion" match="/connexion" icon="user" label={tx("login")} />
@@ -144,7 +143,6 @@ export default async function Header() {
                   {me.is_admin && <Link href="/moderation">{tx("moderation")}</Link>}
                   {me.is_admin && <Link href="/tableau-de-bord">{tx("dashboard")}</Link>}
                   {me.is_admin && <Link href="/studio">{tx("studio")}</Link>}
-                  {me.is_admin && <Link href="/admin/videos">Vidéos à valider</Link>}
                   <Link href="/contact">{tx("contact")}</Link>
                   <div className="me-pop-theme">
                     <ThemeToggle initial={theme} withLabel locale={locale} />
