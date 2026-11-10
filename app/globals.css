@@ -1446,17 +1446,6 @@ main:has(.chat) { padding-top: 0; }
 }
 .studio-one { padding: 0; border: 0; background: none; cursor: pointer; display: block; width: 100%; }
 
-/* File de validation des vidéos (admins) */
-.admin-videos h1 { margin-bottom: 8px; }
-.video-upload { display: grid; justify-items: start; gap: 12px; margin: 20px 0 28px; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
-.video-upload label { display: grid; gap: 8px; font-size: 14px; font-weight: 600; }
-.video-upload input { max-width: 100%; }
-.video-card { display: grid; gap: 14px; padding: 16px; }
-.video-card-heading { display: flex; justify-content: space-between; gap: 12px; }
-.video-card video { display: block; width: min(100%, 420px); max-height: 75vh; border-radius: 12px; background: #000; }
-.video-review { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
-.video-review .small { flex-basis: 100%; }
-
 /* Tableau de bord (admins) */
 .dash h1 { margin-bottom: 16px; }
 .dash-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-bottom: 22px; }

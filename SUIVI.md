@@ -198,11 +198,13 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     Les réglages restent disponibles sur ordinateur et dans Paramètres.
 40. Thème sur téléphone (5 novembre 2026) : l'icône de changement de thème est
     placée à côté de la recherche pour tous les visiteurs, connectés ou non.
-41. Vidéos hebdomadaires (10 novembre 2026) : ajout des requêtes SQL qui excluent
-    les profils Démo, de la file privée, d'un prompt éditorial et d'un modèle
-    Remotion. La page `/admin/videos` permet aux admins d'envoyer un MP4, de le
-    regarder et de l'approuver/refuser. Le worker planifié qui crée les vidéos
-    automatiquement et la publication restent à construire.
+41. Prototype vidéo hebdomadaire (10 novembre 2026) : un premier squelette SQL,
+    Remotion et une page admin ont été ajoutés, puis retirés à la demande.
+42. Retrait de la file vidéo (10 novembre 2026) : suppression de la page d'envoi
+    et de validation, des liens admin et des sources Remotion. Si les SQL 14 ou
+    15 ont été exécutés, supprimer d'abord les MP4 dans **Supabase > Storage >
+    weekly-videos**, puis exécuter `supabase/16-retirer-videos.sql`. Cela ne
+    touche pas aux colonnes `is_admin` et `is_demo`, utilisées ailleurs.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -233,8 +235,8 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (interface mobile) | Réalignement de la barre du haut pour les visiteurs | Aucun SQL à exécuter |
 | Aucun (interface mobile) | Icône de changement de thème près de la recherche | Aucun SQL à exécuter |
 | `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | oui (confirmé avec le fichier 14) |
-| `14-video-queue.sql` | File privée de vidéos, bucket privé, données hebdomadaires et duels (après `13-suppressions.sql`) | oui (confirmé le 10 novembre 2026) |
-| `15-video-review.sql` | Autoriser les admins à déposer des MP4 dans la file et à les valider (après le 14) | à faire |
+| `14-video-queue.sql` et `15-video-review.sql` | Anciens scripts vidéo ; retirés du dépôt, ne plus exécuter | retirés |
+| `16-retirer-videos.sql` | Supprimer les anciennes fonctions et tables vidéo (après avoir vidé le bucket dans Storage) | à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -282,11 +284,8 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Réaligner les commandes du haut sur téléphone pour éviter leur chevauchement
 - [x] Masquer la rangée Paramètres / Langue / Thème du haut sur téléphone
 - [x] Placer l'icône de thème à côté de la recherche sur téléphone
-- [x] Préparer le squelette vidéo (requêtes, validation, prompt et composition Remotion)
-- [x] Ajouter `/admin/videos` pour envoyer, regarder et approuver/refuser les vidéos
-- [x] `14-video-queue.sql` exécuté (confirmé le 10 novembre 2026)
-- [ ] Après la mise en ligne de l'interface, exécuter `15-video-review.sql` dans Supabase pour autoriser l'envoi manuel
-- [ ] Créer le worker qui génère, rend et dépose une vidéo dans la file ; garder la validation manuelle avant toute publication
+- [x] Retirer la fonction vidéo du site et préparer son nettoyage dans Supabase
+- [ ] Si le bucket vidéo existe : supprimer d'abord les MP4 dans **Storage > weekly-videos**, puis exécuter `16-retirer-videos.sql` dans Supabase
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés

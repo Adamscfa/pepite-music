@@ -149,16 +149,13 @@ Par défaut, Supabase envoie un e-mail de confirmation à chaque inscription. Pe
 
 Si tu le laisses activé, va dans **Authentication > URL Configuration** et mets `http://localhost:3000` dans **Site URL** (et plus tard l'adresse en ligne de ton site), sinon le lien de l'e-mail ne ramènera pas au bon endroit.
 
-### Squelette de vidéos hebdomadaires
+### Retirer l'ancienne file vidéo
 
-Le dossier [`video/`](video/README.md) contient un premier modèle pour préparer
-des vidéos de duel musical : requêtes Supabase sans profils Démo, consigne pour
-l'API Claude et composition Remotion. Les administrateurs peuvent consulter
-`/admin/videos`, envoyer un MP4 et le valider. Pour activer la file, exécute
-[`supabase/14-video-queue.sql`](supabase/14-video-queue.sql), puis
-[`supabase/15-video-review.sql`](supabase/15-video-review.sql) dans Supabase.
-Le worker qui génère les vidéos automatiquement n'est pas encore construit ;
-aucune publication sur les réseaux ne part sans validation humaine.
+La fonction de file vidéo a été retirée. Si les fichiers SQL 14 ou 15 ont été
+exécutés dans Supabase, ouvre **Storage > weekly-videos** et supprime les fichiers
+qu'il contient, puis exécute [`supabase/16-retirer-videos.sql`](supabase/16-retirer-videos.sql)
+dans **SQL Editor**. Cette opération supprime définitivement les MP4 et données
+de cette file. Elle ne modifie pas les autres fonctions du site.
 
 ## Comment le code est rangé
 
