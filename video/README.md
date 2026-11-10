@@ -11,6 +11,9 @@ réseaux.
   pour les votes de la « Pépite de la semaine », `video_weekly_top` pour les avis
   récents, `video_most_commented` et `video_duel_candidates`), une file privée,
   et un bucket privé pour les MP4.
+- `supabase/15-video-review.sql` : droits d'envoi et de validation réservés aux admins.
+- `/admin/videos` : page privée pour envoyer un MP4, le prévisualiser et l'approuver
+  ou le refuser.
 - `video/claude-editorial-prompt.md` : consigne à fournir à l'API Claude.
 - `video/schemas/duel-editorial.schema.json` : forme attendue de sa réponse.
 - `video/remotion/` : projet Remotion autonome et composition verticale de duel.
@@ -21,10 +24,14 @@ commentaires Démo ne comptent pas non plus.
 
 ## Installation Supabase — à faire par la propriétaire
 
-Dans Supabase, ouvre **SQL Editor**, colle le contenu de `supabase/14-video-queue.sql`
-et clique sur **Run** une seule fois, après `13-suppressions.sql`. Le script ajoute
-la file, les requêtes de sélection réservées à `service_role` et le bucket privé
-`weekly-videos`.
+Dans Supabase, ouvre **SQL Editor** et exécute dans l'ordre :
+
+1. `supabase/14-video-queue.sql`, après `13-suppressions.sql`.
+2. `supabase/15-video-review.sql`, après le fichier 14.
+
+Le premier script ajoute la file, les requêtes de sélection réservées à
+`service_role` et le bucket privé `weekly-videos`. Le second autorise les admins à
+envoyer un fichier MP4 dans cette file et à le valider depuis `/admin/videos`.
 
 Les admins peuvent voir et mettre à jour la file depuis une interface serveur
 authentifiée. Les visiteurs n'ont aucun accès à la file ni aux vidéos. Le worker
@@ -57,9 +64,8 @@ fonction Vercel.
 
 Pour automatiser le flux complet, il reste à créer le worker planifié qui lit les
 fonctions SQL, appelle l'API Claude, valide le JSON, rend la vidéo, l'envoie dans
-le bucket privé et crée une ligne `video_queue` en statut `pending`. La page
-`/admin/videos`, les boutons d'approbation et toute publication Instagram/TikTok
-restent à construire. Aucune publication ne doit partir sans approbation humaine.
+le bucket privé et crée une ligne `video_queue` en statut `pending`. Aucune
+publication Instagram/TikTok ne doit partir sans approbation humaine.
 
 Il faudra fournir séparément une clé API Anthropic au worker. L'abonnement Claude
 Pro ne remplace pas l'accès à l'API. Les pochettes Deezer sont protégées par des

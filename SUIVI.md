@@ -198,10 +198,11 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     Les réglages restent disponibles sur ordinateur et dans Paramètres.
 40. Thème sur téléphone (5 novembre 2026) : l'icône de changement de thème est
     placée à côté de la recherche pour tous les visiteurs, connectés ou non.
-41. Squelette vidéo hebdomadaire (10 novembre 2026) : ajout des requêtes SQL
-    filtrant les profils Démo, d'une file vidéo privée, d'un prompt éditorial
-    JSON et d'un modèle de duel Remotion isolé du site. Le worker planifié, la
-    page d'approbation et la publication restent à construire.
+41. Vidéos hebdomadaires (10 novembre 2026) : ajout des requêtes SQL qui excluent
+    les profils Démo, de la file privée, d'un prompt éditorial et d'un modèle
+    Remotion. La page `/admin/videos` permet aux admins d'envoyer un MP4, de le
+    regarder et de l'approuver/refuser. Le worker planifié qui crée les vidéos
+    automatiquement et la publication restent à construire.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -231,8 +232,9 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (interface mobile) | Conversation façon WhatsApp : en-tête, fil défilant et saisie au-dessus du clavier | Aucun SQL à exécuter |
 | Aucun (interface mobile) | Réalignement de la barre du haut pour les visiteurs | Aucun SQL à exécuter |
 | Aucun (interface mobile) | Icône de changement de thème près de la recherche | Aucun SQL à exécuter |
-| `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | non (à faire) |
-| `14-video-queue.sql` | File privée de vidéos, bucket privé, données hebdomadaires et duels (après `13-suppressions.sql`) | à faire |
+| `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | oui (confirmé avec le fichier 14) |
+| `14-video-queue.sql` | File privée de vidéos, bucket privé, données hebdomadaires et duels (après `13-suppressions.sql`) | oui (confirmé le 10 novembre 2026) |
+| `15-video-review.sql` | Autoriser les admins à déposer des MP4 dans la file et à les valider (après le 14) | à faire |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -267,7 +269,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Se mettre administrateur (`is_admin` dans la table `profiles`)
 - [ ] Exécuter `10-lancement.sql`, puis `11-invitations.sql`
 - [ ] Exécuter `12-pseudos-modifiables.sql` après le fichier 11 (nécessaire pour changer de pseudo et garder les anciens liens)
-- [ ] Exécuter `13-suppressions.sql` après le fichier 12 (sans lui, supprimer un message ou une notification ne marche pas)
+- [x] `13-suppressions.sql` exécuté (confirmé par l'exécution du fichier 14)
 - [ ] Compléter les traductions anglaise et espagnole des pages restantes (avis, albums, messages, notifications, modération et pages d'information)
 - [x] Corriger la largeur de l'éditeur de profil sur téléphone et remplacer les icônes de recommandation et de l'année musicale
 - [x] Aligner l'icône de recommandation à gauche et colorer les boutons ouverts/sélectionnés
@@ -281,7 +283,9 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Masquer la rangée Paramètres / Langue / Thème du haut sur téléphone
 - [x] Placer l'icône de thème à côté de la recherche sur téléphone
 - [x] Préparer le squelette vidéo (requêtes, validation, prompt et composition Remotion)
-- [ ] Exécuter `14-video-queue.sql` dans Supabase si le projet vidéo est lancé
+- [x] Ajouter `/admin/videos` pour envoyer, regarder et approuver/refuser les vidéos
+- [x] `14-video-queue.sql` exécuté (confirmé le 10 novembre 2026)
+- [ ] Après la mise en ligne de l'interface, exécuter `15-video-review.sql` dans Supabase pour autoriser l'envoi manuel
 - [ ] Créer le worker qui génère, rend et dépose une vidéo dans la file ; garder la validation manuelle avant toute publication
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)

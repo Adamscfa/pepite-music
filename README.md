@@ -153,10 +153,12 @@ Si tu le laisses activé, va dans **Authentication > URL Configuration** et mets
 
 Le dossier [`video/`](video/README.md) contient un premier modèle pour préparer
 des vidéos de duel musical : requêtes Supabase sans profils Démo, consigne pour
-l'API Claude et composition Remotion. C'est un squelette, pas encore une
-publication automatisée. Pour activer les tables, il faut exécuter
-[`supabase/14-video-queue.sql`](supabase/14-video-queue.sql) dans Supabase ; la
-validation humaine reste obligatoire avant toute publication.
+l'API Claude et composition Remotion. Les administrateurs peuvent consulter
+`/admin/videos`, envoyer un MP4 et le valider. Pour activer la file, exécute
+[`supabase/14-video-queue.sql`](supabase/14-video-queue.sql), puis
+[`supabase/15-video-review.sql`](supabase/15-video-review.sql) dans Supabase.
+Le worker qui génère les vidéos automatiquement n'est pas encore construit ;
+aucune publication sur les réseaux ne part sans validation humaine.
 
 ## Comment le code est rangé
 
