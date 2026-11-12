@@ -362,8 +362,9 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
   possible dans Vercel). Puis : Vercel > Settings > Domains ; Supabase > URL
   Configuration (Site URL + Redirect URLs) ; Brevo > Domaines (authentifier) et
   expéditeur `bonjour@…` ; renvoi des e-mails reçus avec ImprovMX.
-- [ ] Inscrire le site dans **Google Search Console** (gratuit) et y envoyer le
-      plan du site `/sitemap.xml`, pour que Google visite les pages plus vite
+- [ ] Google Search Console : la balise de vérification est sur le site
+      (`verification` dans `app/layout.tsx`, 12 novembre 2026). Reste à cliquer
+      sur **Valider**, puis envoyer `sitemap.xml` dans **Sitemaps**
 - [ ] (idées à ajouter ici)
 
 ## Idées mises de côté
