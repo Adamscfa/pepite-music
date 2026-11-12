@@ -1440,6 +1440,12 @@ main:has(.chat) { padding-top: 0; }
 .studio-slides img { width: 100%; height: auto; aspect-ratio: 9 / 16; border-radius: 12px; background: var(--line); display: block; }
 .studio-poster { grid-template-columns: minmax(0, 420px); }
 .studio-poster img { aspect-ratio: 4 / 5; }
+.studio-video { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.studio-video-canvas { width: 100%; height: auto; aspect-ratio: 9 / 16; border-radius: 14px; background: #000; display: block; }
+.studio-video-side { display: grid; gap: 12px; align-content: start; }
+.studio-video-hook { display: grid; gap: 5px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.studio-video-result { width: 160px; border-radius: 10px; background: #000; }
+@media (max-width: 700px) { .studio-video { grid-template-columns: minmax(0, 1fr); } .studio-video-canvas { max-width: 300px; margin: 0 auto; } }
 .studio-slides figcaption { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 760px) {
   .studio-slides { grid-template-columns: repeat(2, minmax(0, 1fr)); }

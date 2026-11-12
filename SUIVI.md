@@ -218,6 +218,18 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     première version (n°28) : textes toujours d'un seul bloc, pochettes
     téléchargées à l'avance avec 4 secondes maximum, case vide si Deezer ne répond
     pas. Aucun SQL.
+44. Vidéos dans le Studio (12 novembre 2026) : deux nouveaux formats dans
+    **Format** sur `/studio`. **Vidéo « Ta note ? »** (environ 18 s) : accroche
+    modifiable (« Quel album mérite… 5 ÉTOILES ? »), puis 4 albums, un par un,
+    avec « Ta note ? » et les étoiles qui se remplissent. **Vidéo duel**
+    (environ 14 s) : « DUEL D'ALBUMS », puis 2 manches « 1 VS 2 » avec « Qui
+    gagne ? Commente 1 ou 2 ». Les deux finissent par « Crée ton compte » et
+    l'adresse du site. Vidéos 1080 × 1920, **muettes** (la musique s'ajoute dans
+    TikTok). Elles sont fabriquées dans le navigateur pendant la lecture (canvas
+    et MediaRecorder) : aucun serveur vidéo ni outil à installer ; garder la page
+    ouverte pendant l'enregistrement. MP4 sur Chrome (ordinateur et Android
+    récents), sinon WebM. Les pochettes passent par `/studio/cover` (admins,
+    images Deezer seulement). Code : `app/studio/StudioVideo.tsx`. Aucun SQL.
 44. Plus de pays (12 novembre 2026) : la liste des tops pays (Studio, Classements,
     tendances) n'avait plus qu'une dizaine de pays, mélangés avec des playlists
     « Top Hits 1985 », car la liste du compte Deezer Charts ne répondait plus.
@@ -257,6 +269,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | oui (confirmé avec le fichier 14) |
 | `14-video-queue.sql` et `15-video-review.sql` | Anciens scripts vidéo ; retirés du dépôt, ne plus exécuter | retirés |
 | Aucun (Studio) | Affiche Top 10 | Aucun SQL à exécuter |
+| Aucun (Studio) | Vidéos « Ta note ? » et duel | Aucun SQL à exécuter |
 | Aucun (Deezer) | Plus de pays dans les tops | Aucun SQL à exécuter |
 | `16-retirer-videos.sql` | Supprimer les anciennes fonctions et tables vidéo (après avoir vidé le bucket dans Storage) | à exécuter |
 
@@ -315,6 +328,8 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
 - [ ] Vérifier que le Studio en ligne permet toujours de préparer et télécharger
       les carrousels d'albums, de titres et d'artistes
+- [ ] Après publication, enregistrer une vidéo « Ta note ? » et une vidéo duel
+      depuis le Studio (sur ordinateur avec Chrome, puis sur téléphone)
 - [ ] Après publication, essayer l'affiche Top 10 du Studio (au moins un top
       de pays en titres, un en albums et un Top Monde en artistes)
 - [ ] **Nom de domaine** (plus tard) : `.ci` (environ 45 000 à 75 000 FCFA/an,
