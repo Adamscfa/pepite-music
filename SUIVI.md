@@ -230,6 +230,12 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     ouverte pendant l'enregistrement. MP4 sur Chrome (ordinateur et Android
     récents), sinon WebM. Les pochettes passent par `/studio/cover` (admins,
     images Deezer seulement). Code : `app/studio/StudioVideo.tsx`. Aucun SQL.
+45. Flèche « descendre » dans les conversations (12 novembre 2026) : comme sur
+    WhatsApp, une flèche ronde apparaît en bas à droite dès qu'on remonte dans les
+    messages, et ramène au dernier message d'un toucher. Sur téléphone, l'arrivée
+    dans une conversation, l'envoi et la réception d'un message descendent aussi
+    jusqu'en bas de la zone des messages (avant, seule la page descendait).
+    Code : `app/messages/[username]/ScrollDown.tsx` et `scroll.ts`. Aucun SQL.
 44. Plus de pays (12 novembre 2026) : la liste des tops pays (Studio, Classements,
     tendances) n'avait plus qu'une dizaine de pays, mélangés avec des playlists
     « Top Hits 1985 », car la liste du compte Deezer Charts ne répondait plus.
@@ -275,6 +281,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `14-video-queue.sql` et `15-video-review.sql` | Anciens scripts vidéo ; retirés du dépôt, ne plus exécuter | retirés |
 | Aucun (Studio) | Affiche Top 10 | Aucun SQL à exécuter |
 | Aucun (Studio) | Vidéos « Ta note ? » et duel | Aucun SQL à exécuter |
+| Aucun (interface) | Flèche « descendre » dans les conversations | Aucun SQL à exécuter |
 | Aucun (Deezer) | Plus de pays dans les tops | Aucun SQL à exécuter |
 | `16-retirer-videos.sql` | Supprimer les anciennes fonctions et tables vidéo (après avoir vidé le bucket dans Storage) | à exécuter |
 
