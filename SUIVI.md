@@ -237,6 +237,11 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     pays connus, dont la Côte d'Ivoire, le Sénégal, le Cameroun, le Nigeria, le
     Kenya…) est cherché un par un, seulement chez Deezer Charts. Gardé une
     journée. Code : `getCountryCharts` dans `lib/deezer.ts`. Aucun SQL.
+    Correctif le même jour : la recherche pays par pays pouvait prendre plus de
+    10 secondes et faire planter Classements et le Studio. Elle s'arrête
+    maintenant au bout de 3 secondes (pays d'Afrique et France cherchés en
+    premier), la liste est gardée en mémoire 6 heures et se complète d'une
+    visite à l'autre.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
