@@ -218,6 +218,13 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     première version (n°28) : textes toujours d'un seul bloc, pochettes
     téléchargées à l'avance avec 4 secondes maximum, case vide si Deezer ne répond
     pas. Aucun SQL.
+44. Plus de pays (12 novembre 2026) : la liste des tops pays (Studio, Classements,
+    tendances) n'avait plus qu'une dizaine de pays, mélangés avec des playlists
+    « Top Hits 1985 », car la liste du compte Deezer Charts ne répondait plus.
+    Elle est maintenant lue page par page, et chaque pays manquant (environ 80
+    pays connus, dont la Côte d'Ivoire, le Sénégal, le Cameroun, le Nigeria, le
+    Kenya…) est cherché un par un, seulement chez Deezer Charts. Gardé une
+    journée. Code : `getCountryCharts` dans `lib/deezer.ts`. Aucun SQL.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -250,6 +257,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | oui (confirmé avec le fichier 14) |
 | `14-video-queue.sql` et `15-video-review.sql` | Anciens scripts vidéo ; retirés du dépôt, ne plus exécuter | retirés |
 | Aucun (Studio) | Affiche Top 10 | Aucun SQL à exécuter |
+| Aucun (Deezer) | Plus de pays dans les tops | Aucun SQL à exécuter |
 | `16-retirer-videos.sql` | Supprimer les anciennes fonctions et tables vidéo (après avoir vidé le bucket dans Storage) | à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base

@@ -241,19 +241,62 @@ const CHARTS_USER = 637006841;
 // code (CI, SN…) et name (« Côte d'Ivoire ») : seulement pour un vrai top de pays.
 export type CountryChart = { id: number; title: string; code: string | null; name: string | null };
 
-type RawPlaylists = { data: { id: number; title: string; user?: { name: string } }[] };
+type RawPlaylists = {
+  data: { id: number; title: string; user?: { name: string } }[];
+  next?: string;
+};
 
 const isCountryTop = (p: { id: number; title: string }) =>
   /^Top [^0-9]/i.test(p.title) && p.id !== WORLD_PLAYLIST && !/worldwide|monde/i.test(p.title);
 
-// Les tops par pays, triés par nom. Si le compte Deezer Charts ne répond pas,
-// on les cherche parmi les playlists publiées par Deezer.
+const byDeezerCharts = (p: { user?: { name: string } }) => /^deezer charts$/i.test(p.user?.name?.trim() ?? "");
+
+// Pays pour lesquels Deezer publie (ou a publié) un « Top <pays> », avec le nom anglais
+// utilisé dans le titre. Sert à aller chercher chaque top un par un quand la liste du
+// compte Deezer Charts ne répond pas ou est incomplète.
+const CHART_COUNTRIES = [
+  "Algeria", "Angola", "Argentina", "Australia", "Austria", "Belgium", "Bolivia", "Brazil",
+  "Bulgaria", "Cameroon", "Canada", "Chile", "Colombia", "Costa Rica", "Croatia", "Czech Republic",
+  "Ivory Coast", "Denmark", "DR Congo", "Dominican Republic", "Ecuador", "Egypt", "El Salvador",
+  "Estonia", "Finland", "France", "Gabon", "Germany", "Ghana", "Greece", "Guatemala", "Honduras",
+  "Hungary", "Indonesia", "Ireland", "Israel", "Italy", "Japan", "Jordan", "Kenya", "Latvia",
+  "Lebanon", "Lithuania", "Madagascar", "Malaysia", "Mali", "Mexico", "Morocco", "Netherlands",
+  "New Zealand", "Nigeria", "Norway", "Panama", "Paraguay", "Peru", "Philippines", "Poland",
+  "Portugal", "Romania", "Saudi Arabia", "Senegal", "Serbia", "Singapore", "Slovakia", "Slovenia",
+  "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Tanzania", "Thailand",
+  "Tunisia", "Turkey", "UAE", "Uganda", "UK", "Ukraine", "Uruguay", "USA", "Venezuela", "Zambia",
+];
+
+// Toutes les playlists du compte Deezer Charts, page par page (100 par page).
+async function chartsAccountPlaylists() {
+  const all: RawPlaylists["data"] = [];
+  for (let index = 0; index < 1000; index += 100) {
+    const page = await get<RawPlaylists>(`/user/${CHARTS_USER}/playlists?limit=100&index=${index}`, 86400);
+    all.push(...(page?.data ?? []));
+    if (!page?.next || !page.data?.length) break;
+  }
+  return all.filter(isCountryTop);
+}
+
+// Un « Top <pays> » trouvé par la recherche Deezer, seulement s'il vient de Deezer Charts.
+async function searchCountryTop(country: string) {
+  const found = await get<RawPlaylists>(`/search/playlist?q=${encodeURIComponent(`Top ${country}`)}&limit=25`, 86400);
+  const want = `top ${country}`.toLowerCase();
+  return (found?.data ?? []).find((p) => byDeezerCharts(p) && p.title.trim().toLowerCase() === want) ?? null;
+}
+
+// Les tops par pays, triés par nom. D'abord la liste du compte Deezer Charts ; pour les
+// pays qui n'y sont pas, on cherche leur top un par un, par paquets de 6 avec une courte
+// pause : Deezer refuse plus d'environ 50 appels en 5 secondes. Le tout est gardé une
+// journée, donc cette recherche ne se fait qu'une fois par jour.
 export async function getCountryCharts(): Promise<CountryChart[]> {
-  const own = await get<RawPlaylists>(`/user/${CHARTS_USER}/playlists?limit=200`, 86400);
-  let list = (own?.data ?? []).filter(isCountryTop);
-  if (!list.length) {
-    const found = await get<RawPlaylists>(`/search/playlist?q=${encodeURIComponent("Top")}&limit=100`, 86400);
-    list = (found?.data ?? []).filter((p) => isCountryTop(p) && /deezer/i.test(p.user?.name ?? ""));
+  const list = await chartsAccountPlaylists();
+  const have = new Set(list.map((p) => p.title.trim().toLowerCase()));
+  const missing = CHART_COUNTRIES.filter((c) => !have.has(`top ${c}`.toLowerCase()));
+  for (let i = 0; i < missing.length; i += 6) {
+    if (i) await new Promise((r) => setTimeout(r, 700));
+    const found = await Promise.all(missing.slice(i, i + 6).map(searchCountryTop));
+    for (const p of found) if (p && isCountryTop(p)) list.push(p);
   }
   const unique = new Map(list.map((p) => [p.id, { id: p.id, ...frenchChartTitle(p.title) }]));
   return [...unique.values()].sort((a, b) => a.title.localeCompare(b.title, "fr"));
