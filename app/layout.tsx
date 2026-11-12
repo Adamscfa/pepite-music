@@ -10,6 +10,7 @@ import SetupNotice from "@/components/SetupNotice";
 import "./globals.css";
 import { getLocale } from "@/lib/server-locale";
 import { t } from "@/lib/i18n";
+import { siteUrl } from "@/lib/seo";
 
 // Une seule police ronde et nette pour tout le site (titres et texte), comme sur la maquette.
 const sans = Plus_Jakarta_Sans({ variable: "--font-sans", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
@@ -21,9 +22,6 @@ const mono = JetBrains_Mono({ variable: "--font-mono", subsets: ["latin"], weigh
 export const dynamic = "force-dynamic";
 
 // Adresse publique du site, pour les liens dans les aperçus de partage.
-const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : "http://localhost:3000";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();

@@ -34,22 +34,38 @@ export type Album = {
 
 type DeezerError = { error?: { message?: string } };
 
+// Deezer ne doit jamais bloquer une page : chaque appel est coupé au bout de 5 secondes
+// (la page s'affiche alors sans cette partie).
+const TIMEOUT = 5000;
+
+async function fetchJson<T>(url: string, revalidate: number): Promise<(T & DeezerError) | null> {
+  const res = await fetch(url, { next: { revalidate }, signal: AbortSignal.timeout(TIMEOUT) });
+  if (!res.ok) {
+    console.error(`Deezer ${url} : réponse ${res.status}`);
+    return null;
+  }
+  return (await res.json()) as T & DeezerError;
+}
+
 async function get<T>(path: string, revalidate: number): Promise<T | null> {
   try {
-    const res = await fetch(`${API}${path}`, { next: { revalidate } });
-    if (!res.ok) {
-      console.error(`Deezer ${path} : réponse ${res.status}`);
-      return null;
+    let json = await fetchJson<T>(`${API}${path}`, revalidate);
+    // Deezer répond 200 même en cas d'erreur (par exemple « trop d'appels »), et cette
+    // réponse resterait gardée aussi longtemps qu'une bonne. On redemande donc tout de
+    // suite avec une adresse qui change toutes les 10 minutes : la bonne réponse est
+    // gardée 10 minutes au lieu de laisser une rangée vide pendant des heures.
+    if (json?.error) {
+      const retry = `${API}${path}${path.includes("?") ? "&" : "?"}_r=${Math.floor(Date.now() / 600000)}`;
+      json = await fetchJson<T>(retry, 600);
     }
-    const json = (await res.json()) as T & DeezerError;
-    // Deezer répond 200 même en cas d'erreur, avec un champ "error".
+    if (!json) return null;
     if (json.error) {
       console.error(`Deezer ${path} : ${JSON.stringify(json.error)}`);
       return null;
     }
     return json;
   } catch (error) {
-    // Visible dans Vercel > Logs.
+    // Visible dans Vercel > Logs (y compris quand Deezer met plus de 5 secondes).
     console.error(`Deezer ${path} : appel impossible`, error);
     return null;
   }
