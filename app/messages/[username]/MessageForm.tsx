@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { sendMessage, type FormState } from "@/app/social-actions";
 import Icon from "@/components/Icon";
+import { scrollChatToBottom } from "./scroll";
 
 type AlbumHit = { id: number; title: string; artist: string; cover: string };
 
@@ -33,7 +34,7 @@ export default function MessageForm({ to, onTyping }: { to: string; onTyping?: (
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setAlbum(null);
     field.current?.focus();
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    scrollChatToBottom(true);
   }, [state]);
 
   // Recherche d'albums pendant qu'on tape (300 ms après la dernière lettre).
