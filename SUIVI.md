@@ -236,6 +236,18 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     dans une conversation, l'envoi et la réception d'un message descendent aussi
     jusqu'en bas de la zone des messages (avant, seule la page descendait).
     Code : `app/messages/[username]/ScrollDown.tsx` et `scroll.ts`. Aucun SQL.
+46. Google, chargement et Deezer (12 novembre 2026) :
+    - **Google** : `robots.txt` et plan du site `sitemap.xml` (pages principales,
+      chaque album et titre noté, profils des vrais membres). Les pages album,
+      titre et artiste ont une description (« noté 4,3/5 (12 notes) sur Pépite »)
+      et des données structurées pour que Google puisse afficher les étoiles.
+      Code : `app/robots.ts`, `app/sitemap.ts`, `lib/seo.tsx`.
+    - **Écrans de chargement** sur les pages album, titre, artiste, profil,
+      Classements et Explorer : des emplacements gris s'affichent tout de suite
+      (`components/PageSkeleton.tsx`).
+    - **Deezer** : chaque appel est coupé au bout de 5 secondes ; une réponse
+      d'erreur de Deezer n'est plus gardée des heures (nouvel essai, gardé
+      10 minutes). Code : `get` dans `lib/deezer.ts`. Aucun SQL.
 44. Plus de pays (12 novembre 2026) : la liste des tops pays (Studio, Classements,
     tendances) n'avait plus qu'une dizaine de pays, mélangés avec des playlists
     « Top Hits 1985 », car la liste du compte Deezer Charts ne répondait plus.
@@ -282,6 +294,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (Studio) | Affiche Top 10 | Aucun SQL à exécuter |
 | Aucun (Studio) | Vidéos « Ta note ? » et duel | Aucun SQL à exécuter |
 | Aucun (interface) | Flèche « descendre » dans les conversations | Aucun SQL à exécuter |
+| Aucun (Google, chargement, Deezer) | Plan du site, descriptions, écrans de chargement | Aucun SQL à exécuter |
 | Aucun (Deezer) | Plus de pays dans les tops | Aucun SQL à exécuter |
 | `16-retirer-videos.sql` | Supprimer les anciennes fonctions et tables vidéo (après avoir vidé le bucket dans Storage) | à exécuter |
 
@@ -349,6 +362,8 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
   possible dans Vercel). Puis : Vercel > Settings > Domains ; Supabase > URL
   Configuration (Site URL + Redirect URLs) ; Brevo > Domaines (authentifier) et
   expéditeur `bonjour@…` ; renvoi des e-mails reçus avec ImprovMX.
+- [ ] Inscrire le site dans **Google Search Console** (gratuit) et y envoyer le
+      plan du site `/sitemap.xml`, pour que Google visite les pages plus vite
 - [ ] (idées à ajouter ici)
 
 ## Idées mises de côté

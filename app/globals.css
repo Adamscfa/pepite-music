@@ -1530,3 +1530,20 @@ section.dash-box + section.dash-box { margin-top: 0; }
 .skel-pepite { height: 96px; border-radius: 16px; }
 .skel-strip { display: flex; gap: 12px; overflow: hidden; }
 .skel-tile { width: 132px; height: 132px; flex: none; }
+
+/* Écran de chargement des pages (components/PageSkeleton.tsx) */
+.page-skel { display: grid; gap: 28px; padding: 18px 0; }
+.page-skel-hero { display: flex; gap: 24px; align-items: center; }
+.page-skel-cover { width: 220px; height: 220px; flex: none; border-radius: 14px; }
+.page-skel-text { display: grid; gap: 14px; flex: 1; }
+.page-skel-h1 { height: 34px; width: 60%; border-radius: 12px; }
+.page-skel-small { flex: none; width: 30%; }
+.page-skel-mid { flex: none; width: 45%; }
+.page-skel-rows { max-width: 640px; }
+.page-skel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; }
+.page-skel-tile { aspect-ratio: 1; border-radius: 12px; }
+@media (max-width: 760px) {
+  .page-skel-hero { flex-direction: column; align-items: stretch; }
+  .page-skel-cover { width: 100%; max-width: 320px; height: auto; aspect-ratio: 1; align-self: center; }
+  .page-skel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
