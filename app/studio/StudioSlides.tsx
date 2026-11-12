@@ -33,7 +33,15 @@ function download(file: File) {
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
-export default function StudioSlides({ slides, caption }: { slides: Slide[]; caption: string }) {
+export default function StudioSlides({
+  slides,
+  caption,
+  poster = false,
+}: {
+  slides: Slide[];
+  caption: string;
+  poster?: boolean;
+}) {
   const [status, setStatus] = useState("");
   const [done, setDone] = useState<Set<number>>(new Set());
   const [copied, setCopied] = useState(false);
@@ -81,7 +89,8 @@ export default function StudioSlides({ slides, caption }: { slides: Slide[]; cap
           const from = i * BATCH + 1;
           return (
             <button key={i} className={done.has(i) ? "btn ghost" : "btn"} onClick={() => save(b, i)}>
-              {done.has(i) ? "✓ " : ""}Images {from} à {from + b.length - 1}
+              {done.has(i) ? "✓ " : ""}
+              {poster ? "Enregistrer l'affiche" : `Images ${from} à ${from + b.length - 1}`}
             </button>
           );
         })}
@@ -95,11 +104,17 @@ export default function StudioSlides({ slides, caption }: { slides: Slide[]; cap
         </button>
       </div>
 
-      <div className="studio-slides">
+      {poster && (
+        <p className="small">
+          L&apos;affiche est au format 4:5 (1080 × 1350), comme les publications photo de TikTok et d&apos;Instagram. Elle
+          peut mettre quelques secondes à apparaître.
+        </p>
+      )}
+      <div className={poster ? "studio-slides studio-poster" : "studio-slides"}>
         {slides.map((s, i) => (
           <figure key={s.src}>
             <button type="button" className="studio-one" onClick={() => save([s], -1 - i)} title="Enregistrer cette image">
-              <img src={s.src} alt={s.label} loading={i < 6 ? "eager" : "lazy"} width={1080} height={1920} />
+              <img src={s.src} alt={s.label} loading={i < 6 ? "eager" : "lazy"} width={1080} height={poster ? 1350 : 1920} />
             </button>
             <figcaption>{s.label}</figcaption>
           </figure>

@@ -4,7 +4,7 @@ Ce fichier sert de mémoire au projet. Il dit où on en est et quoi faire ensuit
 pour pouvoir reprendre le travail depuis n'importe quel compte ou n'importe quelle
 conversation. **À mettre à jour à chaque nouvelle étape.**
 
-Dernière mise à jour : 10 novembre 2026
+Dernière mise à jour : 12 novembre 2026
 
 ## Le projet en bref
 
@@ -205,6 +205,19 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     15 ont été exécutés, supprimer d'abord les MP4 dans **Supabase > Storage >
     weekly-videos**, puis exécuter `supabase/16-retirer-videos.sql`. Cela ne
     touche pas aux colonnes `is_admin` et `is_demo`, utilisées ailleurs.
+43. Affiche Top 10 dans le Studio (12 novembre 2026) : nouveau choix **Format >
+    Affiche Top 10** sur `/studio`. Une seule image 1080 × 1350 (format 4:5 des
+    publications photo TikTok et Instagram) : grand titre (« TOP 10 TITRES »),
+    pays et « cette semaine », deux colonnes de 5 avec rang, pochette, titre et
+    artiste, fond de couleur pointillé, logo Pépite et adresse du site en bas.
+    Marche avec tous les thèmes (top d'un pays, Monde, mieux notés, sorties, au
+    hasard) et les albums, titres ou artistes. La couleur suit le drapeau du pays
+    (orange pour la Côte d'Ivoire, vert pour le Sénégal ou le Nigeria, rouge pour
+    le Kenya, bleu pour la France ou l'Afrique du Sud…) et peut être changée dans
+    **Couleur**. Code : `lib/studio-poster.tsx`. Pour éviter les pannes de la
+    première version (n°28) : textes toujours d'un seul bloc, pochettes
+    téléchargées à l'avance avec 4 secondes maximum, case vide si Deezer ne répond
+    pas. Aucun SQL.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -236,6 +249,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (interface mobile) | Icône de changement de thème près de la recherche | Aucun SQL à exécuter |
 | `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | oui (confirmé avec le fichier 14) |
 | `14-video-queue.sql` et `15-video-review.sql` | Anciens scripts vidéo ; retirés du dépôt, ne plus exécuter | retirés |
+| Aucun (Studio) | Affiche Top 10 | Aucun SQL à exécuter |
 | `16-retirer-videos.sql` | Supprimer les anciennes fonctions et tables vidéo (après avoir vidé le bucket dans Storage) | à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
@@ -293,6 +307,8 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
 - [ ] Vérifier que le Studio en ligne permet toujours de préparer et télécharger
       les carrousels d'albums, de titres et d'artistes
+- [ ] Après publication, essayer l'affiche Top 10 du Studio (au moins un top
+      de pays en titres, un en albums et un Top Monde en artistes)
 - [ ] **Nom de domaine** (plus tard) : `.ci` (environ 45 000 à 75 000 FCFA/an,
   CNI demandée, 2 à 5 jours) ou `.com` (environ 10 à 15 $/an, immédiat, achat
   possible dans Vercel). Puis : Vercel > Settings > Domains ; Supabase > URL

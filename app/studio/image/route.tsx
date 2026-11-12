@@ -3,11 +3,14 @@ import { Fragment, isValidElement, type ReactElement, type ReactNode } from "rea
 import { getCurrentProfile } from "@/lib/data";
 import { getAlbum, getArtist, getTrack } from "@/lib/deezer";
 import { logoDataUri, siteLabel } from "@/lib/og";
+import { getStudio, THEMES, type StudioKind, type StudioTheme } from "@/lib/studio";
+import { renderStudioPoster } from "@/lib/studio-poster";
 
 // Une image du Studio TikTok (1080 × 1920, format vertical) :
 //   s=intro : titre de la série et 4 pochettes ;
 //   s=item  : une pochette avec son rang ;
-//   s=fin   : « Lien en bio ».
+//   s=fin   : « Lien en bio » ;
+//   s=affiche : l'affiche Top 10 (1080 × 1350), voir lib/studio-poster.tsx.
 // Le navigateur garde l'image une journée : « Enregistrer » reprend celles déjà affichées
 // au lieu de tout refabriquer. (« private » : jamais gardée par un serveur intermédiaire.)
 const SIZE = { width: 1080, height: 1920, headers: { "Cache-Control": "private, max-age=86400" } };
@@ -59,6 +62,33 @@ export async function GET(request: Request) {
   const slide = q.get("s");
   const me = await getCurrentProfile();
   if (!me?.is_admin) return new Response("Réservé aux admins", { status: 404 });
+
+  if (slide === "affiche") {
+    // Mêmes réglages que la page Studio : on refait la liste ici (le classement Deezer
+    // est gardé une heure, donc c'est la même).
+    const theme = (THEMES.find((t) => t.id === q.get("theme"))?.id ?? "pays") as StudioTheme;
+    const rawType = q.get("type");
+    const type: StudioKind =
+      theme === "notes" || theme === "sorties"
+        ? "albums"
+        : rawType === "titres" || rawType === "artistes"
+          ? rawType
+          : "albums";
+    const { items, poster } = await getStudio({
+      theme,
+      kind: type,
+      countryId: Number(q.get("pays")) || -1,
+      count: 10,
+      seed: Number(q.get("graine")) || 1,
+    });
+    if (!items.length) return new Response("Rien à afficher", { status: 404 });
+    try {
+      return await renderStudioPoster(items, poster, q.get("couleur") ?? undefined);
+    } catch (error) {
+      console.error("Studio affiche : rendu impossible", error);
+      return new Response("Affiche impossible à préparer", { status: 500 });
+    }
+  }
 
   const requestedKind = q.get("k");
   const kind = requestedKind === "titre" || requestedKind === "artiste" ? requestedKind : "album";
