@@ -1438,6 +1438,8 @@ main:has(.chat) { padding-top: 0; }
 .studio-slides { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
 .studio-slides figure { margin: 0; display: grid; gap: 6px; }
 .studio-slides img { width: 100%; height: auto; aspect-ratio: 9 / 16; border-radius: 12px; background: var(--line); display: block; }
+.studio-poster { grid-template-columns: minmax(0, 420px); }
+.studio-poster img { aspect-ratio: 4 / 5; }
 .studio-slides figcaption { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 760px) {
   .studio-slides { grid-template-columns: repeat(2, minmax(0, 1fr)); }

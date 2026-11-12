@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/data";
-import { getStudio, THEMES, type StudioKind, type StudioTheme } from "@/lib/studio";
+import { getStudio, POSTER_COLORS, THEMES, type StudioKind, type StudioTheme } from "@/lib/studio";
 import StudioSlides from "./StudioSlides";
 
 export const metadata: Metadata = { title: "Studio TikTok" };
@@ -22,9 +22,12 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
       : rawKind === "titres" || rawKind === "artistes"
         ? rawKind
         : "albums";
-  const count = [5, 10].includes(Number(one(p.nombre))) ? Number(one(p.nombre)) : 10;
+  // Format : carrousel (une image par album) ou affiche Top 10 (une seule image).
+  const format = one(p.format) === "affiche" ? "affiche" : "carrousel";
+  const color = Object.hasOwn(POSTER_COLORS, one(p.couleur)) ? one(p.couleur) : "";
+  const count = format === "affiche" ? 10 : [5, 10].includes(Number(one(p.nombre))) ? Number(one(p.nombre)) : 10;
   const seed = Number(one(p.graine)) || 1;
-  const { heading, items, caption, country, countries } = await getStudio({
+  const { heading, items, caption, country, countries, poster } = await getStudio({
     theme,
     kind,
     // pays vide = la France choisie dans le menu ; absent = le pays du visiteur.
@@ -35,7 +38,22 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
 
   const k = kind === "titres" ? "titre" : kind === "artistes" ? "artiste" : "album";
   const enc = encodeURIComponent;
-  const slides = [
+  const posterQuery = new URLSearchParams({
+    s: "affiche",
+    theme,
+    type: kind,
+    pays: country ? String(country.id) : "",
+    graine: String(seed),
+    couleur: color,
+  });
+  const posterSlides = [
+    {
+      src: `/studio/image?${posterQuery}`,
+      name: `affiche-${poster.title}-${poster.place}`.replace(/[^\p{L}\p{N} -]/gu, "").slice(0, 60),
+      label: `${poster.title} · ${poster.place}`,
+    },
+  ];
+  const carouselSlides = [
     {
       src: `/studio/image?s=intro&k=${k}&h=${enc(heading)}&c=${items
         .slice(0, 4)
@@ -51,12 +69,15 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
     })),
     { src: "/studio/image?s=fin", name: `${String(items.length + 1).padStart(2, "0")}-fin`, label: "Fin · lien en bio" },
   ];
+  const slides = format === "affiche" ? posterSlides : carouselSlides;
   const remix = new URLSearchParams({
     theme,
     type: kind,
     nombre: String(count),
     graine: String(seed + 1),
     pays: country ? String(country.id) : "",
+    format,
+    couleur: color,
   });
 
   return (
@@ -70,6 +91,13 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
       </p>
 
       <form className="studio-form">
+        <label>
+          Format
+          <select name="format" defaultValue={format} className="select">
+            <option value="carrousel">Carrousel (une image par album)</option>
+            <option value="affiche">Affiche Top 10 (une seule image)</option>
+          </select>
+        </label>
         <label>
           Thème
           <select name="theme" defaultValue={theme} className="select">
@@ -100,10 +128,21 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
           </select>
         </label>
         <label>
-          Nombre
+          Nombre {"(carrousel)"}
           <select name="nombre" defaultValue={count} className="select">
             <option value="5">5</option>
             <option value="10">10</option>
+          </select>
+        </label>
+        <label>
+          Couleur {"(affiche)"}
+          <select name="couleur" defaultValue={color} className="select">
+            <option value="">Selon le pays</option>
+            {Object.keys(POSTER_COLORS).map((c) => (
+              <option key={c} value={c}>
+                {c[0].toUpperCase() + c.slice(1)}
+              </option>
+            ))}
           </select>
         </label>
         <button className="btn">Préparer</button>
@@ -121,7 +160,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
       </div>
 
       {items.length ? (
-        <StudioSlides slides={slides} caption={caption} />
+        <StudioSlides slides={slides} caption={caption} poster={format === "affiche"} />
       ) : (
         <div className="empty">Rien à montrer pour ce choix (Deezer ne répond pas ou personne n&apos;a encore noté).</div>
       )}

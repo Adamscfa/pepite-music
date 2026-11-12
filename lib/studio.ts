@@ -20,7 +20,34 @@ import { inCountry } from "./country-names";
 
 export type StudioTheme = "pays" | "monde" | "notes" | "sorties" | "hasard";
 export type StudioKind = "albums" | "titres" | "artistes";
-export type StudioItem = { kind: "album" | "titre" | "artiste"; id: number; title: string; artist: string };
+// cover : pochette (ou photo de l'artiste) en petite taille Deezer, utilisée par l'affiche.
+export type StudioItem = { kind: "album" | "titre" | "artiste"; id: number; title: string; artist: string; cover: string };
+
+// Titre de l'affiche Top 10 : une grande ligne (« TOP 10 TITRES ») et une petite
+// (« CÔTE D'IVOIRE · CETTE SEMAINE »), plus la couleur de fond choisie d'après le pays.
+export type StudioPoster = { title: string; place: string; color: PosterColor };
+
+export const POSTER_COLORS = {
+  vert: "#0B6B45",
+  orange: "#D9590B",
+  rouge: "#B3121B",
+  bleu: "#1730A6",
+  violet: "#4A23A0",
+  rose: "#B0175E",
+  noir: "#15181C",
+} as const;
+export type PosterColor = keyof typeof POSTER_COLORS;
+
+// Couleur de l'affiche selon le pays, inspirée de son drapeau (sinon le vert Pépite).
+const COUNTRY_COLORS: Record<string, PosterColor> = {
+  CI: "orange", NE: "orange", IN: "orange", NL: "orange",
+  SN: "vert", NG: "vert", CM: "vert", ML: "vert", GN: "vert", BF: "vert", GH: "vert", BR: "vert",
+  DZ: "vert", SA: "vert", MX: "vert", IT: "vert", IE: "vert", PT: "vert",
+  KE: "rouge", MA: "rouge", TN: "rouge", TR: "rouge", CA: "rouge", CH: "rouge", PE: "rouge", AT: "rouge",
+  PL: "rouge", DK: "rouge", ES: "rouge", BE: "rouge", DE: "noir", EG: "rouge", JP: "rouge",
+  ZA: "bleu", FR: "bleu", CD: "bleu", US: "bleu", GB: "bleu", AR: "bleu", GR: "bleu", FI: "bleu",
+  SE: "bleu", AU: "bleu", NZ: "bleu", RW: "bleu", CO: "bleu", CL: "bleu", PH: "bleu", KR: "bleu",
+};
 
 export const THEMES: { id: StudioTheme; label: string }[] = [
   { id: "pays", label: "Top d'un pays" },
@@ -71,7 +98,14 @@ export async function getStudio(opts: {
   countryId?: number;
   count: number;
   seed: number;
-}): Promise<{ heading: string; items: StudioItem[]; caption: string; country: CountryChart | null; countries: CountryChart[] }> {
+}): Promise<{
+  heading: string;
+  items: StudioItem[];
+  caption: string;
+  country: CountryChart | null;
+  countries: CountryChart[];
+  poster: StudioPoster;
+}> {
   const countries = (await getCountryCharts()).filter((c) => c.code);
   let country: CountryChart | null = null;
   if (opts.theme === "pays") {
@@ -90,10 +124,10 @@ export async function getStudio(opts: {
   type Chart = { tracks: ChartTrack[]; albums: AlbumHit[]; artists?: ArtistHit[] };
   const fromChart = (chart: Chart): StudioItem[] =>
     opts.kind === "artistes"
-      ? (chart.artists ?? []).map((a) => ({ kind: "artiste" as const, id: a.id, title: a.name, artist: a.name }))
+      ? (chart.artists ?? []).map((a) => ({ kind: "artiste" as const, id: a.id, title: a.name, artist: a.name, cover: a.picture }))
       : asAlbums
-        ? chart.albums.map((a) => ({ kind: "album" as const, id: a.id, title: a.title, artist: a.artist }))
-        : chart.tracks.map((t) => ({ kind: "titre" as const, id: t.id, title: t.title, artist: t.artist }));
+        ? chart.albums.map((a) => ({ kind: "album" as const, id: a.id, title: a.title, artist: a.artist, cover: a.cover }))
+        : chart.tracks.map((t) => ({ kind: "titre" as const, id: t.id, title: t.title, artist: t.artist, cover: t.cover }));
 
   if (opts.theme === "pays") {
     const chart = country
@@ -117,11 +151,18 @@ export async function getStudio(opts: {
       id: a.album_id,
       title: a.album_title,
       artist: a.artist_name,
+      cover: a.cover_url ?? "",
     }));
     heading = `Les ${opts.count} albums les mieux notés sur Pépite`;
     tags = ["#avismusique", "#critique"];
   } else if (opts.theme === "sorties") {
-    items = (await getNewReleases(opts.count)).map((a) => ({ kind: "album" as const, id: a.id, title: a.title, artist: a.artist }));
+    items = (await getNewReleases(opts.count)).map((a) => ({
+      kind: "album" as const,
+      id: a.id,
+      title: a.title,
+      artist: a.artist,
+      cover: a.cover,
+    }));
     heading = `${opts.count} sorties de la semaine à écouter`;
     tags = ["#nouveautes", "#nouvellesortie"];
   } else {
@@ -139,7 +180,9 @@ export async function getStudio(opts: {
     const pool = [
       ...fromChart(local),
       ...fromChart(world),
-      ...(asAlbums ? fresh.map((a) => ({ kind: "album" as const, id: a.id, title: a.title, artist: a.artist })) : []),
+      ...(asAlbums
+        ? fresh.map((a) => ({ kind: "album" as const, id: a.id, title: a.title, artist: a.artist, cover: a.cover }))
+        : []),
     ];
     const seen = new Set<number>();
     items = shuffle(pool, opts.seed).filter((i) => !seen.has(i.id) && seen.add(i.id));
@@ -155,5 +198,21 @@ export async function getStudio(opts: {
     "",
     [...tags, "#musique", "#musiquetiktok", "#pepitemusic", "#fyp"].join(" "),
   ].join("\n");
-  return { heading, items, caption, country, countries };
+  const up = (s: string) => s.toLocaleUpperCase("fr");
+  const n = items.length;
+  const poster: StudioPoster =
+    opts.theme === "pays"
+      ? {
+          title: `TOP ${n} ${up(word)}`,
+          place: `${up(country?.name ?? "France")} · CETTE SEMAINE`,
+          color: COUNTRY_COLORS[country?.code ?? "FR"] ?? "vert",
+        }
+      : opts.theme === "monde"
+        ? { title: `TOP ${n} ${up(word)}`, place: "MONDE · CETTE SEMAINE", color: "violet" }
+        : opts.theme === "notes"
+          ? { title: `TOP ${n} PÉPITE`, place: "LES ALBUMS LES MIEUX NOTÉS", color: "vert" }
+          : opts.theme === "sorties"
+            ? { title: "NOUVEAUTÉS", place: "LES SORTIES DE LA SEMAINE", color: "rose" }
+            : { title: `${n} PÉPITES`, place: `${up(word)} À DÉCOUVRIR`, color: "noir" };
+  return { heading, items, caption, country, countries, poster };
 }
