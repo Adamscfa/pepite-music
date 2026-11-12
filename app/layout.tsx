@@ -32,6 +32,8 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       t(locale, "siteDescription"),
     appleWebApp: { capable: true, title: "Pépite", statusBarStyle: "default" },
+    // Preuve pour Google Search Console que le site t'appartient (ne pas retirer).
+    verification: { google: "AU7CAOumaYPBj34VBEA-VClCTZQU8SVilVN1_n1nVIY" },
   };
 }
 
