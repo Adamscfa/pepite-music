@@ -205,12 +205,67 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     15 ont été exécutés, supprimer d'abord les MP4 dans **Supabase > Storage >
     weekly-videos**, puis exécuter `supabase/16-retirer-videos.sql`. Cela ne
     touche pas aux colonnes `is_admin` et `is_demo`, utilisées ailleurs.
-43. Diagnostic connexion Google (14 novembre 2026) : le site consigne désormais
-    le code et le motif d'un échec OAuth dans les journaux Vercel et indique les
-    réglages Google/Supabase à vérifier. Le README distingue l'adresse de rappel
-    Google (`...supabase.co/auth/v1/callback`) de l'adresse autorisée par
-    Supabase (`.../auth/callback`). Le propriétaire doit vérifier les réglages
-    du fournisseur et autoriser l'adresse exacte du site.
+43. Affiche Top 10 dans le Studio (12 novembre 2026) : nouveau choix **Format >
+    Affiche Top 10** sur `/studio`. Une seule image 1080 × 1350 (format 4:5 des
+    publications photo TikTok et Instagram) : grand titre (« TOP 10 TITRES »),
+    pays et « cette semaine », deux colonnes de 5 avec rang, pochette, titre et
+    artiste, fond de couleur pointillé, logo Pépite et adresse du site en bas.
+    Marche avec tous les thèmes (top d'un pays, Monde, mieux notés, sorties, au
+    hasard) et les albums, titres ou artistes. La couleur suit le drapeau du pays
+    (orange pour la Côte d'Ivoire, vert pour le Sénégal ou le Nigeria, rouge pour
+    le Kenya, bleu pour la France ou l'Afrique du Sud…) et peut être changée dans
+    **Couleur**. Code : `lib/studio-poster.tsx`. Pour éviter les pannes de la
+    première version (n°28) : textes toujours d'un seul bloc, pochettes
+    téléchargées à l'avance avec 4 secondes maximum, case vide si Deezer ne répond
+    pas. Aucun SQL.
+44. Vidéos dans le Studio (12 novembre 2026) : deux nouveaux formats dans
+    **Format** sur `/studio`. **Vidéo « Ta note ? »** (environ 18 s) : accroche
+    modifiable (« Quel album mérite… 5 ÉTOILES ? »), puis 4 albums, un par un,
+    avec « Ta note ? » et les étoiles qui se remplissent. **Vidéo duel**
+    (environ 14 s) : « DUEL D'ALBUMS », puis 2 manches « 1 VS 2 » avec « Qui
+    gagne ? Commente 1 ou 2 ». Les deux finissent par « Crée ton compte » et
+    l'adresse du site. Vidéos 1080 × 1920, **muettes** (la musique s'ajoute dans
+    TikTok). Elles sont fabriquées dans le navigateur pendant la lecture (canvas
+    et MediaRecorder) : aucun serveur vidéo ni outil à installer ; garder la page
+    ouverte pendant l'enregistrement. MP4 sur Chrome (ordinateur et Android
+    récents), sinon WebM. Les pochettes passent par `/studio/cover` (admins,
+    images Deezer seulement). Code : `app/studio/StudioVideo.tsx`. Aucun SQL.
+45. Flèche « descendre » dans les conversations (12 novembre 2026) : comme sur
+    WhatsApp, une flèche ronde apparaît en bas à droite dès qu'on remonte dans les
+    messages, et ramène au dernier message d'un toucher. Sur téléphone, l'arrivée
+    dans une conversation, l'envoi et la réception d'un message descendent aussi
+    jusqu'en bas de la zone des messages (avant, seule la page descendait).
+    Code : `app/messages/[username]/ScrollDown.tsx` et `scroll.ts`. Aucun SQL.
+46. Google, chargement et Deezer (12 novembre 2026) :
+    - **Google** : `robots.txt` et plan du site `sitemap.xml` (pages principales,
+      chaque album et titre noté, profils des vrais membres). Les pages album,
+      titre et artiste ont une description (« noté 4,3/5 (12 notes) sur Pépite »)
+      et des données structurées pour que Google puisse afficher les étoiles.
+      Code : `app/robots.ts`, `app/sitemap.ts`, `lib/seo.tsx`.
+    - **Écrans de chargement** sur les pages album, titre, artiste, profil,
+      Classements et Explorer : des emplacements gris s'affichent tout de suite
+      (`components/PageSkeleton.tsx`).
+    - **Deezer** : chaque appel est coupé au bout de 5 secondes ; une réponse
+      d'erreur de Deezer n'est plus gardée des heures (nouvel essai, gardé
+      10 minutes). Code : `get` dans `lib/deezer.ts`. Aucun SQL.
+47. Plus de pays (12 novembre 2026) : la liste des tops pays (Studio, Classements,
+    tendances) n'avait plus qu'une dizaine de pays, mélangés avec des playlists
+    « Top Hits 1985 », car la liste du compte Deezer Charts ne répondait plus.
+    Elle est maintenant lue page par page, et chaque pays manquant (environ 80
+    pays connus, dont la Côte d'Ivoire, le Sénégal, le Cameroun, le Nigeria, le
+    Kenya…) est cherché un par un, seulement chez Deezer Charts. Gardé une
+    journée. Code : `getCountryCharts` dans `lib/deezer.ts`. Aucun SQL.
+    Correctif le même jour : la recherche pays par pays pouvait prendre plus de
+    10 secondes et faire planter Classements et le Studio. Elle s'arrête
+    maintenant au bout de 3 secondes (pays d'Afrique et France cherchés en
+    premier), la liste est gardée en mémoire 6 heures et se complète d'une
+    visite à l'autre.
+48. Connexion Google (14 novembre 2026) : le code note désormais le code et le
+    motif d'un échec OAuth dans les journaux Vercel et indique les réglages
+    Google/Supabase à vérifier. Le README distingue l'adresse de rappel Google
+    (`...supabase.co/auth/v1/callback`) de l'adresse autorisée par Supabase
+    (`.../auth/callback`). Le propriétaire doit vérifier les réglages du
+    fournisseur et autoriser l'adresse exacte du site.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -242,6 +297,11 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (interface mobile) | Icône de changement de thème près de la recherche | Aucun SQL à exécuter |
 | `13-suppressions.sql` | Supprimer un message, une notification, vider une conversation | oui (confirmé avec le fichier 14) |
 | `14-video-queue.sql` et `15-video-review.sql` | Anciens scripts vidéo ; retirés du dépôt, ne plus exécuter | retirés |
+| Aucun (Studio) | Affiche Top 10 | Aucun SQL à exécuter |
+| Aucun (Studio) | Vidéos « Ta note ? » et duel | Aucun SQL à exécuter |
+| Aucun (interface) | Flèche « descendre » dans les conversations | Aucun SQL à exécuter |
+| Aucun (Google, chargement, Deezer) | Plan du site, descriptions, écrans de chargement | Aucun SQL à exécuter |
+| Aucun (Deezer) | Plus de pays dans les tops | Aucun SQL à exécuter |
 | `16-retirer-videos.sql` | Supprimer les anciennes fonctions et tables vidéo (après avoir vidé le bucket dans Storage) | à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
@@ -300,11 +360,18 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
 - [ ] Vérifier que le Studio en ligne permet toujours de préparer et télécharger
       les carrousels d'albums, de titres et d'artistes
+- [ ] Après publication, enregistrer une vidéo « Ta note ? » et une vidéo duel
+      depuis le Studio (sur ordinateur avec Chrome, puis sur téléphone)
+- [ ] Après publication, essayer l'affiche Top 10 du Studio (au moins un top
+      de pays en titres, un en albums et un Top Monde en artistes)
 - [ ] **Nom de domaine** (plus tard) : `.ci` (environ 45 000 à 75 000 FCFA/an,
   CNI demandée, 2 à 5 jours) ou `.com` (environ 10 à 15 $/an, immédiat, achat
   possible dans Vercel). Puis : Vercel > Settings > Domains ; Supabase > URL
   Configuration (Site URL + Redirect URLs) ; Brevo > Domaines (authentifier) et
   expéditeur `bonjour@…` ; renvoi des e-mails reçus avec ImprovMX.
+- [ ] Google Search Console : la balise de vérification est sur le site
+      (`verification` dans `app/layout.tsx`, 12 novembre 2026). Reste à cliquer
+      sur **Valider**, puis envoyer `sitemap.xml` dans **Sitemaps**
 - [ ] (idées à ajouter ici)
 
 ## Idées mises de côté

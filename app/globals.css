@@ -1134,6 +1134,30 @@ main:has(.chat) { padding-top: 0; }
 .chat-who small { color: var(--muted); font-size: 12px; }
 .chat-who small.typing-label { color: var(--gold); font-weight: 600; }
 .chat-who:hover b { text-decoration: underline; text-underline-offset: 3px; }
+/* Flèche « descendre au dernier message », au-dessus de la barre d'écriture */
+.chat-down {
+  /* Sur ordinateur : collée en bas à droite de la conversation, sans prendre de place */
+  position: sticky;
+  bottom: 100px;
+  margin: -46px 8px 0 auto;
+  z-index: 12;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(12px) scale(.9);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.chat-down.show { opacity: 1; transform: none; pointer-events: auto; }
+.chat-down:hover { border-color: var(--gold); }
 @media (max-width: 760px) {
   /* Comme WhatsApp : en conversation, plein écran, sans le menu du bas */
   html:has(.chat), body:has(.chat) {
@@ -1173,6 +1197,7 @@ main:has(.chat) { padding-top: 0; }
     touch-action: pan-y;
   }
   .chat .thread > * { flex-shrink: 0; }
+  .chat-down { position: fixed; margin: 0; right: 16px; bottom: calc(var(--chat-visual-bottom, 0px) + 100px + env(safe-area-inset-bottom)); }
   .composer {
     position: relative;
     padding: 8px 0 calc(10px + env(safe-area-inset-bottom));
@@ -1438,6 +1463,14 @@ main:has(.chat) { padding-top: 0; }
 .studio-slides { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
 .studio-slides figure { margin: 0; display: grid; gap: 6px; }
 .studio-slides img { width: 100%; height: auto; aspect-ratio: 9 / 16; border-radius: 12px; background: var(--line); display: block; }
+.studio-poster { grid-template-columns: minmax(0, 420px); }
+.studio-poster img { aspect-ratio: 4 / 5; }
+.studio-video { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.studio-video-canvas { width: 100%; height: auto; aspect-ratio: 9 / 16; border-radius: 14px; background: #000; display: block; }
+.studio-video-side { display: grid; gap: 12px; align-content: start; }
+.studio-video-hook { display: grid; gap: 5px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.studio-video-result { width: 160px; border-radius: 10px; background: #000; }
+@media (max-width: 700px) { .studio-video { grid-template-columns: minmax(0, 1fr); } .studio-video-canvas { max-width: 300px; margin: 0 auto; } }
 .studio-slides figcaption { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 760px) {
   .studio-slides { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1497,3 +1530,20 @@ section.dash-box + section.dash-box { margin-top: 0; }
 .skel-pepite { height: 96px; border-radius: 16px; }
 .skel-strip { display: flex; gap: 12px; overflow: hidden; }
 .skel-tile { width: 132px; height: 132px; flex: none; }
+
+/* Écran de chargement des pages (components/PageSkeleton.tsx) */
+.page-skel { display: grid; gap: 28px; padding: 18px 0; }
+.page-skel-hero { display: flex; gap: 24px; align-items: center; }
+.page-skel-cover { width: 220px; height: 220px; flex: none; border-radius: 14px; }
+.page-skel-text { display: grid; gap: 14px; flex: 1; }
+.page-skel-h1 { height: 34px; width: 60%; border-radius: 12px; }
+.page-skel-small { flex: none; width: 30%; }
+.page-skel-mid { flex: none; width: 45%; }
+.page-skel-rows { max-width: 640px; }
+.page-skel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; }
+.page-skel-tile { aspect-ratio: 1; border-radius: 12px; }
+@media (max-width: 760px) {
+  .page-skel-hero { flex-direction: column; align-items: stretch; }
+  .page-skel-cover { width: 100%; max-width: 320px; height: auto; aspect-ratio: 1; align-self: center; }
+  .page-skel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

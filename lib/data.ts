@@ -737,3 +737,19 @@ export async function getMyReferrals(meId: string): Promise<Author[]> {
     .returns<{ invited: Profile }[]>();
   return (data ?? []).filter((r) => r.invited).map((r) => author(r.invited));
 }
+
+// Note moyenne et nombre de notes d'un album (avis sur l'album entier) ou d'un titre,
+// sans les avis masqués par la modération. Pour les descriptions Google et les étoiles
+// dans les résultats de recherche.
+export const getRatingSummary = cache(
+  async (target: { albumId: number } | { trackId: number }): Promise<{ average: number; count: number }> => {
+    if (!hasSupabaseConfig) return { average: 0, count: 0 };
+    const supabase = await createClient();
+    let query = supabase.from("reviews").select("*");
+    query = "trackId" in target ? query.eq("track_id", target.trackId) : query.eq("album_id", target.albumId).is("track_id", null);
+    const { data } = await query.limit(5000).returns<RawReview[]>();
+    const ratings = (data ?? []).filter((r) => !r.hidden).map((r) => r.rating);
+    const count = ratings.length;
+    return { count, average: count ? ratings.reduce((s, x) => s + x, 0) / count : 0 };
+  },
+);

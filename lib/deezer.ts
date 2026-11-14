@@ -34,22 +34,38 @@ export type Album = {
 
 type DeezerError = { error?: { message?: string } };
 
+// Deezer ne doit jamais bloquer une page : chaque appel est coupé au bout de 5 secondes
+// (la page s'affiche alors sans cette partie).
+const TIMEOUT = 5000;
+
+async function fetchJson<T>(url: string, revalidate: number): Promise<(T & DeezerError) | null> {
+  const res = await fetch(url, { next: { revalidate }, signal: AbortSignal.timeout(TIMEOUT) });
+  if (!res.ok) {
+    console.error(`Deezer ${url} : réponse ${res.status}`);
+    return null;
+  }
+  return (await res.json()) as T & DeezerError;
+}
+
 async function get<T>(path: string, revalidate: number): Promise<T | null> {
   try {
-    const res = await fetch(`${API}${path}`, { next: { revalidate } });
-    if (!res.ok) {
-      console.error(`Deezer ${path} : réponse ${res.status}`);
-      return null;
+    let json = await fetchJson<T>(`${API}${path}`, revalidate);
+    // Deezer répond 200 même en cas d'erreur (par exemple « trop d'appels »), et cette
+    // réponse resterait gardée aussi longtemps qu'une bonne. On redemande donc tout de
+    // suite avec une adresse qui change toutes les 10 minutes : la bonne réponse est
+    // gardée 10 minutes au lieu de laisser une rangée vide pendant des heures.
+    if (json?.error) {
+      const retry = `${API}${path}${path.includes("?") ? "&" : "?"}_r=${Math.floor(Date.now() / 600000)}`;
+      json = await fetchJson<T>(retry, 600);
     }
-    const json = (await res.json()) as T & DeezerError;
-    // Deezer répond 200 même en cas d'erreur, avec un champ "error".
+    if (!json) return null;
     if (json.error) {
       console.error(`Deezer ${path} : ${JSON.stringify(json.error)}`);
       return null;
     }
     return json;
   } catch (error) {
-    // Visible dans Vercel > Logs.
+    // Visible dans Vercel > Logs (y compris quand Deezer met plus de 5 secondes).
     console.error(`Deezer ${path} : appel impossible`, error);
     return null;
   }
@@ -241,22 +257,89 @@ const CHARTS_USER = 637006841;
 // code (CI, SN…) et name (« Côte d'Ivoire ») : seulement pour un vrai top de pays.
 export type CountryChart = { id: number; title: string; code: string | null; name: string | null };
 
-type RawPlaylists = { data: { id: number; title: string; user?: { name: string } }[] };
+type RawPlaylists = {
+  data: { id: number; title: string; user?: { name: string } }[];
+  next?: string;
+};
 
 const isCountryTop = (p: { id: number; title: string }) =>
   /^Top [^0-9]/i.test(p.title) && p.id !== WORLD_PLAYLIST && !/worldwide|monde/i.test(p.title);
 
-// Les tops par pays, triés par nom. Si le compte Deezer Charts ne répond pas,
-// on les cherche parmi les playlists publiées par Deezer.
+const byDeezerCharts = (p: { user?: { name: string } }) => /^deezer charts$/i.test(p.user?.name?.trim() ?? "");
+
+// Pays pour lesquels Deezer publie (ou a publié) un « Top <pays> », avec le nom anglais
+// utilisé dans le titre. Sert à aller chercher chaque top un par un quand la liste du
+// compte Deezer Charts ne répond pas ou est incomplète.
+const CHART_COUNTRIES = [
+  "Algeria", "Angola", "Argentina", "Australia", "Austria", "Belgium", "Bolivia", "Brazil",
+  "Bulgaria", "Cameroon", "Canada", "Chile", "Colombia", "Costa Rica", "Croatia", "Czech Republic",
+  "Ivory Coast", "Denmark", "DR Congo", "Dominican Republic", "Ecuador", "Egypt", "El Salvador",
+  "Estonia", "Finland", "France", "Gabon", "Germany", "Ghana", "Greece", "Guatemala", "Honduras",
+  "Hungary", "Indonesia", "Ireland", "Israel", "Italy", "Japan", "Jordan", "Kenya", "Latvia",
+  "Lebanon", "Lithuania", "Madagascar", "Malaysia", "Mali", "Mexico", "Morocco", "Netherlands",
+  "New Zealand", "Nigeria", "Norway", "Panama", "Paraguay", "Peru", "Philippines", "Poland",
+  "Portugal", "Romania", "Saudi Arabia", "Senegal", "Serbia", "Singapore", "Slovakia", "Slovenia",
+  "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Tanzania", "Thailand",
+  "Tunisia", "Turkey", "UAE", "Uganda", "UK", "Ukraine", "Uruguay", "USA", "Venezuela", "Zambia",
+];
+
+// Toutes les playlists du compte Deezer Charts, page par page (100 par page).
+async function chartsAccountPlaylists() {
+  const all: RawPlaylists["data"] = [];
+  for (let index = 0; index < 500; index += 100) {
+    const page = await get<RawPlaylists>(`/user/${CHARTS_USER}/playlists?limit=100&index=${index}`, 86400);
+    all.push(...(page?.data ?? []));
+    if (!page?.next || !page.data?.length) break;
+  }
+  return all.filter(isCountryTop);
+}
+
+// Un « Top <pays> » trouvé par la recherche Deezer, seulement s'il vient de Deezer Charts.
+async function searchCountryTop(country: string) {
+  const found = await get<RawPlaylists>(`/search/playlist?q=${encodeURIComponent(`Top ${country}`)}&limit=25`, 86400);
+  const want = `top ${country}`.toLowerCase();
+  return (found?.data ?? []).find((p) => byDeezerCharts(p) && p.title.trim().toLowerCase() === want) ?? null;
+}
+
+// Pays cherchés en premier (le public de Pépite), avant le reste de la liste.
+const FIRST = ["Ivory Coast", "Senegal", "Cameroon", "Mali", "DR Congo", "Gabon", "Nigeria", "Ghana",
+  "Morocco", "Algeria", "Tunisia", "South Africa", "Kenya", "France", "Belgium", "Canada", "USA", "UK"];
+
+// Liste gardée en mémoire 6 heures (et un seul calcul à la fois), pour ne pas refaire
+// des dizaines d'appels à Deezer à chaque page.
+let memo: { at: number; list: CountryChart[] } | null = null;
+let running: Promise<CountryChart[]> | null = null;
+
+// Les tops par pays, triés par nom. D'abord la liste du compte Deezer Charts ; pour les
+// pays qui n'y sont pas, on cherche leur top un par un, par paquets de 10, pendant
+// 3 secondes au plus : la page ne doit jamais attendre plus longtemps. Chaque réponse
+// de Deezer est gardée une journée, donc la liste se complète d'une visite à l'autre.
 export async function getCountryCharts(): Promise<CountryChart[]> {
-  const own = await get<RawPlaylists>(`/user/${CHARTS_USER}/playlists?limit=200`, 86400);
-  let list = (own?.data ?? []).filter(isCountryTop);
-  if (!list.length) {
-    const found = await get<RawPlaylists>(`/search/playlist?q=${encodeURIComponent("Top")}&limit=100`, 86400);
-    list = (found?.data ?? []).filter((p) => isCountryTop(p) && /deezer/i.test(p.user?.name ?? ""));
+  if (memo && Date.now() - memo.at < 6 * 3600 * 1000) return memo.list;
+  running ??= buildCountryCharts().finally(() => (running = null));
+  return running;
+}
+
+async function buildCountryCharts(): Promise<CountryChart[]> {
+  const deadline = Date.now() + 3000;
+  const list = await chartsAccountPlaylists();
+  const have = new Set(list.map((p) => p.title.trim().toLowerCase()));
+  const order = [...FIRST, ...CHART_COUNTRIES.filter((c) => !FIRST.includes(c))];
+  const missing = order.filter((c) => !have.has(`top ${c}`.toLowerCase()));
+  let complete = true;
+  for (let i = 0; i < missing.length; i += 10) {
+    if (Date.now() > deadline) {
+      complete = false;
+      break;
+    }
+    const found = await Promise.all(missing.slice(i, i + 10).map(searchCountryTop));
+    for (const p of found) if (p && isCountryTop(p)) list.push(p);
   }
   const unique = new Map(list.map((p) => [p.id, { id: p.id, ...frenchChartTitle(p.title) }]));
-  return [...unique.values()].sort((a, b) => a.title.localeCompare(b.title, "fr"));
+  const result = [...unique.values()].sort((a, b) => a.title.localeCompare(b.title, "fr"));
+  // Liste incomplète (Deezer lent) : gardée 5 minutes seulement, puis on complète.
+  memo = { at: complete ? Date.now() : Date.now() - 6 * 3600 * 1000 + 5 * 60 * 1000, list: result };
+  return result;
 }
 
 export type ArtistHit = { id: number; name: string; picture: string };

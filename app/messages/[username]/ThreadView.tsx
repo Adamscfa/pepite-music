@@ -13,6 +13,7 @@ import type { Author, Message } from "@/lib/data";
 import { emojiCount } from "@/lib/format";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import MessageForm from "./MessageForm";
+import ScrollDown from "./ScrollDown";
 
 const time = (d: Date) => d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -222,6 +223,8 @@ export default function ThreadView({
           </div>
         )}
       </div>
+
+      <ScrollDown />
 
       {canWrite ? (
         <MessageForm to={friendUsername} onTyping={onTyping} />

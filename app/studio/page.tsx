@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/data";
-import { getStudio, THEMES, type StudioKind, type StudioTheme } from "@/lib/studio";
+import { getStudio, POSTER_COLORS, THEMES, type StudioKind, type StudioTheme } from "@/lib/studio";
+import { siteLabel } from "@/lib/og";
 import StudioSlides from "./StudioSlides";
+import StudioVideo from "./StudioVideo";
 
 export const metadata: Metadata = { title: "Studio TikTok" };
 
@@ -22,9 +24,15 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
       : rawKind === "titres" || rawKind === "artistes"
         ? rawKind
         : "albums";
-  const count = [5, 10].includes(Number(one(p.nombre))) ? Number(one(p.nombre)) : 10;
+  // Format : carrousel (une image par album), affiche Top 10 (une seule image), ou vidéo
+  // (« note » : 4 albums à noter ; « duel » : 2 manches de 1 contre 2).
+  const FORMATS = ["carrousel", "affiche", "video-note", "video-duel"] as const;
+  const format = FORMATS.find((f) => f === one(p.format)) ?? "carrousel";
+  const isVideo = format === "video-note" || format === "video-duel";
+  const color = Object.hasOwn(POSTER_COLORS, one(p.couleur)) ? one(p.couleur) : "";
+  const count = format === "affiche" ? 10 : [5, 10].includes(Number(one(p.nombre))) ? Number(one(p.nombre)) : 10;
   const seed = Number(one(p.graine)) || 1;
-  const { heading, items, caption, country, countries } = await getStudio({
+  const { heading, items, caption, country, countries, poster } = await getStudio({
     theme,
     kind,
     // pays vide = la France choisie dans le menu ; absent = le pays du visiteur.
@@ -35,7 +43,22 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
 
   const k = kind === "titres" ? "titre" : kind === "artistes" ? "artiste" : "album";
   const enc = encodeURIComponent;
-  const slides = [
+  const posterQuery = new URLSearchParams({
+    s: "affiche",
+    theme,
+    type: kind,
+    pays: country ? String(country.id) : "",
+    graine: String(seed),
+    couleur: color,
+  });
+  const posterSlides = [
+    {
+      src: `/studio/image?${posterQuery}`,
+      name: `affiche-${poster.title}-${poster.place}`.replace(/[^\p{L}\p{N} -]/gu, "").slice(0, 60),
+      label: `${poster.title} · ${poster.place}`,
+    },
+  ];
+  const carouselSlides = [
     {
       src: `/studio/image?s=intro&k=${k}&h=${enc(heading)}&c=${items
         .slice(0, 4)
@@ -51,12 +74,27 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
     })),
     { src: "/studio/image?s=fin", name: `${String(items.length + 1).padStart(2, "0")}-fin`, label: "Fin · lien en bio" },
   ];
+  const slides = format === "affiche" ? posterSlides : carouselSlides;
+
+  // Vidéos : les 4 premiers de la liste, et un texte de publication adapté.
+  const videoItems = items.slice(0, 4).map((i) => ({ title: i.title, artist: i.artist, cover: i.cover }));
+  const tagLine = caption.split("\n").pop() ?? "";
+  const videoCaption = [
+    format === "video-duel" ? "Duel : tu choisis qui ? ⚔️" : "Lequel mérite 5 étoiles ? ⭐",
+    format === "video-duel" ? "Commente 1 ou 2 👇" : "Donne ta note en commentaire 👇",
+    "Note ta musique sur Pépite (lien en bio).",
+    "",
+    tagLine,
+  ].join("\n");
+  const defaultHook = kind === "titres" ? "Quel son mérite" : kind === "artistes" ? "Quel artiste mérite" : "Quel album mérite";
   const remix = new URLSearchParams({
     theme,
     type: kind,
     nombre: String(count),
     graine: String(seed + 1),
     pays: country ? String(country.id) : "",
+    format,
+    couleur: color,
   });
 
   return (
@@ -70,6 +108,15 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
       </p>
 
       <form className="studio-form">
+        <label>
+          Format
+          <select name="format" defaultValue={format} className="select">
+            <option value="carrousel">Carrousel (une image par album)</option>
+            <option value="affiche">Affiche Top 10 (une seule image)</option>
+            <option value="video-note">Vidéo « Ta note ? » (4 albums)</option>
+            <option value="video-duel">Vidéo duel (2 manches, 1 contre 2)</option>
+          </select>
+        </label>
         <label>
           Thème
           <select name="theme" defaultValue={theme} className="select">
@@ -100,10 +147,21 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
           </select>
         </label>
         <label>
-          Nombre
+          Nombre {"(carrousel)"}
           <select name="nombre" defaultValue={count} className="select">
             <option value="5">5</option>
             <option value="10">10</option>
+          </select>
+        </label>
+        <label>
+          Couleur {"(affiche)"}
+          <select name="couleur" defaultValue={color} className="select">
+            <option value="">Selon le pays</option>
+            {Object.keys(POSTER_COLORS).map((c) => (
+              <option key={c} value={c}>
+                {c[0].toUpperCase() + c.slice(1)}
+              </option>
+            ))}
           </select>
         </label>
         <button className="btn">Préparer</button>
@@ -121,7 +179,20 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
       </div>
 
       {items.length ? (
-        <StudioSlides slides={slides} caption={caption} />
+        isVideo ? (
+          <StudioVideo
+            key={`${format}-${videoItems.map((i) => i.cover).join()}`}
+            mode={format === "video-duel" ? "duel" : "note"}
+            items={videoItems}
+            kind={kind}
+            defaultHook={defaultHook}
+            site={siteLabel}
+            tags={tagLine.split(" ").slice(0, 3).join("  ")}
+            caption={videoCaption}
+          />
+        ) : (
+          <StudioSlides slides={slides} caption={caption} poster={format === "affiche"} />
+        )
       ) : (
         <div className="empty">Rien à montrer pour ce choix (Deezer ne répond pas ou personne n&apos;a encore noté).</div>
       )}

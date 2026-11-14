@@ -6,9 +6,10 @@ import CoverHero from "@/components/CoverHero";
 import ListenLinks from "@/components/ListenLinks";
 import { MemberReviews, RatePanel, ScoreSummary } from "@/components/Ratings";
 import TrackList from "@/app/album/TrackList";
-import { getCurrentProfile, getTrackReviews } from "@/lib/data";
+import { getCurrentProfile, getRatingSummary, getTrackReviews } from "@/lib/data";
 import { getAlbum, getTrack } from "@/lib/deezer";
 import { formatDuration } from "@/lib/format";
+import { aggregateRating, JsonLd, ratingText, siteUrl } from "@/lib/seo";
 
 async function loadTrack(params: PageProps<"/titre/[id]">["params"]) {
   const id = Number((await params).id);
@@ -20,7 +21,11 @@ async function loadTrack(params: PageProps<"/titre/[id]">["params"]) {
 export async function generateMetadata({ params }: PageProps<"/titre/[id]">): Promise<Metadata> {
   const track = await loadTrack(params);
   const title = `${track.title} – ${track.artist}`;
-  return { title, openGraph: { title, images: [track.cover] } };
+  const { average, count } = await getRatingSummary({ trackId: track.id });
+  const description = count
+    ? `${track.title} de ${track.artist} (album ${track.albumTitle}) : noté ${ratingText(average, count)} sur Pépite. Lis les avis et donne ta note.`
+    : `${track.title} de ${track.artist} (album ${track.albumTitle}) : écoute l'extrait, donne ta note et ton avis sur Pépite.`;
+  return { title, description, alternates: { canonical: `/titre/${track.id}` }, openGraph: { title, description, images: [track.cover] } };
 }
 
 export default async function TrackPage({ params }: PageProps<"/titre/[id]">) {
@@ -31,8 +36,25 @@ export default async function TrackPage({ params }: PageProps<"/titre/[id]">) {
     getAlbum(track.albumId),
   ]);
 
+  // Les avis masqués par la modération sont déjà retirés (withSocial) : même note que la page.
+  const visible = reviews;
+  const average = visible.length ? visible.reduce((s, r) => s + r.rating, 0) / visible.length : 0;
+
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "MusicRecording",
+          name: track.title,
+          url: `${siteUrl}/titre/${track.id}`,
+          image: track.cover,
+          duration: `PT${Math.floor(track.duration / 60)}M${track.duration % 60}S`,
+          byArtist: { "@type": "MusicGroup", name: track.artist, url: `${siteUrl}/artiste/${track.artistId}` },
+          inAlbum: { "@type": "MusicAlbum", name: track.albumTitle, url: `${siteUrl}/album/${track.albumId}` },
+          aggregateRating: aggregateRating(average, visible.length),
+        }}
+      />
       <CoverHero cover={track.coverSmall}>
         <div className="album-top">
           <Cover src={track.cover} size="l" alt={`Pochette de ${track.albumTitle}`} />

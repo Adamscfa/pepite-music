@@ -13,7 +13,13 @@ async function loadArtist(params: PageProps<"/artiste/[id]">["params"]) {
 
 export async function generateMetadata({ params }: PageProps<"/artiste/[id]">): Promise<Metadata> {
   const artist = await loadArtist(params);
-  return { title: artist.name, openGraph: { images: [artist.picture] } };
+  const description = `Tous les albums, EP et singles de ${artist.name} : écoute les extraits, lis les avis et donne ta note sur Pépite.`;
+  return {
+    title: artist.name,
+    description,
+    alternates: { canonical: `/artiste/${artist.id}` },
+    openGraph: { images: [artist.picture], description },
+  };
 }
 
 const SECTIONS = [

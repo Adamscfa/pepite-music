@@ -5,8 +5,17 @@ import Cover from "@/components/Cover";
 import CoverHero from "@/components/CoverHero";
 import ListenLinks from "@/components/ListenLinks";
 import { MemberReviews, RatePanel, ScoreSummary } from "@/components/Ratings";
-import { getAlbumReviews, getCurrentProfile, getFavorites, getFriends, getUserLists, getWeeklyPepite } from "@/lib/data";
+import {
+  getAlbumReviews,
+  getCurrentProfile,
+  getFavorites,
+  getFriends,
+  getRatingSummary,
+  getUserLists,
+  getWeeklyPepite,
+} from "@/lib/data";
 import { getAlbum } from "@/lib/deezer";
+import { aggregateRating, JsonLd, ratingText, siteUrl } from "@/lib/seo";
 import AlbumActions from "../AlbumActions";
 import TrackList from "../TrackList";
 import WeeklyVote from "../WeeklyVote";
@@ -21,7 +30,16 @@ async function loadAlbum(params: PageProps<"/album/[id]">["params"]) {
 
 export async function generateMetadata({ params }: PageProps<"/album/[id]">): Promise<Metadata> {
   const album = await loadAlbum(params);
-  return { title: `${album.title} – ${album.artist}` };
+  const { average, count } = await getRatingSummary({ albumId: album.id });
+  // Description lue par Google sous le titre du résultat.
+  const description = count
+    ? `${album.title} de ${album.artist}${album.year ? ` (${album.year})` : ""} : noté ${ratingText(average, count)} sur Pépite. Lis les avis et donne ta note.`
+    : `${album.title} de ${album.artist}${album.year ? ` (${album.year})` : ""} : écoute les extraits, donne ta note et ton avis sur Pépite.`;
+  return {
+    title: `${album.title} – ${album.artist}`,
+    description,
+    alternates: { canonical: `/album/${album.id}` },
+  };
 }
 
 export default async function AlbumPage({ params }: PageProps<"/album/[id]">) {
@@ -33,12 +51,29 @@ export default async function AlbumPage({ params }: PageProps<"/album/[id]">) {
     getCurrentProfile(),
   ]);
   if (!album) notFound();
+  // Les avis masqués par la modération sont déjà retirés (withSocial) : même note que la page.
+  const visible = reviews;
+  const average = visible.length ? visible.reduce((s, r) => s + r.rating, 0) / visible.length : 0;
   const [myLists, friends, weekly, favorites] = me
     ? await Promise.all([getUserLists(me.id), getFriends(me.id), getWeeklyPepite(me.id), getFavorites(me.id)])
     : [[], [], null, []];
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "MusicAlbum",
+          name: album.title,
+          url: `${siteUrl}/album/${album.id}`,
+          image: album.cover,
+          byArtist: { "@type": "MusicGroup", name: album.artist, url: `${siteUrl}/artiste/${album.artistId}` },
+          ...(album.year ? { datePublished: String(album.year) } : {}),
+          ...(album.genre ? { genre: album.genre } : {}),
+          numTracks: album.trackCount,
+          aggregateRating: aggregateRating(average, visible.length),
+        }}
+      />
       <CoverHero cover={album.coverSmall}>
         <div className="album-top">
           <Cover src={album.cover} size="l" alt={`Pochette de ${album.title}`} />
