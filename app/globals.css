@@ -136,6 +136,9 @@ textarea, .field input { width: 100%; border: 1px solid var(--line); border-radi
 .stats { display: flex; gap: 28px; margin-top: 22px; flex-wrap: wrap; }
 .stats b { font-family: var(--display); font-size: 26px; display: block; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .stats span { font-size: 12px; color: var(--muted); }
+.stats a { display: block; color: inherit; border-radius: 6px; }
+.stats a:hover span { color: var(--gold); }
+.stats a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 .grid-rated { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
 .grid-rated a { display: grid; gap: 6px; align-content: start; }
 .grid-rated small { color: var(--muted); font-size: 12px; }
@@ -413,6 +416,19 @@ a:hover > .cover, .tile:hover .cover, a:hover > .tile-cover .cover { transform: 
 .friends { display: flex; gap: 10px; flex-wrap: wrap; }
 .friend { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px 5px 5px; font-weight: 600; font-size: 14px; }
 .friend:hover { border-color: var(--gold); }
+.follow-page { max-width: 640px; margin: 0 auto; }
+.follow-page-head { margin-bottom: 20px; }
+.follow-page-back { color: var(--muted); font-size: 13px; font-weight: 600; }
+.follow-page-back:hover { color: var(--gold); }
+.follow-page h1 { margin: 8px 0 0; font-size: 28px; }
+.follow-list { display: grid; gap: 8px; }
+.follow-row { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; color: inherit; }
+.follow-row:hover { border-color: var(--gold); }
+.follow-row .avatar { width: 44px; height: 44px; font-size: 17px; flex: none; }
+.follow-row-name { display: grid; min-width: 0; }
+.follow-row-name b, .follow-row-name small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.follow-row-name small { color: var(--muted); font-size: 12px; }
+.follow-row-arrow { margin-left: auto; color: var(--muted); }
 .thread-head { margin: 14px 0 18px; font-size: 18px; }
 .thread { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
 .bubble { max-width: min(80%, 460px); background: var(--surface); border: 1px solid var(--line); border-radius: 18px 18px 18px 4px; padding: 10px 14px; align-self: flex-start; }
