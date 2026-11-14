@@ -20,6 +20,7 @@ import { inCountry } from "./country-names";
 
 export type StudioTheme = "pays" | "monde" | "notes" | "sorties" | "hasard";
 export type StudioKind = "albums" | "titres" | "artistes";
+export type StudioCaptionLocale = "fr" | "en" | "es";
 // cover : pochette (ou photo de l'artiste) en petite taille Deezer, utilisée par l'affiche.
 export type StudioItem = { kind: "album" | "titre" | "artiste"; id: number; title: string; artist: string; cover: string };
 
@@ -92,6 +93,94 @@ const tag = (s: string) =>
     .replace(/[^a-zA-Z0-9]/g, "")
     .toLowerCase();
 
+const FRENCH_SPEAKING_COUNTRIES = new Set([
+  "BE", "BJ", "BF", "BI", "CM", "CA", "CF", "TD", "KM", "CD", "CG", "CI", "DJ", "FR", "GA", "GN", "HT",
+  "LU", "MG", "ML", "MC", "NE", "SN", "CH", "TG",
+]);
+const SPANISH_SPEAKING_COUNTRIES = new Set([
+  "AR", "BO", "CL", "CO", "CR", "CU", "DO", "EC", "SV", "GQ", "GT", "HN", "MX", "NI", "PA", "PY", "PE",
+  "ES", "UY", "VE",
+]);
+
+function captionLocale(country: CountryChart | null): StudioCaptionLocale {
+  if (!country?.code) return "fr";
+  if (FRENCH_SPEAKING_COUNTRIES.has(country.code)) return "fr";
+  if (SPANISH_SPEAKING_COUNTRIES.has(country.code)) return "es";
+  return "en";
+}
+
+function countryName(country: CountryChart | null, locale: StudioCaptionLocale) {
+  if (!country?.code) return locale === "es" ? "Francia" : locale === "en" ? "France" : "France";
+  return new Intl.DisplayNames([locale], { type: "region" }).of(country.code) ?? country.name ?? country.title;
+}
+
+function captionTitle(
+  theme: StudioTheme,
+  kind: StudioKind,
+  count: number,
+  heading: string,
+  place: string,
+  locale: StudioCaptionLocale,
+) {
+  if (locale === "fr") return heading;
+  const noun = {
+    en: { albums: "albums", titres: "tracks", artistes: "artists" },
+    es: { albums: "álbumes", titres: "canciones", artistes: "artistas" },
+    fr: { albums: "albums", titres: "titres", artistes: "artistes" },
+  }[locale][kind];
+
+  if (theme === "pays") {
+    return locale === "en"
+      ? `Top ${count} ${noun} in ${place} this week`
+      : `Top ${count} ${noun} de ${place} esta semana`;
+  }
+  if (theme === "monde") {
+    return locale === "en"
+      ? `Top ${count} ${noun} worldwide this week`
+      : `Top ${count} ${noun} del mundo esta semana`;
+  }
+  if (theme === "notes") return locale === "en"
+    ? `The ${count} highest-rated albums on Pépite`
+    : `Los ${count} álbumes mejor valorados en Pépite`;
+  if (theme === "sorties") return locale === "en"
+    ? `${count} new releases to listen to this week`
+    : `${count} novedades para escuchar esta semana`;
+  return locale === "en" ? `${count} ${noun} to discover` : `${count} ${noun} por descubrir`;
+}
+
+function captionTags(theme: StudioTheme, count: number, place: string, locale: StudioCaptionLocale) {
+  const specific = theme === "pays"
+    ? [tag(place), `#top${count}`]
+    : theme === "monde"
+      ? [locale === "en" ? "#worldtop" : locale === "es" ? "#topmundial" : "#topmonde", `#top${count}`]
+      : theme === "notes"
+        ? locale === "en" ? ["#musicreviews", "#albumreview"] : locale === "es" ? ["#criticasmusicales", "#albumes"] : ["#avismusique", "#critique"]
+        : theme === "sorties"
+          ? locale === "en" ? ["#newmusic", "#newreleases"] : locale === "es" ? ["#novedades", "#nuevoslanzamientos"] : ["#nouveautes", "#nouvellesortie"]
+          : locale === "en" ? ["#discovermusic", "#pepite"] : locale === "es" ? ["#descubremusica", "#pepite"] : ["#decouverte", "#pepite"];
+  const common = locale === "en"
+    ? ["#music", "#musictiktok", "#pepitemusic", "#fyp"]
+    : locale === "es"
+      ? ["#musica", "#musictiktok", "#pepitemusic", "#fyp"]
+      : ["#musique", "#musiquetiktok", "#pepitemusic", "#fyp"];
+  return [...specific, ...common];
+}
+
+export function getStudioVideoCaption(mode: "duel" | "note", locale: StudioCaptionLocale, tags: string) {
+  const lines = {
+    fr: mode === "duel"
+      ? ["Duel : tu choisis qui ? ⚔️", "Commente 1 ou 2 👇", "Note ta musique sur Pépite (lien en bio)."]
+      : ["Lequel mérite 5 étoiles ? ⭐", "Donne ta note en commentaire 👇", "Note ta musique sur Pépite (lien en bio)."],
+    en: mode === "duel"
+      ? ["Duel: who do you choose? ⚔️", "Comment 1 or 2 👇", "Rate your music on Pépite (link in bio)."]
+      : ["Which one deserves 5 stars? ⭐", "Leave your rating in the comments 👇", "Rate your music on Pépite (link in bio)."],
+    es: mode === "duel"
+      ? ["Duelo: ¿con cuál te quedas? ⚔️", "Comenta 1 o 2 👇", "Puntúa tu música en Pépite (enlace en la bio)."]
+      : ["¿Cuál merece 5 estrellas? ⭐", "Deja tu nota en los comentarios 👇", "Puntúa tu música en Pépite (enlace en la bio)."],
+  }[locale];
+  return [...lines, "", tags].join("\n");
+}
+
 export async function getStudio(opts: {
   theme: StudioTheme;
   kind: StudioKind;
@@ -102,6 +191,7 @@ export async function getStudio(opts: {
   heading: string;
   items: StudioItem[];
   caption: string;
+  captionLocale: StudioCaptionLocale;
   country: CountryChart | null;
   countries: CountryChart[];
   poster: StudioPoster;
@@ -119,7 +209,6 @@ export async function getStudio(opts: {
   const word = opts.kind === "albums" ? "albums" : opts.kind === "artistes" ? "artistes" : "titres";
   let items: StudioItem[] = [];
   let heading = "";
-  let tags: string[] = [];
 
   type Chart = { tracks: ChartTrack[]; albums: AlbumHit[]; artists?: ArtistHit[] };
   const fromChart = (chart: Chart): StudioItem[] =>
@@ -138,13 +227,11 @@ export async function getStudio(opts: {
     const where = country?.name ? inCountry(country.name) : "en France";
     items = fromChart(chart);
     heading = `Top ${opts.count} des ${word} ${where} cette semaine`;
-    tags = [country?.name ? tag(country.name) : "#france", "#top" + opts.count];
   } else if (opts.theme === "monde") {
     const chart =
       opts.kind === "artistes" ? await getPlaylistChart(WORLD_PLAYLIST) : await lightChart(WORLD_PLAYLIST);
     items = fromChart(chart);
     heading = `Top ${opts.count} des ${word} dans le monde cette semaine`;
-    tags = ["#topmonde", "#top" + opts.count];
   } else if (opts.theme === "notes") {
     items = (await getTopRatedAlbums(opts.count)).map((a) => ({
       kind: "album" as const,
@@ -154,7 +241,6 @@ export async function getStudio(opts: {
       cover: a.cover_url ?? "",
     }));
     heading = `Les ${opts.count} albums les mieux notés sur Pépite`;
-    tags = ["#avismusique", "#critique"];
   } else if (opts.theme === "sorties") {
     items = (await getNewReleases(opts.count)).map((a) => ({
       kind: "album" as const,
@@ -164,7 +250,6 @@ export async function getStudio(opts: {
       cover: a.cover,
     }));
     heading = `${opts.count} sorties de la semaine à écouter`;
-    tags = ["#nouveautes", "#nouvellesortie"];
   } else {
     // Au hasard : un mélange du top du pays, du Top Monde et des sorties.
     const scope = await getTrendScope();
@@ -187,16 +272,25 @@ export async function getStudio(opts: {
     const seen = new Set<number>();
     items = shuffle(pool, opts.seed).filter((i) => !seen.has(i.id) && seen.add(i.id));
     heading = `${opts.count} ${word} à découvrir`;
-    tags = ["#decouverte", "#pepite"];
   }
 
   items = items.slice(0, opts.count);
+  const locale = captionLocale(country);
+  const place = countryName(country, locale);
   const caption = [
-    `${heading} 🔥`,
-    "Lequel tu écoutes en boucle ? Dis-le en commentaire 👇",
-    "Note-les et donne ton avis sur Pépite (lien en bio).",
+    `${captionTitle(opts.theme, opts.kind, items.length, heading, place, locale)} 🔥`,
+    locale === "en"
+      ? "Which one is on repeat? Tell us in the comments 👇"
+      : locale === "es"
+        ? "¿Cuál estás escuchando en bucle? Cuéntanos en los comentarios 👇"
+        : "Lequel tu écoutes en boucle ? Dis-le en commentaire 👇",
+    locale === "en"
+      ? "Rate them and share your thoughts on Pépite (link in bio)."
+      : locale === "es"
+        ? "Puntúalos y comparte tu opinión en Pépite (enlace en la bio)."
+        : "Note-les et donne ton avis sur Pépite (lien en bio).",
     "",
-    [...tags, "#musique", "#musiquetiktok", "#pepitemusic", "#fyp"].join(" "),
+    captionTags(opts.theme, items.length, place, locale).join(" "),
   ].join("\n");
   const up = (s: string) => s.toLocaleUpperCase("fr");
   const n = items.length;
@@ -214,5 +308,5 @@ export async function getStudio(opts: {
           : opts.theme === "sorties"
             ? { title: "NOUVEAUTÉS", place: "LES SORTIES DE LA SEMAINE", color: "rose" }
             : { title: `${n} PÉPITES`, place: `${up(word)} À DÉCOUVRIR`, color: "noir" };
-  return { heading, items, caption, country, countries, poster };
+  return { heading, items, caption, captionLocale: locale, country, countries, poster };
 }
