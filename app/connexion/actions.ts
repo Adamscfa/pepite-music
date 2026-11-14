@@ -86,7 +86,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
 
 // Connexion en un clic : Google renvoie ensuite sur /auth/callback.
 export async function signInWithGoogle() {
-  if (!hasSupabaseConfig) redirect("/connexion");
+  if (!hasSupabaseConfig) redirect("/connexion?erreur=google");
   const supabase = await createClient();
   const h = await headers();
   const origin = h.get("origin") ?? `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
@@ -94,7 +94,14 @@ export async function signInWithGoogle() {
     provider: "google",
     options: { redirectTo: `${origin}/auth/callback` },
   });
-  if (error || !data.url) redirect("/connexion?erreur=google");
+  if (error || !data.url) {
+    console.error("[auth/google] OAuth initialization failed", {
+      code: error?.code,
+      status: error?.status,
+      message: error?.message,
+    });
+    redirect("/connexion?erreur=google");
+  }
   redirect(data.url);
 }
 

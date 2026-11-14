@@ -135,11 +135,15 @@ Les avis signalés se trouvent dans **Table Editor > reports**. Un avis signalé
 
 ### Connexion avec Google (facultatif)
 
-Le bouton « Continuer avec Google » ne marche qu'une fois Google branché dans Supabase :
+Pour que le bouton « Continuer avec Google » fonctionne, deux adresses différentes
+doivent être autorisées :
 
-1. Sur [console.cloud.google.com](https://console.cloud.google.com), crée un projet, puis **APIs et services > Identifiants > Créer des identifiants > ID client OAuth** (type « Application Web »).
-2. Dans **URI de redirection autorisés**, colle l'adresse donnée par Supabase dans **Authentication > Sign In / Providers > Google** (elle finit par `/auth/v1/callback`).
-3. Recopie l'**ID client** et le **Code secret** dans cette page Supabase, active Google et enregistre.
+1. Dans Supabase, ouvre **Authentication > Sign In / Providers > Google** et active Google. Garde cette page ouverte.
+2. Dans [Google Cloud Console](https://console.cloud.google.com), crée un identifiant OAuth de type **Application Web**. Dans **URI de redirection autorisés**, colle exactement l'adresse de rappel affichée par Supabase. Elle ressemble à `https://<projet>.supabase.co/auth/v1/callback` : c'est l'adresse de Supabase, pas celle du site Pépite.
+3. Copie l'**ID client** et le **Code secret** Google dans les champs du fournisseur Google dans Supabase, puis enregistre.
+4. Dans Supabase, ouvre **Authentication > URL Configuration**. Mets l'adresse publique du site Pépite en **Site URL**, puis ajoute cette adresse suivie de `/auth/callback` dans **Redirect URLs** (par exemple `https://<ton-site>/auth/callback`). Si tu testes depuis un aperçu Vercel, son adresse doit aussi être autorisée ici.
+
+Si la connexion échoue, vérifie d'abord ces deux adresses et que le fournisseur Google est activé. Le message affiché sur Pépite donne cette indication ; les journaux Vercel contiennent aussi le code et le motif renvoyés par Supabase, sans afficher de clé secrète.
 
 Le pseudo des comptes Google est fabriqué à partir de l'e-mail ; le membre peut ensuite changer son nom affiché et son pseudo sur son profil.
 
