@@ -54,9 +54,9 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
     getFollowStats(profile.id, me?.id),
     me && !isMe ? getSharedRatings(me.id, profile.id) : null,
   ]);
-  // Amis = l'un des deux est abonné à l'autre.
+  // Les messages sont réservés aux membres qui se suivent mutuellement.
   const friends = me && !isMe ? await areFriends(me.id, profile.id) : false;
-  const followsMe = friends && !follow.iFollow;
+  const followsMe = follow.followsMe && !follow.iFollow;
   const average = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
 
   return (
