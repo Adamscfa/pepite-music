@@ -267,7 +267,7 @@ export async function sendMessage(_prev: FormState, formData: FormData): Promise
   const friend = await getProfileByUsername(String(formData.get("to") ?? ""));
   if (!friend || friend.id === me.id) return { error: "Choisis un ami." };
   if (!(await areFriends(me.id, friend.id))) {
-    return { error: "Vous devez être amis : l'un de vous doit être abonné à l'autre." };
+    return { error: "Vous devez vous suivre tous les deux pour vous écrire." };
   }
   const body = String(formData.get("body") ?? "").trim();
   if (body.length > 1000) return { error: "Ton message est trop long (1000 caractères max)." };

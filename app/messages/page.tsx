@@ -21,7 +21,7 @@ export default async function MessagesPage() {
       <div className="eyebrow">Entre amis</div>
       <h1 style={{ fontSize: 30, marginBottom: 6 }}>Messages</h1>
       <p className="small" style={{ marginTop: 0, marginBottom: 18 }}>
-        Tu peux écrire à un membre quand l&apos;un de vous deux est abonné à l&apos;autre.
+        Vous pouvez vous écrire seulement si vous êtes abonnés l&apos;un à l&apos;autre.
       </p>
 
       {conversations.length > 0 && (
@@ -61,8 +61,8 @@ export default async function MessagesPage() {
         ) : (
           <p className="small">
             {friends.length
-              ? "Tu as déjà une conversation avec tous tes amis."
-              : "Pas encore d'amis. Abonne-toi à des membres depuis leur profil !"}
+              ? "Tu as déjà une conversation avec tous les membres avec qui tu te suis mutuellement."
+              : "Pour écrire à un membre, vous devez vous suivre tous les deux. Abonne-toi à des membres depuis leur profil !"}
           </p>
         )}
       </section>

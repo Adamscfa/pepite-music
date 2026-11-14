@@ -102,6 +102,10 @@ Colle [`supabase/13-suppressions.sql`](supabase/13-suppressions.sql) dans **SQL 
 - sur la page Messages, la corbeille 🗑 à droite d'une conversation la vide entièrement, pour vous deux ;
 - sur la page Notifications, la croix ✕ efface la notification.
 
+### Messages entre abonnés mutuels
+
+Pour que seuls les membres qui se suivent tous les deux puissent démarrer ou consulter une conversation, colle [`supabase/17-messages-abonnement-mutuel.sql`](supabase/17-messages-abonnement-mutuel.sql) dans **SQL Editor** et clique sur **Run** (une seule fois, après `10-lancement.sql` et `13-suppressions.sql`). La règle est aussi appliquée dans le site ; le SQL protège la base contre les envois qui contourneraient l'interface.
+
 ### E-mails d'inscription fiables, en français
 
 L'expéditeur fourni par Supabase n'envoie que quelques e-mails par heure. On branche **Brevo** (gratuit jusqu'à 300 e-mails par jour) :

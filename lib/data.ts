@@ -287,14 +287,22 @@ export async function getFavorites(userId: string): Promise<Favorite[]> {
 
 export async function getFollowStats(userId: string, meId?: string) {
   const supabase = await createClient();
-  const [followers, following, mine] = await Promise.all([
+  const [followers, following, mine, theirs] = await Promise.all([
     supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", userId),
     supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", userId),
     meId
       ? supabase.from("follows").select("follower_id").eq("follower_id", meId).eq("following_id", userId).maybeSingle()
       : Promise.resolve({ data: null }),
+    meId
+      ? supabase.from("follows").select("follower_id").eq("follower_id", userId).eq("following_id", meId).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
-  return { followers: followers.count ?? 0, following: following.count ?? 0, iFollow: Boolean(mine.data) };
+  return {
+    followers: followers.count ?? 0,
+    following: following.count ?? 0,
+    iFollow: Boolean(mine.data),
+    followsMe: Boolean(theirs.data),
+  };
 }
 
 const LIST_FIELDS = "*, items:list_items(album_id, album_title, artist_name, cover_url, added_at)";
@@ -414,14 +422,16 @@ export const getUnreadCounts = cache(async (userId: string) => {
 
 // ---- Amis et messages privés ----
 
-// On est amis quand l'un des deux est abonné à l'autre.
+// Les conversations et recommandations ne sont possibles qu'entre abonnés mutuels.
 export async function getFriends(userId: string): Promise<(Author & { id: string })[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("follows")
     .select("follower_id, following_id")
     .or(`follower_id.eq.${userId},following_id.eq.${userId}`);
-  const ids = [...new Set((data ?? []).map((f) => (f.follower_id === userId ? f.following_id : f.follower_id)))];
+  const following = new Set((data ?? []).filter((f) => f.follower_id === userId).map((f) => f.following_id));
+  const followedBy = new Set((data ?? []).filter((f) => f.following_id === userId).map((f) => f.follower_id));
+  const ids = [...following].filter((id) => followedBy.has(id));
   if (!ids.length) return [];
   const { data: profiles } = await supabase.from("profiles").select("*").in("id", ids).order("display_name");
   return (profiles ?? []).map((p: Profile) => ({ id: p.id, ...author(p) }));
@@ -432,9 +442,9 @@ export async function areFriends(a: string, b: string): Promise<boolean> {
   const { data } = await supabase
     .from("follows")
     .select("follower_id")
-    .or(`and(follower_id.eq.${a},following_id.eq.${b}),and(follower_id.eq.${b},following_id.eq.${a})`)
-    .limit(1);
-  return Boolean(data?.length);
+    .or(`and(follower_id.eq.${a},following_id.eq.${b}),and(follower_id.eq.${b},following_id.eq.${a})`);
+  const follows = new Set((data ?? []).map((follow) => follow.follower_id));
+  return follows.has(a) && follows.has(b);
 }
 
 export type Message = {
