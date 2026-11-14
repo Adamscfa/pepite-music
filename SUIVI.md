@@ -274,6 +274,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     contrôle des blocages. Le propriétaire doit exécuter ce fichier dans
     **Supabase > SQL Editor > Run** après `10-lancement.sql` et
     `13-suppressions.sql`.
+50. Listes d'abonnés et d'abonnements (14 novembre 2026) : les compteurs du
+    profil sont cliquables et ouvrent les listes correspondantes ; chaque
+    personne affichée mène à son profil. Les listes sont triées des plus
+    récents aux plus anciens. Aucun SQL à exécuter.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -312,6 +316,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (Deezer) | Plus de pays dans les tops | Aucun SQL à exécuter |
 | `16-retirer-videos.sql` | Supprimer les anciennes fonctions et tables vidéo (après avoir vidé le bucket dans Storage) | à exécuter |
 | `17-messages-abonnement-mutuel.sql` | Réserver la lecture et l'envoi des messages aux membres qui se suivent mutuellement | à exécuter |
+| Aucun (profil) | Consulter les listes d'abonnés et d'abonnements | Aucun SQL à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -362,6 +367,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Retirer la fonction vidéo du site et préparer son nettoyage dans Supabase
 - [ ] Si le bucket vidéo existe : supprimer d'abord les MP4 dans **Storage > weekly-videos**, puis exécuter `16-retirer-videos.sql` dans Supabase
 - [ ] Exécuter `17-messages-abonnement-mutuel.sql` dans **Supabase > SQL Editor > Run** après `10-lancement.sql` et `13-suppressions.sql`
+- [x] Rendre les compteurs d'abonnés et d'abonnements du profil consultables, avec une liste de profils cliquables (aucun SQL)
 - [ ] Vérifier la connexion Google : fournisseur activé et identifiants Google corrects dans Supabase ; URI `/auth/v1/callback` exacte dans Google Cloud ; adresse du site + `/auth/callback` autorisée dans Supabase
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)

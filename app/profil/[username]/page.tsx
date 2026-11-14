@@ -153,12 +153,22 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
           <span>note moyenne</span>
         </div>
         <div>
-          <b>{follow.followers}</b>
-          <span>abonné{follow.followers > 1 ? "s" : ""}</span>
+          <Link
+            href={`/profil/${profile.username}/abonnes`}
+            aria-label={`Voir les ${follow.followers} abonnés de ${profile.display_name}`}
+          >
+            <b>{follow.followers}</b>
+            <span>abonné{follow.followers > 1 ? "s" : ""}</span>
+          </Link>
         </div>
         <div>
-          <b>{follow.following}</b>
-          <span>abonnement{follow.following > 1 ? "s" : ""}</span>
+          <Link
+            href={`/profil/${profile.username}/abonnements`}
+            aria-label={`Voir les ${follow.following} abonnements de ${profile.display_name}`}
+          >
+            <b>{follow.following}</b>
+            <span>abonnement{follow.following > 1 ? "s" : ""}</span>
+          </Link>
         </div>
       </div>
 

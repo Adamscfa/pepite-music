@@ -305,6 +305,28 @@ export async function getFollowStats(userId: string, meId?: string) {
   };
 }
 
+export async function getFollowProfiles(
+  userId: string,
+  direction: "followers" | "following",
+): Promise<(Author & { id: string })[]> {
+  const supabase = await createClient();
+  const column = direction === "followers" ? "following_id" : "follower_id";
+  const profileColumn = direction === "followers" ? "follower_id" : "following_id";
+  const { data: follows } = await supabase
+    .from("follows")
+    .select("follower_id, following_id, created_at")
+    .eq(column, userId)
+    .order("created_at", { ascending: false });
+  const ids = (follows ?? []).map((follow) => follow[profileColumn]);
+  if (!ids.length) return [];
+  const { data: profiles } = await supabase.from("profiles").select("*").in("id", ids);
+  const byId = new Map((profiles ?? []).map((profile: Profile) => [profile.id, profile]));
+  return ids.flatMap((id) => {
+    const profile = byId.get(id);
+    return profile ? [{ id, ...author(profile) }] : [];
+  });
+}
+
 const LIST_FIELDS = "*, items:list_items(album_id, album_title, artist_name, cover_url, added_at)";
 
 const sortItems = (list: List): List => ({
