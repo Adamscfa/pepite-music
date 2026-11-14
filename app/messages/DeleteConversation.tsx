@@ -3,8 +3,7 @@
 import { useActionState, useRef, useState } from "react";
 import { deleteConversation, type FormState } from "@/app/social-actions";
 
-// Bouton corbeille : un premier clic demande de confirmer, car la conversation
-// disparaît pour les deux personnes.
+// Un premier clic demande de confirmer, car la conversation disparaît pour les deux personnes.
 export default function DeleteConversation({ friendId, friendName }: { friendId: string; friendName: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(deleteConversation, {});
   const [asking, setAsking] = useState(false);
@@ -28,7 +27,7 @@ export default function DeleteConversation({ friendId, friendName }: { friendId:
           else setAsking(true);
         }}
       >
-        {asking ? "⚠ Confirmer ?" : "🗑"}
+        {asking ? "⚠ Confirmer ?" : "✕"}
       </button>
       {state.error && <p className="error">{state.error}</p>}
     </form>

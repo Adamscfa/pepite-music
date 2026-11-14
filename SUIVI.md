@@ -284,6 +284,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     navigateurs compatibles et des indications Android/iPhone si le bouton
     automatique n'est pas disponible. Aucun SQL à exécuter ; ce n'est pas un
     lien vers une application Play Store publiée.
+52. Icône de suppression des conversations (14 novembre 2026) : la corbeille
+    est remplacée par une croix, sans retirer la confirmation de suppression.
+    L'étape mobile de bienvenue rappelle aussi d'activer les notifications
+    quand ce n'est pas déjà fait. Aucun SQL à exécuter.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -324,6 +328,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | `17-messages-abonnement-mutuel.sql` | Réserver la lecture et l'envoi des messages aux membres qui se suivent mutuellement | à exécuter |
 | Aucun (profil) | Consulter les listes d'abonnés et d'abonnements | Aucun SQL à exécuter |
 | Aucun (inscription) | Proposer l'installation de Pépite sur téléphone en fin de bienvenue | Aucun SQL à exécuter |
+| Aucun (interface) | Croix à la place de l'icône corbeille des conversations et rappel d'activation des notifications | Aucun SQL à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -376,6 +381,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Exécuter `17-messages-abonnement-mutuel.sql` dans **Supabase > SQL Editor > Run** après `10-lancement.sql` et `13-suppressions.sql`
 - [x] Rendre les compteurs d'abonnés et d'abonnements du profil consultables, avec une liste de profils cliquables (aucun SQL)
 - [x] Proposer aux nouveaux inscrits d'ajouter Pépite à l'écran d'accueil (aucun SQL)
+- [x] Remplacer l'icône de suppression de conversation par une croix et rappeler l'activation des notifications (aucun SQL)
 - [ ] Vérifier la connexion Google : fournisseur activé et identifiants Google corrects dans Supabase ; URI `/auth/v1/callback` exacte dans Google Cloud ; adresse du site + `/auth/callback` autorisée dans Supabase
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
