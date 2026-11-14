@@ -26,7 +26,15 @@ export function ServiceWorker() {
 
 // « Installer l'appli » et « Activer les notifications ».
 // variant="side" : version compacte de la barre latérale ; "card" : encadré du profil.
-export default function AppPanel({ variant, loggedIn }: { variant: "side" | "card"; loggedIn: boolean }) {
+export default function AppPanel({
+  variant,
+  loggedIn,
+  showWhenUnavailable = false,
+}: {
+  variant: "side" | "card";
+  loggedIn: boolean;
+  showWhenUnavailable?: boolean;
+}) {
   const [install, setInstall] = useState<InstallEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [ios, setIos] = useState(false);
@@ -131,7 +139,7 @@ export default function AppPanel({ variant, loggedIn }: { variant: "side" | "car
     </button>
   );
 
-  if (!canInstall && !pushButton) return null;
+  if (!canInstall && !pushButton && !showWhenUnavailable) return null;
 
   const installButton = canInstall && (
     <button
@@ -172,6 +180,13 @@ export default function AppPanel({ variant, loggedIn }: { variant: "side" | "car
         Installe Pépite comme une appli, avec son icône sur l&apos;écran d&apos;accueil, et reçois une notification
         quand on t&apos;écrit, qu&apos;on aime tes avis ou qu&apos;on te répond.
       </p>
+      {showWhenUnavailable && !canInstall && (
+        <p className="small">
+          {installed
+            ? "Pépite est déjà installée sur cet appareil."
+            : "Sur Android, ouvre cette page dans Chrome puis le menu ⋮ pour choisir « Installer l'appli » ou « Ajouter à l'écran d'accueil ». Sur iPhone, ouvre Pépite dans Safari et utilise le bouton Partager."}
+        </p>
+      )}
       <div className="row" style={{ justifyContent: "flex-start" }}>
         {installButton}
         {pushButton}
