@@ -4,7 +4,7 @@ Ce fichier sert de mémoire au projet. Il dit où on en est et quoi faire ensuit
 pour pouvoir reprendre le travail depuis n'importe quel compte ou n'importe quelle
 conversation. **À mettre à jour à chaque nouvelle étape.**
 
-Dernière mise à jour : 10 novembre 2026
+Dernière mise à jour : 14 novembre 2026
 
 ## Le projet en bref
 
@@ -205,6 +205,12 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     15 ont été exécutés, supprimer d'abord les MP4 dans **Supabase > Storage >
     weekly-videos**, puis exécuter `supabase/16-retirer-videos.sql`. Cela ne
     touche pas aux colonnes `is_admin` et `is_demo`, utilisées ailleurs.
+43. Diagnostic connexion Google (14 novembre 2026) : le site consigne désormais
+    le code et le motif d'un échec OAuth dans les journaux Vercel et indique les
+    réglages Google/Supabase à vérifier. Le README distingue l'adresse de rappel
+    Google (`...supabase.co/auth/v1/callback`) de l'adresse autorisée par
+    Supabase (`.../auth/callback`). Le propriétaire doit vérifier les réglages
+    du fournisseur et autoriser l'adresse exacte du site.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -286,6 +292,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Placer l'icône de thème à côté de la recherche sur téléphone
 - [x] Retirer la fonction vidéo du site et préparer son nettoyage dans Supabase
 - [ ] Si le bucket vidéo existe : supprimer d'abord les MP4 dans **Storage > weekly-videos**, puis exécuter `16-retirer-videos.sql` dans Supabase
+- [ ] Vérifier la connexion Google : fournisseur activé et identifiants Google corrects dans Supabase ; URI `/auth/v1/callback` exacte dans Google Cloud ; adresse du site + `/auth/callback` autorisée dans Supabase
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés

@@ -22,8 +22,21 @@ export async function GET(request: Request) {
         .maybeSingle();
       return NextResponse.redirect(`${origin}${profile?.onboarded === false ? "/bienvenue" : "/"}`);
     }
+    if (error) {
+      console.error("[auth/callback] Code exchange failed", {
+        code: error.code,
+        status: error.status,
+        message: error.message,
+      });
+    }
   }
   // Google renvoie "error" quand la connexion est refusée ou annulée.
   const fromGoogle = searchParams.has("error");
+  if (fromGoogle) {
+    console.error("[auth/google] Provider returned an OAuth error", {
+      error: searchParams.get("error"),
+      errorCode: searchParams.get("error_code"),
+    });
+  }
   return NextResponse.redirect(`${origin}/connexion?erreur=${fromGoogle ? "google" : "lien"}`);
 }
