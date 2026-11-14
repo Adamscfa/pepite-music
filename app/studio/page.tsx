@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/data";
-import { getStudio, POSTER_COLORS, THEMES, type StudioKind, type StudioTheme } from "@/lib/studio";
+import {
+  getStudio,
+  getStudioVideoCaption,
+  POSTER_COLORS,
+  THEMES,
+  type StudioKind,
+  type StudioTheme,
+} from "@/lib/studio";
 import { siteLabel } from "@/lib/og";
 import StudioSlides from "./StudioSlides";
 import StudioVideo from "./StudioVideo";
@@ -32,7 +39,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
   const color = Object.hasOwn(POSTER_COLORS, one(p.couleur)) ? one(p.couleur) : "";
   const count = format === "affiche" ? 10 : [5, 10].includes(Number(one(p.nombre))) ? Number(one(p.nombre)) : 10;
   const seed = Number(one(p.graine)) || 1;
-  const { heading, items, caption, country, countries, poster } = await getStudio({
+  const { heading, items, caption, captionLocale, country, countries, poster } = await getStudio({
     theme,
     kind,
     // pays vide = la France choisie dans le menu ; absent = le pays du visiteur.
@@ -79,13 +86,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
   // Vidéos : les 4 premiers de la liste, et un texte de publication adapté.
   const videoItems = items.slice(0, 4).map((i) => ({ title: i.title, artist: i.artist, cover: i.cover }));
   const tagLine = caption.split("\n").pop() ?? "";
-  const videoCaption = [
-    format === "video-duel" ? "Duel : tu choisis qui ? ⚔️" : "Lequel mérite 5 étoiles ? ⭐",
-    format === "video-duel" ? "Commente 1 ou 2 👇" : "Donne ta note en commentaire 👇",
-    "Note ta musique sur Pépite (lien en bio).",
-    "",
-    tagLine,
-  ].join("\n");
+  const videoCaption = getStudioVideoCaption(format === "video-duel" ? "duel" : "note", captionLocale, tagLine);
   const defaultHook = kind === "titres" ? "Quel son mérite" : kind === "artistes" ? "Quel artiste mérite" : "Quel album mérite";
   const remix = new URLSearchParams({
     theme,
