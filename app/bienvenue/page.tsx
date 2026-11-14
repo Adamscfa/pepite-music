@@ -6,20 +6,21 @@ import DemoBadge from "@/components/DemoBadge";
 import { toggleFollow } from "@/app/social-actions";
 import { getCurrentProfile, getSuggestedMembers } from "@/lib/data";
 import { getChart, getGenres, getTopAlbums, type AlbumHit } from "@/lib/deezer";
-import { finishOnboarding, saveGenres } from "./actions";
+import { saveGenres } from "./actions";
 import ClaimInvite from "./ClaimInvite";
 import RateStep from "./RateStep";
+import InstallStep from "./InstallStep";
 import { sharpImage } from "@/lib/images";
 
 export const metadata: Metadata = { title: "Bienvenue" };
 
-const STEPS = ["Tes genres", "Tes premières notes", "Des membres à suivre"];
+const STEPS = ["Tes genres", "Tes premières notes", "Des membres à suivre", "Sur ton téléphone"];
 
 // Premier pas après l'inscription : choisir ses genres, noter 3 albums, suivre des membres.
 export default async function WelcomePage({ searchParams }: PageProps<"/bienvenue">) {
   const me = await getCurrentProfile();
   if (!me) redirect("/connexion?mode=inscription");
-  const step = Math.min(3, Math.max(1, Number((await searchParams).etape) || 1));
+  const step = Math.min(4, Math.max(1, Number((await searchParams).etape) || 1));
 
   return (
     <div className="onboard">
@@ -35,6 +36,7 @@ export default async function WelcomePage({ searchParams }: PageProps<"/bienvenu
       {step === 1 && <GenresStep chosen={me.favorite_genres ?? []} />}
       {step === 2 && <AlbumsStep genres={me.favorite_genres ?? []} />}
       {step === 3 && <MembersStep />}
+      {step === 4 && <InstallStep />}
     </div>
   );
 }
@@ -130,9 +132,11 @@ async function MembersStep() {
       ) : (
         <p className="empty">Tu suis déjà tout le monde, ou la communauté démarre tout juste !</p>
       )}
-      <form action={finishOnboarding} className="onboard-actions">
-        <button className="btn big-btn">C&apos;est parti →</button>
-      </form>
+      <div className="onboard-actions">
+        <Link href="/bienvenue?etape=4" className="btn big-btn">
+          Continuer →
+        </Link>
+      </div>
     </>
   );
 }
