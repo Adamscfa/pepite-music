@@ -292,6 +292,11 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     pour les carrousels, affiches et vidéos s'adapte à la langue principale
     du pays sélectionné (français, anglais ou espagnol). Les autres thèmes
     gardent le français. Aucun SQL à exécuter.
+54. Navigateurs intégrés Instagram/TikTok (15 novembre 2026) : Android tente
+    d'ouvrir l'adresse dans Chrome avec un lien `intent://` et garde un bouton
+    de secours ; iPhone affiche une consigne pour le menu `•••` et « Ouvrir dans
+    le navigateur ». Le retour OAuth reste dans le navigateur courant afin de
+    ne pas perdre le code de session. Aucun SQL à exécuter.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -334,6 +339,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (inscription) | Proposer l'installation de Pépite sur téléphone en fin de bienvenue | Aucun SQL à exécuter |
 | Aucun (interface) | Croix à la place de l'icône corbeille des conversations et rappel d'activation des notifications | Aucun SQL à exécuter |
 | Aucun (Studio) | Traduire le texte de publication selon la langue du pays sélectionné | Aucun SQL à exécuter |
+| Aucun (connexion) | Aider à ouvrir Pépite hors des navigateurs intégrés Instagram/TikTok | Aucun SQL à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -388,6 +394,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Proposer aux nouveaux inscrits d'ajouter Pépite à l'écran d'accueil (aucun SQL)
 - [x] Remplacer l'icône de suppression de conversation par une croix et rappeler l'activation des notifications (aucun SQL)
 - [x] Traduire le texte copié dans le Studio selon la langue du pays choisi (aucun SQL)
+- [x] Aider les visiteurs venant d'Instagram/TikTok à ouvrir Pépite dans Chrome ou Safari (aucun SQL)
 - [ ] Vérifier la connexion Google : fournisseur activé et identifiants Google corrects dans Supabase ; URI `/auth/v1/callback` exacte dans Google Cloud ; adresse du site + `/auth/callback` autorisée dans Supabase
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
