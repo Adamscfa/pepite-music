@@ -66,6 +66,15 @@ h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-he
 .notice { font-size: 14px; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 10px 14px; margin-bottom: 22px; }
 .notice code { font-family: var(--mono); font-size: 12px; }
 .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.in-app-browser-notice { position: relative; z-index: 20; display: flex; align-items: center; gap: 12px; padding: 10px 44px 10px 14px; background: var(--gold-soft); border: 1px solid var(--line); border-radius: 12px; color: var(--ink); font-size: 13px; }
+.in-app-browser-notice p { margin: 0; flex: 1; }
+.in-app-browser-open { flex: none; padding: 6px 10px; background: var(--gold); border-radius: 999px; color: var(--on-gold); font-weight: 700; }
+.in-app-browser-close { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; }
+.in-app-browser-close:hover { background: var(--surface); color: var(--ink); }
+@media (max-width: 640px) {
+  .in-app-browser-notice { align-items: flex-start; flex-wrap: wrap; gap: 8px; padding: 10px 40px 10px 12px; font-size: 12px; }
+  .in-app-browser-open { margin-left: auto; }
+}
 
 /* Pochettes */
 .cover { aspect-ratio: 1; max-width: 100%; border-radius: 6px; overflow: hidden; flex: none; box-shadow: 0 1px 2px rgb(0 0 0 / .2); background: linear-gradient(150deg, var(--plum), var(--gold)); display: block; object-fit: cover; }

@@ -5,6 +5,7 @@ import { ServiceWorker } from "@/components/AppPanel";
 import CloseMenus from "@/components/CloseMenus";
 import ErrorReporter from "@/components/ErrorReporter";
 import Header from "@/components/Header";
+import InAppBrowserNotice from "@/components/InAppBrowserNotice";
 import PlayerProvider from "@/components/Player";
 import SetupNotice from "@/components/SetupNotice";
 import "./globals.css";
@@ -60,6 +61,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <ErrorReporter />
         <CloseMenus />
         <PlayerProvider>
+          <InAppBrowserNotice locale={locale} />
           <div className="shell">
             <Header />
             <main>
