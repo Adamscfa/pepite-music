@@ -304,6 +304,8 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
 56. État actif des liens « Mes albums » et « Mes favoris » (18 novembre
     2026) : le menu suit maintenant le fragment de profil sélectionné et
     colore le lien actif, y compris lors du retour arrière. Aucun SQL à exécuter.
+57. Menu latéral (18 novembre 2026) : retrait du raccourci « Mes albums » ;
+    « Mes favoris » reste disponible. Aucun SQL à exécuter.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -348,7 +350,8 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (Studio) | Traduire le texte de publication selon la langue du pays sélectionné | Aucun SQL à exécuter |
 | Aucun (connexion) | Aider à ouvrir Pépite hors des navigateurs intégrés Instagram/TikTok | Aucun SQL à exécuter |
 | Aucun (apparence) | Réduire les ombres, animations décoratives et effets de survol sans changer la mise en page | Aucun SQL à exécuter |
-| Aucun (navigation) | Afficher la couleur active des liens « Mes albums » et « Mes favoris » dans le menu | Aucun SQL à exécuter |
+| Aucun (navigation) | Afficher la couleur active des liens de profil encore présents dans le menu | Aucun SQL à exécuter |
+| Aucun (navigation) | Retirer « Mes albums » du menu latéral sans supprimer la section du profil | Aucun SQL à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
