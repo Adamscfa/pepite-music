@@ -4,7 +4,7 @@ Ce fichier sert de mémoire au projet. Il dit où on en est et quoi faire ensuit
 pour pouvoir reprendre le travail depuis n'importe quel compte ou n'importe quelle
 conversation. **À mettre à jour à chaque nouvelle étape.**
 
-Dernière mise à jour : 17 novembre 2026
+Dernière mise à jour : 18 novembre 2026
 
 ## Le projet en bref
 
@@ -301,6 +301,9 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     2026) : les ombres, lueurs, flous et animations décoratives sont réduits.
     Les couleurs, la mise en page et les interactions restent les mêmes.
     Aucun SQL à exécuter.
+56. État actif des liens « Mes albums » et « Mes favoris » (18 novembre
+    2026) : le menu suit maintenant le fragment de profil sélectionné et
+    colore le lien actif, y compris lors du retour arrière. Aucun SQL à exécuter.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -345,6 +348,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (Studio) | Traduire le texte de publication selon la langue du pays sélectionné | Aucun SQL à exécuter |
 | Aucun (connexion) | Aider à ouvrir Pépite hors des navigateurs intégrés Instagram/TikTok | Aucun SQL à exécuter |
 | Aucun (apparence) | Réduire les ombres, animations décoratives et effets de survol sans changer la mise en page | Aucun SQL à exécuter |
+| Aucun (navigation) | Afficher la couleur active des liens « Mes albums » et « Mes favoris » dans le menu | Aucun SQL à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
