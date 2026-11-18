@@ -61,8 +61,8 @@ export default async function Header() {
           <Item href="/classements" match="/classements" icon="chart" label={tx("charts")} />
           {me ? (
             <>
-              <Item href={`${profile}#notes`} match="/mes-albums" icon="disc" label={tx("myAlbums")} />
-              <Item href={`${profile}#favoris`} match="/mes-favoris" icon="heart" label={tx("favorites")} />
+              <Item href={`${profile}#notes`} match={`${profile}#notes`} icon="disc" label={tx("myAlbums")} />
+              <Item href={`${profile}#favoris`} match={`${profile}#favoris`} icon="heart" label={tx("favorites")} />
               <Item href="/notifications" match="/notifications" icon="bell" label={tx("notifications")} count={unread.notifications} />
               <Item href="/messages" match="/messages" icon="mail" label={tx("messages")} count={unread.messages} />
               <Item href={profile} match={profile} icon="user" label={tx("profile")} />
