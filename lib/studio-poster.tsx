@@ -73,7 +73,7 @@ export async function renderStudioPoster(items: StudioItem[], poster: StudioPost
     artist: isArtist ? "" : cut(item.artist, 34),
     cover: item.cover,
   }));
-  const footer = `Note-les sur Pépite · ${siteLabel}`;
+  const footer = `${poster.footer} · ${siteLabel}`;
   const allText = [poster.title, poster.place, footer, "Pépite", ...rows.flatMap((r) => [r.rank, r.title, r.artist])].join(" ");
 
   const [logo, covers, black, bold, medium] = await Promise.all([

@@ -4,7 +4,7 @@ Ce fichier sert de mémoire au projet. Il dit où on en est et quoi faire ensuit
 pour pouvoir reprendre le travail depuis n'importe quel compte ou n'importe quelle
 conversation. **À mettre à jour à chaque nouvelle étape.**
 
-Dernière mise à jour : 18 novembre 2026
+Dernière mise à jour : 25 novembre 2026
 
 ## Le projet en bref
 
@@ -306,6 +306,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     colore le lien actif, y compris lors du retour arrière. Aucun SQL à exécuter.
 57. Menu latéral (18 novembre 2026) : retrait du raccourci « Mes albums » ;
     « Mes favoris » reste disponible. Aucun SQL à exécuter.
+58. Langue et duels dans le Studio (25 novembre 2026) : choix français, anglais
+    ou espagnol pour les affiches et vidéos, avec détection automatique selon
+    le pays si souhaité. Les vidéos duel permettent de modifier la question et
+    la consigne de vote (titres ou albums). Aucun SQL à exécuter.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -352,6 +356,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (apparence) | Réduire les ombres, animations décoratives et effets de survol sans changer la mise en page | Aucun SQL à exécuter |
 | Aucun (navigation) | Afficher la couleur active des liens de profil encore présents dans le menu | Aucun SQL à exécuter |
 | Aucun (navigation) | Retirer « Mes albums » du menu latéral sans supprimer la section du profil | Aucun SQL à exécuter |
+| Aucun (Studio) | Choisir le français, l'anglais ou l'espagnol des affiches et vidéos ; modifier la question et la consigne des duels | Aucun SQL à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -419,6 +424,8 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
       depuis le Studio (sur ordinateur avec Chrome, puis sur téléphone)
 - [ ] Après publication, essayer l'affiche Top 10 du Studio (au moins un top
       de pays en titres, un en albums et un Top Monde en artistes)
+- [ ] Après publication, vérifier les affiches et vidéos dans les trois langues,
+      ainsi que les textes personnalisés des duels de titres et d'albums
 - [ ] **Nom de domaine** (plus tard) : `.ci` (environ 45 000 à 75 000 FCFA/an,
   CNI demandée, 2 à 5 jours) ou `.com` (environ 10 à 15 $/an, immédiat, achat
   possible dans Vercel). Puis : Vercel > Settings > Domains ; Supabase > URL

@@ -21,12 +21,17 @@ import { inCountry } from "./country-names";
 export type StudioTheme = "pays" | "monde" | "notes" | "sorties" | "hasard";
 export type StudioKind = "albums" | "titres" | "artistes";
 export type StudioCaptionLocale = "fr" | "en" | "es";
+export const STUDIO_LOCALES: { id: StudioCaptionLocale; label: string }[] = [
+  { id: "fr", label: "Français" },
+  { id: "en", label: "English" },
+  { id: "es", label: "Español" },
+];
 // cover : pochette (ou photo de l'artiste) en petite taille Deezer, utilisée par l'affiche.
 export type StudioItem = { kind: "album" | "titre" | "artiste"; id: number; title: string; artist: string; cover: string };
 
 // Titre de l'affiche Top 10 : une grande ligne (« TOP 10 TITRES ») et une petite
 // (« CÔTE D'IVOIRE · CETTE SEMAINE »), plus la couleur de fond choisie d'après le pays.
-export type StudioPoster = { title: string; place: string; color: PosterColor };
+export type StudioPoster = { title: string; place: string; footer: string; color: PosterColor };
 
 export const POSTER_COLORS = {
   vert: "#0B6B45",
@@ -109,6 +114,38 @@ function captionLocale(country: CountryChart | null): StudioCaptionLocale {
   return "en";
 }
 
+export function isStudioCaptionLocale(value: string): value is StudioCaptionLocale {
+  return value === "fr" || value === "en" || value === "es";
+}
+
+export function getStudioDuelLabels(locale: StudioCaptionLocale, kind: StudioKind) {
+  const categories = {
+    fr: { albums: "D'ALBUMS", titres: "DE SONS", artistes: "D'ARTISTES" },
+    en: { albums: "OF ALBUMS", titres: "OF TRACKS", artistes: "OF ARTISTS" },
+    es: { albums: "DE ÁLBUMES", titres: "DE CANCIONES", artistes: "DE ARTISTAS" },
+  }[locale];
+  const question = {
+    fr: "Tu choisis qui ?",
+    en: "Who do you choose?",
+    es: "¿Con cuál te quedas?",
+  }[locale];
+  const vote = {
+    fr: "Commente 1 ou 2",
+    en: "Comment 1 or 2",
+    es: "Comenta 1 o 2",
+  }[locale];
+  return { category: categories[kind], question, vote };
+}
+
+export function getStudioVideoHook(locale: StudioCaptionLocale, kind: StudioKind) {
+  const phrases = {
+    fr: { albums: "Quel album mérite", titres: "Quel son mérite", artistes: "Quel artiste mérite" },
+    en: { albums: "Which album deserves", titres: "Which track deserves", artistes: "Which artist deserves" },
+    es: { albums: "¿Qué álbum merece", titres: "¿Qué canción merece", artistes: "¿Qué artista merece" },
+  }[locale];
+  return phrases[kind];
+}
+
 function countryName(country: CountryChart | null, locale: StudioCaptionLocale) {
   if (!country?.code) return locale === "es" ? "Francia" : locale === "en" ? "France" : "France";
   return new Intl.DisplayNames([locale], { type: "region" }).of(country.code) ?? country.name ?? country.title;
@@ -166,16 +203,22 @@ function captionTags(theme: StudioTheme, count: number, place: string, locale: S
   return [...specific, ...common];
 }
 
-export function getStudioVideoCaption(mode: "duel" | "note", locale: StudioCaptionLocale, tags: string) {
+export function getStudioVideoCaption(
+  mode: "duel" | "note",
+  locale: StudioCaptionLocale,
+  tags: string,
+  duelQuestion?: string,
+  duelVote?: string,
+) {
   const lines = {
     fr: mode === "duel"
-      ? ["Duel : tu choisis qui ? ⚔️", "Commente 1 ou 2 👇", "Note ta musique sur Pépite (lien en bio)."]
+      ? [`Duel : ${duelQuestion ?? "Tu choisis qui ?"} ⚔️`, `${duelVote ?? "Commente 1 ou 2"} 👇`, "Note ta musique sur Pépite (lien en bio)."]
       : ["Lequel mérite 5 étoiles ? ⭐", "Donne ta note en commentaire 👇", "Note ta musique sur Pépite (lien en bio)."],
     en: mode === "duel"
-      ? ["Duel: who do you choose? ⚔️", "Comment 1 or 2 👇", "Rate your music on Pépite (link in bio)."]
+      ? [`Duel: ${duelQuestion ?? "Who do you choose?"} ⚔️`, `${duelVote ?? "Comment 1 or 2"} 👇`, "Rate your music on Pépite (link in bio)."]
       : ["Which one deserves 5 stars? ⭐", "Leave your rating in the comments 👇", "Rate your music on Pépite (link in bio)."],
     es: mode === "duel"
-      ? ["Duelo: ¿con cuál te quedas? ⚔️", "Comenta 1 o 2 👇", "Puntúa tu música en Pépite (enlace en la bio)."]
+      ? [`Duelo: ${duelQuestion ?? "¿Con cuál te quedas?"} ⚔️`, `${duelVote ?? "Comenta 1 o 2"} 👇`, "Puntúa tu música en Pépite (enlace en la bio)."]
       : ["¿Cuál merece 5 estrellas? ⭐", "Deja tu nota en los comentarios 👇", "Puntúa tu música en Pépite (enlace en la bio)."],
   }[locale];
   return [...lines, "", tags].join("\n");
@@ -187,6 +230,7 @@ export async function getStudio(opts: {
   countryId?: number;
   count: number;
   seed: number;
+  locale?: StudioCaptionLocale;
 }): Promise<{
   heading: string;
   items: StudioItem[];
@@ -275,7 +319,7 @@ export async function getStudio(opts: {
   }
 
   items = items.slice(0, opts.count);
-  const locale = captionLocale(country);
+  const locale = opts.locale ?? captionLocale(country);
   const place = countryName(country, locale);
   const caption = [
     `${captionTitle(opts.theme, opts.kind, items.length, heading, place, locale)} 🔥`,
@@ -294,19 +338,59 @@ export async function getStudio(opts: {
   ].join("\n");
   const up = (s: string) => s.toLocaleUpperCase("fr");
   const n = items.length;
+  const posterNouns = {
+    fr: { albums: "ALBUMS", titres: "TITRES", artistes: "ARTISTES" },
+    en: { albums: "ALBUMS", titres: "TRACKS", artistes: "ARTISTS" },
+    es: { albums: "ÁLBUMES", titres: "CANCIONES", artistes: "ARTISTAS" },
+  }[locale];
+  const week = { fr: "CETTE SEMAINE", en: "THIS WEEK", es: "ESTA SEMANA" }[locale];
+  const footer = {
+    fr: "Note-les sur Pépite",
+    en: "Rate them on Pépite",
+    es: "Puntúalos en Pépite",
+  }[locale];
   const poster: StudioPoster =
     opts.theme === "pays"
       ? {
-          title: `TOP ${n} ${up(word)}`,
-          place: `${up(country?.name ?? "France")} · CETTE SEMAINE`,
+          title: `TOP ${n} ${posterNouns[opts.kind]}`,
+          place: `${up(countryName(country, locale))} · ${week}`,
+          footer,
           color: COUNTRY_COLORS[country?.code ?? "FR"] ?? "vert",
         }
       : opts.theme === "monde"
-        ? { title: `TOP ${n} ${up(word)}`, place: "MONDE · CETTE SEMAINE", color: "violet" }
+        ? {
+            title: `TOP ${n} ${posterNouns[opts.kind]}`,
+            place: `${{ fr: "MONDE", en: "WORLDWIDE", es: "MUNDO" }[locale]} · ${week}`,
+            footer,
+            color: "violet",
+          }
         : opts.theme === "notes"
-          ? { title: `TOP ${n} PÉPITE`, place: "LES ALBUMS LES MIEUX NOTÉS", color: "vert" }
+          ? {
+              title: `TOP ${n} PÉPITE`,
+              place: { fr: "LES ALBUMS LES MIEUX NOTÉS", en: "HIGHEST-RATED ALBUMS", es: "ÁLBUMES MEJOR VALORADOS" }[locale],
+              footer,
+              color: "vert",
+            }
           : opts.theme === "sorties"
-            ? { title: "NOUVEAUTÉS", place: "LES SORTIES DE LA SEMAINE", color: "rose" }
-            : { title: `${n} PÉPITES`, place: `${up(word)} À DÉCOUVRIR`, color: "noir" };
+            ? {
+                title: { fr: "NOUVEAUTÉS", en: "NEW RELEASES", es: "NOVEDADES" }[locale],
+                place: {
+                  fr: "LES SORTIES DE LA SEMAINE",
+                  en: "THIS WEEK'S NEW MUSIC",
+                  es: "NOVEDADES DE LA SEMANA",
+                }[locale],
+                footer,
+                color: "rose",
+              }
+            : {
+                title: `${n} ${posterNouns[opts.kind]}`,
+                place: {
+                  fr: `${up(word)} À DÉCOUVRIR`,
+                  en: `${posterNouns[opts.kind]} TO DISCOVER`,
+                  es: `${posterNouns[opts.kind]} POR DESCUBRIR`,
+                }[locale],
+                footer,
+                color: "noir",
+              };
   return { heading, items, caption, captionLocale: locale, country, countries, poster };
 }
