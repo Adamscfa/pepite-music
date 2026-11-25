@@ -4,24 +4,25 @@ import { redirect } from "next/navigation";
 import Avatar from "@/components/Avatar";
 import { toggleBlock } from "@/app/social-actions";
 import { getBlockedMembers, getCurrentProfile } from "@/lib/data";
+import { getLocale } from "@/lib/server-locale";
+import { t } from "@/lib/i18n";
 
-export const metadata: Metadata = { title: "Membres bloqués" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: t(await getLocale(), "blockedMembers") };
+}
 
 // La liste des membres que j'ai bloqués, pour les débloquer.
 export default async function BlockedPage() {
-  const me = await getCurrentProfile();
+  const [me, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
   if (!me) redirect("/connexion");
   const blocked = await getBlockedMembers();
   return (
     <div className="legal-narrow">
       <Link href={`/profil/${me.username}`} className="small link-under">
-        ← Mon profil
+        ← {t(locale, "myProfile")}
       </Link>
-      <h1 style={{ fontSize: 28, margin: "10px 0 6px" }}>Membres bloqués</h1>
-      <p className="small">
-        Tu ne vois pas leurs avis ni leurs commentaires, et vous ne pouvez pas vous écrire. Pour bloquer quelqu&apos;un,
-        va sur son profil et touche ⋯.
-      </p>
+      <h1 style={{ fontSize: 28, margin: "10px 0 6px" }}>{t(locale, "blockedMembers")}</h1>
+      <p className="small">{t(locale, "blockedMembersDescription")}</p>
       {blocked.length ? (
         <div className="notifs" style={{ marginTop: 16 }}>
           {blocked.map((m) => (
@@ -34,14 +35,14 @@ export default async function BlockedPage() {
               <form action={toggleBlock}>
                 <input type="hidden" name="user_id" value={m.id} />
                 <input type="hidden" name="block" value="0" />
-                <button className="btn ghost">Débloquer</button>
+                <button className="btn ghost">{t(locale, "unblock")}</button>
               </form>
             </div>
           ))}
         </div>
       ) : (
         <div className="empty" style={{ marginTop: 16 }}>
-          Tu n&apos;as bloqué personne.
+          {t(locale, "noBlockedMembers")}
         </div>
       )}
     </div>

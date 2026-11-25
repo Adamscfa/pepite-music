@@ -319,6 +319,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     rechercher des albums ou des titres, retirer les propositions automatiques
     et composer sa liste personnelle (jusqu'à 4 éléments). L'ordre d'ajout
     devient l'ordre de la vidéo ; un duel demande 2 ou 4 choix. Aucun SQL.
+61. Traduction du profil (25 novembre 2026) : les liens d'information, la
+    suppression de compte et la page des membres bloqués suivent maintenant la
+    langue choisie (français, anglais ou espagnol). Les autres pages qui ne
+    sont pas encore traduites restent à traiter. Aucun SQL.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -368,6 +372,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (sécurité) | Mettre Next.js à jour en version 16.4.6 et activer les rappels de mise à niveau | Aucun SQL à exécuter |
 | Aucun (Studio) | Choisir le français, l'anglais ou l'espagnol des affiches et vidéos ; modifier la question et la consigne des duels | Aucun SQL à exécuter |
 | Aucun (Studio) | Rechercher et choisir les albums ou titres à inclure dans les vidéos | Aucun SQL à exécuter |
+| Aucun (langues) | Traduire les liens du profil, la suppression de compte et les membres bloqués | Aucun SQL à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -430,6 +435,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Faire relire les pages Confidentialité et Conditions par un juriste afin de vérifier les règles applicables aux pays visés
 - [ ] Quand assez de vrais membres sont inscrits : exécuter `demo-supprimer.sql`
 - [ ] Vérifier que le site en ligne sur Vercel marche avec la dernière version
+- [ ] Continuer la traduction des pages encore en français quand l'anglais ou l'espagnol est sélectionné
 - [ ] Vérifier que le Studio en ligne permet toujours de préparer et télécharger
       les carrousels d'albums, de titres et d'artistes
 - [ ] Après publication, enregistrer une vidéo « Ta note ? » et une vidéo duel

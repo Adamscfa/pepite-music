@@ -26,6 +26,7 @@ import EditProfile from "../EditProfile";
 import DeleteAccount from "../DeleteAccount";
 import NewList from "../NewList";
 import { getLocale } from "@/lib/server-locale";
+import { t } from "@/lib/i18n";
 
 async function loadProfile(params: PageProps<"/profil/[username]">["params"]) {
   const requestedUsername = decodeURIComponent((await params).username);
@@ -314,13 +315,13 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
 
       {isMe && (
         <section className="account-zone">
-          <nav className="site-links" aria-label="Informations">
-            <Link href="/confidentialite">Confidentialité</Link>
-            <Link href="/conditions">Conditions</Link>
-            <Link href="/contact">Contact</Link>
-            <Link href="/reglages/bloques">Membres bloqués</Link>
+          <nav className="site-links" aria-label={t(locale, "information")}>
+            <Link href="/confidentialite">{t(locale, "privacy")}</Link>
+            <Link href="/conditions">{t(locale, "terms")}</Link>
+            <Link href="/contact">{t(locale, "contact")}</Link>
+            <Link href="/reglages/bloques">{t(locale, "blockedMembers")}</Link>
           </nav>
-          <DeleteAccount username={profile.username} />
+          <DeleteAccount username={profile.username} locale={locale} />
         </section>
       )}
     </>
