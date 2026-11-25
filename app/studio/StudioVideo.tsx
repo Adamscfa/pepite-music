@@ -10,10 +10,12 @@ import { deezerAt } from "@/lib/images";
 //   « duel » : « Duel d'albums », puis des manches 1 contre 2 (« Commente 1 ou 2 »).
 // La vidéo est muette : la musique s'ajoute dans TikTok (sons autorisés par TikTok).
 
-export type VideoItem = { title: string; artist: string; cover: string };
+export type VideoItem = { id: number; title: string; artist: string; cover: string };
 export type VideoMode = "note" | "duel";
 type Kind = "albums" | "titres" | "artistes";
 type VideoLocale = "fr" | "en" | "es";
+type SearchResults = { albums: VideoItem[]; tracks: VideoItem[] };
+const MAX_VIDEO_ITEMS = 4;
 
 const W = 1080;
 const H = 1920;
@@ -445,6 +447,12 @@ export default function StudioVideo({
   const canvas = useRef<HTMLCanvasElement>(null);
   const loaded = useRef<Loaded[] | null>(null);
   const playing = useRef(0);
+  const [videoItems, setVideoItems] = useState(items);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [completedQuery, setCompletedQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<VideoItem[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
   const [hook, setHook] = useState(defaultHook);
   const [duelQuestion, setDuelQuestion] = useState(defaultDuelQuestion);
   const [duelVote, setDuelVote] = useState(defaultDuelVote);
@@ -460,6 +468,41 @@ export default function StudioVideo({
       ? duelTimeline(loaded.current ?? [], kind, site, tags, locale, defaultDuelCategory, duelQuestion, duelVote)
       : noteTimeline(loaded.current ?? [], kind, hook, site, tags, locale);
   const total = (segments: Segment[]) => segments.reduce((s, x) => s + x.dur, 0);
+  const currentCaption =
+    mode === "duel"
+      ? caption.replace(defaultDuelQuestion, duelQuestion).replace(defaultDuelVote, duelVote)
+      : caption;
+
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (kind === "artistes" || q.length < 2) return;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`Recherche Deezer impossible (${response.status})`);
+        const data = (await response.json()) as SearchResults;
+        if (controller.signal.aborted) return;
+        const matches = kind === "albums" ? data.albums : data.tracks;
+        setSearchResults(Array.isArray(matches) ? matches : []);
+        setCompletedQuery(q);
+      } catch {
+        if (controller.signal.aborted) return;
+        setSearchResults([]);
+        setCompletedQuery(q);
+        setSearchError("La recherche n’a pas abouti. Vérifie ta connexion et réessaie.");
+      } finally {
+        if (!controller.signal.aborted) setSearching(false);
+      }
+    }, 300);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [kind, searchQuery]);
 
   // Police du site (Plus Jakarta Sans), pochettes, puis première image.
   useEffect(() => {
@@ -467,7 +510,7 @@ export default function StudioVideo({
     (async () => {
       FONT = getComputedStyle(document.body).fontFamily || FONT;
       await Promise.all([500, 600, 700, 800].map((w) => document.fonts.load(font(w, 60), "ÉéÀàç?"))).catch(() => {});
-      const list = await Promise.all(items.map(load));
+      const list = await Promise.all(videoItems.map(load));
       if (cancelled) return;
       loaded.current = list;
       const segments =
@@ -497,12 +540,12 @@ export default function StudioVideo({
     defaultDuelQuestion,
     defaultDuelVote,
     defaultHook,
-    items,
     kind,
     locale,
     mode,
     site,
     tags,
+    videoItems,
   ]);
 
   // Image fixe d'aperçu quand rien ne joue (et quand l'accroche change).
@@ -597,21 +640,133 @@ export default function StudioVideo({
   }
 
   async function copy() {
-    await navigator.clipboard.writeText(caption);
+    await navigator.clipboard.writeText(currentCaption);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const length = ready ? Math.round(duration) : 0;
-  const currentCaption =
-    mode === "duel"
-      ? caption.replace(defaultDuelQuestion, duelQuestion).replace(defaultDuelVote, duelVote)
-      : caption;
+  function replaceVideoItems(next: VideoItem[]) {
+    if (result) URL.revokeObjectURL(result.url);
+    setResult(null);
+    setReady(false);
+    setStatus("Chargement des pochettes…");
+    setVideoItems(next);
+  }
+
+  function addVideoItem(item: VideoItem) {
+    if (busy || videoItems.length >= MAX_VIDEO_ITEMS || videoItems.some((selected) => selected.id === item.id)) {
+      return;
+    }
+    replaceVideoItems([...videoItems, item]);
+  }
+
+  const validSelection =
+    videoItems.length > 0 &&
+    (mode !== "duel" || (videoItems.length >= 2 && videoItems.length % 2 === 0));
+  const length = ready && validSelection ? Math.round(duration) : 0;
 
   return (
     <div className="studio-video">
       <canvas ref={canvas} width={W} height={H} className="studio-video-canvas" />
       <div className="studio-video-side">
+        {kind === "artistes" ? (
+          <p className="small">Pour choisir toi-même les contenus, sélectionne « Albums » ou « Titres » dans le type du Studio.</p>
+        ) : (
+          <section className="studio-video-picker" aria-label="Choix des albums et titres de la vidéo">
+            <div className="studio-video-picker-head">
+              <strong>{kind === "albums" ? "Albums de la vidéo" : "Titres de la vidéo"}</strong>
+              <span className="small">{videoItems.length}/{MAX_VIDEO_ITEMS}</span>
+            </div>
+            <p className="small">
+              Les premières propositions sont déjà choisies. Retire celles que tu ne veux pas, puis ajoute tes choix.
+              L’ordre de sélection sera celui de la vidéo.
+            </p>
+            <button
+              type="button"
+              className="btn ghost"
+              onClick={() => replaceVideoItems([])}
+              disabled={busy || videoItems.length === 0}
+            >
+              Tout retirer
+            </button>
+            <label className="studio-video-search">
+              Rechercher {kind === "albums" ? "un album" : "un titre"}
+              <input
+                type="search"
+                value={searchQuery}
+                placeholder={kind === "albums" ? "Nom de l’album ou de l’artiste" : "Nom du titre ou de l’artiste"}
+                autoComplete="off"
+                maxLength={100}
+                disabled={busy}
+                onChange={(event) => {
+                  setSearchQuery(event.target.value);
+                  setCompletedQuery("");
+                  setSearchResults([]);
+                  setSearchError("");
+                  setSearching(false);
+                }}
+              />
+            </label>
+            {searching && <p className="small" role="status">Recherche en cours…</p>}
+            {searchError && <p className="error" role="alert">{searchError}</p>}
+            {completedQuery === searchQuery.trim() && !searching && !searchError && searchResults.length === 0 && (
+              <p className="small">Aucun résultat trouvé.</p>
+            )}
+            {searchResults.length > 0 && (
+              <ul className="studio-video-picker-list" aria-label="Résultats de recherche">
+                {searchResults.map((item) => {
+                  const alreadySelected = videoItems.some((selected) => selected.id === item.id);
+                  return (
+                    <li key={item.id}>
+                      <div className="studio-video-choice">
+                        <img src={item.cover} alt="" />
+                        <span className="studio-video-choice-text">
+                          <strong>{item.title}</strong>
+                          <small>{item.artist}</small>
+                        </span>
+                        <button
+                          type="button"
+                          className="btn ghost"
+                          onClick={() => addVideoItem(item)}
+                          disabled={busy || alreadySelected || videoItems.length >= MAX_VIDEO_ITEMS}
+                        >
+                          {alreadySelected ? "Ajouté" : "Ajouter"}
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {videoItems.length > 0 && (
+              <ol className="studio-video-picker-list" aria-label="Éléments choisis pour la vidéo">
+                {videoItems.map((item, index) => (
+                  <li key={`${item.id}-${index}`}>
+                    <div className="studio-video-choice">
+                      <img src={item.cover} alt="" />
+                      <span className="studio-video-choice-text">
+                        <strong>{index + 1}. {item.title}</strong>
+                        <small>{item.artist}</small>
+                      </span>
+                      <button
+                        type="button"
+                        className="btn ghost"
+                        onClick={() => replaceVideoItems(videoItems.filter((_, i) => i !== index))}
+                        disabled={busy}
+                        aria-label={`Retirer ${item.title} de la vidéo`}
+                      >
+                        Retirer
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+            {mode === "duel" && !validSelection && (
+              <p className="small" role="status">Un duel nécessite 2 ou 4 titres ou albums.</p>
+            )}
+          </section>
+        )}
         {mode === "note" && (
           <label className="field studio-video-hook">
             Accroche (avant « 5 étoiles ? »)
@@ -635,10 +790,10 @@ export default function StudioVideo({
           L&apos;enregistrement se fait en direct : il prend autant de temps que la vidéo.
         </p>
         <div className="studio-actions">
-          <button className="btn ghost" onClick={preview} disabled={!ready || busy}>
+          <button className="btn ghost" onClick={preview} disabled={!ready || !validSelection || busy}>
             ▶ Aperçu
           </button>
-          <button className="btn" onClick={record} disabled={!ready || busy}>
+          <button className="btn" onClick={record} disabled={!ready || !validSelection || busy}>
             {busy ? "En cours…" : "● Enregistrer la vidéo"}
           </button>
           {result && (
