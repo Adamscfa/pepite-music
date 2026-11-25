@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/data";
 import { getHomeExtras } from "@/lib/home";
+import { t } from "@/lib/i18n";
+import { getLocale } from "@/lib/server-locale";
 import Avatar from "./Avatar";
 import Cover from "./Cover";
 import DemoBadge from "./DemoBadge";
@@ -9,7 +11,7 @@ import TrendingTracks from "./TrendingTracks";
 
 // Colonne de droite de l'accueil : albums tendance, meilleurs contributeurs, et un encart.
 export default async function RightRail() {
-  const [me, extras] = await Promise.all([getCurrentProfile(), getHomeExtras()]);
+  const [me, extras, locale] = await Promise.all([getCurrentProfile(), getHomeExtras(), getLocale()]);
   const albums = extras.trends.albums.slice(0, 5);
   const tracks = extras.trends.tracks.slice(0, 5);
   const label = extras.trends.label;
@@ -26,7 +28,7 @@ export default async function RightRail() {
               <Icon name="flame" size={22} filled />
             </span>
             <span>
-              Albums tendance <small className="trend-where">{label}</small>
+              {t(locale, "trendingAlbums")} <small className="trend-where">{label}</small>
             </span>
           </h2>
           <ol className="rank-list">
@@ -40,7 +42,7 @@ export default async function RightRail() {
                     <small>{a.artist}</small>
                   </span>
                 </Link>
-                <span className="rank-stat" title="Avis sur Pépite">
+                <span className="rank-stat" title={t(locale, "reviewsOnPepite")}>
                   <Icon name="flame" size={15} filled />
                   {counts.get(a.id) ?? 0}
                 </span>
@@ -48,7 +50,7 @@ export default async function RightRail() {
             ))}
           </ol>
           <Link href="/explorer" className="more-link rail-more">
-            Explorer les tendances →
+            {t(locale, "exploreTrends")} →
           </Link>
         </section>
       )}
@@ -60,12 +62,12 @@ export default async function RightRail() {
               <Icon name="music" size={22} />
             </span>
             <span>
-              Titres tendance <small className="trend-where">{label}</small>
+              {t(locale, "trendingTracks")} <small className="trend-where">{label}</small>
             </span>
           </h2>
           <TrendingTracks tracks={tracks} counts={Object.fromEntries(trackCounts)} variant="rail" />
           <Link href="/classements" className="more-link rail-more">
-            Tous les classements →
+            {t(locale, "allCharts")} →
           </Link>
         </section>
       )}
@@ -76,7 +78,7 @@ export default async function RightRail() {
             <span className="trophy">
               <Icon name="trophy" size={22} />
             </span>
-            Top contributeurs
+            {t(locale, "topContributors")}
           </h2>
           <ol className="rank-list">
             {contributors.map((c, i) => (
@@ -89,12 +91,12 @@ export default async function RightRail() {
                       {c.display_name} <DemoBadge show={c.is_demo} />
                     </b>
                     <small>
-                      {c.count} avis
+                      {t(locale, "reviewsCount").replace("{count}", String(c.count))}
                     </small>
                   </span>
                 </Link>
                 {i === 0 && (
-                  <span className="crown" title="Le plus actif">
+                  <span className="crown" title={t(locale, "mostActive")}>
                     ♛
                   </span>
                 )}
@@ -107,14 +109,18 @@ export default async function RightRail() {
       {pepite && (
         <Link href={`/album/${pepite.album_id}`} className="rail-box rail-pepite">
           <div className="eyebrow">
-            💎 {weekly.current[0] ? "Pépite de la semaine · vote en cours" : "Pépite de la semaine dernière"}
+            💎 {weekly.current[0] ? t(locale, "weeklyGemOngoing") : t(locale, "weeklyGemLast")}
           </div>
           <div className="rank-item">
             <Cover src={pepite.cover_url} size="s" />
             <span className="rank-text">
               <b>{pepite.album_title}</b>
               <small>
-                {pepite.artist_name} · {pepite.votes} vote{pepite.votes > 1 ? "s" : ""}
+                {pepite.artist_name} ·{" "}
+                {(pepite.votes === 1 ? t(locale, "votesCountOne") : t(locale, "votesCountMany")).replace(
+                  "{count}",
+                  String(pepite.votes),
+                )}
               </small>
             </span>
           </div>
@@ -124,10 +130,10 @@ export default async function RightRail() {
       {!me && (
         <section className="join">
           <Icon name="music" size={40} />
-          <h2>Rejoins la communauté !</h2>
-          <p>Partage tes goûts, découvre de nouveaux artistes.</p>
+          <h2>{t(locale, "joinCommunity")}</h2>
+          <p>{t(locale, "joinCommunityText")}</p>
           <Link href="/connexion?mode=inscription" className="btn join-btn">
-            S&apos;inscrire maintenant
+            {t(locale, "signUpNow")}
           </Link>
         </section>
       )}

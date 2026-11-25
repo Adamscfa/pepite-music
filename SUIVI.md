@@ -331,6 +331,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     anglaise et espagnole de l'activité, du type d'avis, du partage, des
     commentaires, du tri, des réponses, des libellés accessibles et des erreurs
     d'envoi. Les dates relatives suivent aussi la langue choisie. Aucun SQL.
+64. Tendances de l'accueil (25 novembre 2026) : les rubriques d'albums et de
+    titres tendance, le pays affiché, les liens et les autres libellés des
+    bandeaux sur téléphone et de la colonne latérale suivent la langue choisie.
+    Aucun SQL.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -383,6 +387,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (langues) | Traduire les liens du profil, la suppression de compte et les membres bloqués | Aucun SQL à exécuter |
 | Aucun (langues) | Traduire le premier accueil après inscription et les erreurs du formulaire | Aucun SQL à exécuter |
 | Aucun (langues) | Traduire le fil d'avis, les commentaires, le partage et leurs erreurs | Aucun SQL à exécuter |
+| Aucun (langues) | Traduire les tendances, le pays et les actions des bandeaux de l'accueil | Aucun SQL à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -440,6 +445,7 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Traduire le texte copié dans le Studio selon la langue du pays choisi (aucun SQL)
 - [x] Aider les visiteurs venant d'Instagram/TikTok à ouvrir Pépite dans Chrome ou Safari (aucun SQL)
 - [x] Traduire le fil d'avis et la conversation de commentaires en français, anglais et espagnol (aucun SQL)
+- [x] Traduire les rubriques de tendances de l'accueil, leur pays et leurs commandes (aucun SQL)
 - [ ] Vérifier la connexion Google : fournisseur activé et identifiants Google corrects dans Supabase ; URI `/auth/v1/callback` exacte dans Google Cloud ; adresse du site + `/auth/callback` autorisée dans Supabase
 - [x] E-mails envoyés par Brevo, modèles en français (vérifié le 1er novembre 2026)
 - [ ] Ajouter `CRON_SECRET` et `SUPABASE_SERVICE_ROLE_KEY` dans Vercel (README)
