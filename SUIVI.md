@@ -315,6 +315,10 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     ou espagnol pour les affiches et vidéos, avec détection automatique selon
     le pays si souhaité. Les vidéos duel permettent de modifier la question et
     la consigne de vote (titres ou albums). Aucun SQL à exécuter.
+60. Choix des contenus vidéo (25 novembre 2026) : dans une vidéo du Studio,
+    rechercher des albums ou des titres, retirer les propositions automatiques
+    et composer sa liste personnelle (jusqu'à 4 éléments). L'ordre d'ajout
+    devient l'ordre de la vidéo ; un duel demande 2 ou 4 choix. Aucun SQL.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -363,6 +367,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (navigation) | Retirer « Mes albums » du menu latéral sans supprimer la section du profil | Aucun SQL à exécuter |
 | Aucun (sécurité) | Mettre Next.js à jour en version 16.4.6 et activer les rappels de mise à niveau | Aucun SQL à exécuter |
 | Aucun (Studio) | Choisir le français, l'anglais ou l'espagnol des affiches et vidéos ; modifier la question et la consigne des duels | Aucun SQL à exécuter |
+| Aucun (Studio) | Rechercher et choisir les albums ou titres à inclure dans les vidéos | Aucun SQL à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -428,7 +433,8 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [ ] Vérifier que le Studio en ligne permet toujours de préparer et télécharger
       les carrousels d'albums, de titres et d'artistes
 - [ ] Après publication, enregistrer une vidéo « Ta note ? » et une vidéo duel
-      depuis le Studio (sur ordinateur avec Chrome, puis sur téléphone)
+      depuis le Studio (sur ordinateur avec Chrome, puis sur téléphone), en
+      vérifiant la recherche et la sélection manuelle d'albums ou de titres
 - [ ] Après publication, essayer l'affiche Top 10 du Studio (au moins un top
       de pays en titres, un en albums et un Top Monde en artistes)
 - [ ] Après publication, vérifier les affiches et vidéos dans les trois langues,

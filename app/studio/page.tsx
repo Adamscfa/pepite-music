@@ -94,13 +94,22 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
   const slides = format === "affiche" ? posterSlides : carouselSlides;
 
   // Vidéos : les 4 premiers de la liste, et un texte de publication adapté.
-  const videoItems = items.slice(0, 4).map((i) => ({ title: i.title, artist: i.artist, cover: i.cover }));
-  const tagLine = caption.split("\n").pop() ?? "";
+  const videoItems = items.slice(0, 4).map((i) => ({
+    id: i.id,
+    title: i.title,
+    artist: i.artist,
+    cover: i.cover,
+  }));
+  const videoTags = {
+    fr: "#musique #musiquetiktok #pepitemusic",
+    en: "#music #musictiktok #pepitemusic",
+    es: "#musica #musictiktok #pepitemusic",
+  }[captionLocale];
   const duelLabels = getStudioDuelLabels(captionLocale, kind);
   const videoCaption = getStudioVideoCaption(
     format === "video-duel" ? "duel" : "note",
     captionLocale,
-    tagLine,
+    videoTags,
     duelLabels.question,
     duelLabels.vote,
   );
@@ -132,8 +141,8 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
           <select name="format" defaultValue={format} className="select">
             <option value="carrousel">Carrousel (une image par album)</option>
             <option value="affiche">Affiche Top 10 (une seule image)</option>
-            <option value="video-note">Vidéo « Ta note ? » (4 albums)</option>
-            <option value="video-duel">Vidéo duel (2 manches, 1 contre 2)</option>
+            <option value="video-note">Vidéo « Ta note ? » (jusqu’à 4 titres ou albums)</option>
+            <option value="video-duel">Vidéo duel (2 ou 4 titres ou albums)</option>
           </select>
         </label>
         <label>
@@ -213,7 +222,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
       {items.length ? (
         isVideo ? (
           <StudioVideo
-            key={`${format}-${captionLocale}-${videoItems.map((i) => i.cover).join()}`}
+            key={`${format}-${kind}-${captionLocale}-${videoItems.map((i) => i.id).join()}`}
             mode={format === "video-duel" ? "duel" : "note"}
             items={videoItems}
             kind={kind}
@@ -223,7 +232,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
             defaultDuelQuestion={duelLabels.question}
             defaultDuelVote={duelLabels.vote}
             site={siteLabel}
-            tags={tagLine.split(" ").slice(0, 3).join("  ")}
+            tags={videoTags.split(" ").join("  ")}
             caption={videoCaption}
           />
         ) : (
