@@ -1,3 +1,5 @@
+import type { Locale } from "./i18n";
+
 // Les tops Deezer s'appellent « Top Ivory Coast », « Top Senegal »… On les met en français
 // (« Top Côte d'Ivoire », « Top Sénégal ») et on retient le code du pays (CI, SN…).
 
@@ -85,7 +87,8 @@ export function frenchChartTitle(title: string): { code: string | null; name: st
 // « en Côte d'Ivoire », « au Sénégal », « aux États-Unis ».
 const PLURAL = /^(etats unis|pays bas|emirats|philippines|comores|seychelles|maldives|bahamas|fidji|samoa)/;
 const MASC_E = /^(mexique|cambodge|mozambique|zimbabwe|belize)/;
-export function inCountry(name: string) {
+export function inCountry(name: string, locale: Locale = "fr") {
+  if (locale !== "fr") return `${locale === "en" ? "in" : "en"} ${name}`;
   const n = norm(name);
   if (PLURAL.test(n)) return `aux ${name}`;
   if (/^[aeiouy]/.test(n)) return `en ${name}`;

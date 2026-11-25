@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getHomeExtras } from "@/lib/home";
+import { t } from "@/lib/i18n";
+import { getLocale } from "@/lib/server-locale";
 import Avatar from "./Avatar";
 import Cover from "./Cover";
 import DemoBadge from "./DemoBadge";
@@ -10,7 +12,8 @@ import TrendingTracks from "./TrendingTracks";
 // et titres tendance et les meilleurs contributeurs, en rangées à faire glisser, en haut du fil.
 // Sur ordinateur, ces infos sont dans la colonne de droite (RightRail).
 export default async function MobileHighlights() {
-  const { trends, contributors, weekly, albumCounts: counts, trackCounts } = await getHomeExtras();
+  const [extras, locale] = await Promise.all([getHomeExtras(), getLocale()]);
+  const { trends, contributors, weekly, albumCounts: counts, trackCounts } = extras;
   const top = trends.albums.slice(0, 10);
   const tracks = trends.tracks.slice(0, 10);
   const pepite = weekly.current[0] ?? weekly.lastWinner;
@@ -22,13 +25,17 @@ export default async function MobileHighlights() {
         <Link href={`/album/${pepite.album_id}`} className="pepite-mobile">
           <Cover src={pepite.cover_url} size="m" />
           <span>
-            <small>💎 {weekly.current[0] ? "Pépite de la semaine · vote en cours" : "Pépite de la semaine dernière"}</small>
+            <small>💎 {weekly.current[0] ? t(locale, "weeklyGemOngoing") : t(locale, "weeklyGemLast")}</small>
             <b>{pepite.album_title}</b>
             <small>
-              {pepite.artist_name} · {pepite.votes} vote{pepite.votes > 1 ? "s" : ""}
+              {pepite.artist_name} ·{" "}
+              {(pepite.votes === 1 ? t(locale, "votesCountOne") : t(locale, "votesCountMany")).replace(
+                "{count}",
+                String(pepite.votes),
+              )}
             </small>
           </span>
-          <span className="more-link">Voter →</span>
+          <span className="more-link">{t(locale, "voteNow")} →</span>
         </Link>
       )}
 
@@ -39,24 +46,25 @@ export default async function MobileHighlights() {
               <span className="flame">
                 <Icon name="flame" size={20} filled />
               </span>
-              Albums tendance <small className="trend-where">{trends.label}</small>
+              {t(locale, "trendingAlbums")} <small className="trend-where">{trends.label}</small>
             </h2>
             <Link href="/explorer" className="more-link">
-              Tout voir →
+              {t(locale, "seeAll")} →
             </Link>
           </div>
           <div className="strip-track">
             {top.map((a, i) => (
               <Link key={a.id} href={`/album/${a.id}`} className="strip-album">
                 <span className="strip-cover">
-                  <Cover src={a.cover} size="l" alt={`Pochette de ${a.title}`} />
+                  <Cover src={a.cover} size="l" alt={t(locale, "albumCoverOf").replace("{title}", a.title)} />
                   <span className="strip-rank">{i + 1}</span>
                 </span>
                 <b>{a.title}</b>
                 <small>{a.artist}</small>
                 {(counts.get(a.id) ?? 0) > 0 && (
                   <small className="strip-stat">
-                    <Icon name="flame" size={13} filled /> {counts.get(a.id)} avis
+                    <Icon name="flame" size={13} filled />{" "}
+                    {t(locale, "reviewsCount").replace("{count}", String(counts.get(a.id)))}
                   </small>
                 )}
               </Link>
@@ -72,10 +80,10 @@ export default async function MobileHighlights() {
               <span className="flame">
                 <Icon name="music" size={20} />
               </span>
-              Titres tendance <small className="trend-where">{trends.label}</small>
+              {t(locale, "trendingTracks")} <small className="trend-where">{trends.label}</small>
             </h2>
             <Link href="/classements" className="more-link">
-              Tout voir →
+              {t(locale, "seeAll")} →
             </Link>
           </div>
           <TrendingTracks tracks={tracks} counts={Object.fromEntries(trackCounts)} variant="strip" />
@@ -89,7 +97,7 @@ export default async function MobileHighlights() {
               <span className="trophy">
                 <Icon name="trophy" size={20} />
               </span>
-              Top contributeurs
+              {t(locale, "topContributors")}
             </h2>
           </div>
           <div className="strip-track people">
@@ -101,7 +109,7 @@ export default async function MobileHighlights() {
                 </span>
                 <b>{c.display_name}</b>
                 <small>
-                  {c.count} avis <DemoBadge show={c.is_demo} />
+                  {t(locale, "reviewsCount").replace("{count}", String(c.count))} <DemoBadge show={c.is_demo} />
                 </small>
               </Link>
             ))}

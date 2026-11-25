@@ -12,6 +12,8 @@ import {
   type CountryChart,
 } from "./deezer";
 import { inCountry } from "./country-names";
+import { t, type Locale } from "./i18n";
+import { getLocale } from "./server-locale";
 
 // Classements et tendances « de chez toi » :
 // 1. le choix fait sur la page Classements (cookie « top_pays », posé par proxy.ts) ;
@@ -63,19 +65,27 @@ function albumsFromTracks(tracks: ChartTrack[], limit: number): AlbumHit[] {
 
 export type Trends = { label: string; tracks: ChartTrack[]; albums: AlbumHit[] };
 
+function localizedCountryName(code: string | null, fallback: string, locale: Locale) {
+  if (!code) return fallback;
+  return new Intl.DisplayNames([locale], { type: "region" }).of(code) ?? fallback;
+}
+
 // Titres et albums tendance pour le visiteur (ou pour son choix).
 export async function getTrends(limit = 10): Promise<Trends> {
-  const scope = await getTrendScope();
+  const [scope, locale] = await Promise.all([getTrendScope(), getLocale()]);
   if (scope.kind !== "france") {
     const tracks = scope.kind === "monde" ? await getWorldTopTracks() : await getPlaylistTracks(scope.chart.id);
     if (tracks.length) {
       return {
-        label: scope.kind === "monde" ? "dans le monde" : inCountry(scope.name),
+        label:
+          scope.kind === "monde"
+            ? t(locale, "inWorld")
+            : inCountry(localizedCountryName(scope.chart.code, scope.name, locale), locale),
         tracks: tracks.slice(0, limit),
         albums: albumsFromTracks(tracks, limit),
       };
     }
   }
   const [tracks, albums] = await Promise.all([getTopTracks(limit), getTopAlbums(limit)]);
-  return { label: "en France", tracks, albums };
+  return { label: t(locale, "inFrance"), tracks, albums };
 }
