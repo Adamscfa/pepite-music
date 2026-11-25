@@ -390,6 +390,7 @@ export default function StudioVideo({
   const playing = useRef(0);
   const [hook, setHook] = useState(defaultHook);
   const [ready, setReady] = useState(false);
+  const [duration, setDuration] = useState(0);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("Chargement des pochettes…");
   const [result, setResult] = useState<{ url: string; file: File } | null>(null);
@@ -410,6 +411,11 @@ export default function StudioVideo({
       const list = await Promise.all(items.map(load));
       if (cancelled) return;
       loaded.current = list;
+      const segments =
+        mode === "duel"
+          ? duelTimeline(list, kind, site, tags)
+          : noteTimeline(list, kind, defaultHook, site, tags);
+      setDuration(total(segments));
       setReady(true);
       const missing = list.filter((l) => !l.img).length;
       setStatus(missing ? `${missing} pochette(s) indisponible(s) : une case vide les remplace.` : "");
@@ -418,7 +424,7 @@ export default function StudioVideo({
       cancelled = true;
       playing.current++;
     };
-  }, [items]);
+  }, [defaultHook, items, kind, mode, site, tags]);
 
   // Image fixe d'aperçu quand rien ne joue (et quand l'accroche change).
   useEffect(() => {
@@ -517,7 +523,7 @@ export default function StudioVideo({
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const length = ready ? Math.round(total(timeline())) : 0;
+  const length = ready ? Math.round(duration) : 0;
 
   return (
     <div className="studio-video">

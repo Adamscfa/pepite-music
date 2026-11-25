@@ -4,7 +4,7 @@ Ce fichier sert de mémoire au projet. Il dit où on en est et quoi faire ensuit
 pour pouvoir reprendre le travail depuis n'importe quel compte ou n'importe quelle
 conversation. **À mettre à jour à chaque nouvelle étape.**
 
-Dernière mise à jour : 18 novembre 2026
+Dernière mise à jour : 25 novembre 2026
 
 ## Le projet en bref
 
@@ -306,6 +306,11 @@ Tout a été construit le 25 octobre 2026 (pull requests n°1 à n°8).
     colore le lien actif, y compris lors du retour arrière. Aucun SQL à exécuter.
 57. Menu latéral (18 novembre 2026) : retrait du raccourci « Mes albums » ;
     « Mes favoris » reste disponible. Aucun SQL à exécuter.
+58. Sécurité Next.js (25 novembre 2026) : mise à niveau de Next.js et de sa
+    configuration ESLint de 16.4.3 à 16.4.6, version corrigée. Le rappel des
+    mises à niveau de sécurité est activé dans `next.config.ts`. La compilation
+    et le lint passent ; un avertissement subsiste dans le lecteur vidéo.
+    Aucun SQL à exécuter.
 
 Aussi en place : connexion par e-mail et avec Google, thème clair/sombre,
 images de partage (aperçus de liens et « story » d'un avis), page artiste.
@@ -352,6 +357,7 @@ Les fichiers du dossier `supabase/` se collent un par un dans
 | Aucun (apparence) | Réduire les ombres, animations décoratives et effets de survol sans changer la mise en page | Aucun SQL à exécuter |
 | Aucun (navigation) | Afficher la couleur active des liens de profil encore présents dans le menu | Aucun SQL à exécuter |
 | Aucun (navigation) | Retirer « Mes albums » du menu latéral sans supprimer la section du profil | Aucun SQL à exécuter |
+| Aucun (sécurité) | Mettre Next.js à jour en version 16.4.6 et activer les rappels de mise à niveau | Aucun SQL à exécuter |
 
 La fonction multilingue (français, anglais et espagnol) ne modifie pas la base
 Supabase : aucune requête SQL n’est à exécuter pour la langue. La détection par
@@ -399,6 +405,8 @@ dans le fichier `.env.local` sur l'ordinateur. À garder aussi en lieu sûr.
 - [x] Réaligner les commandes du haut sur téléphone pour éviter leur chevauchement
 - [x] Masquer la rangée Paramètres / Langue / Thème du haut sur téléphone
 - [x] Placer l'icône de thème à côté de la recherche sur téléphone
+- [x] Mettre Next.js à jour de 16.4.3 à 16.4.6 et vérifier le lint et la compilation dans une worktree isolée
+- [ ] Intégrer la branche `security-nextjs-upgrade` pour publier cette mise à niveau
 - [x] Retirer la fonction vidéo du site et préparer son nettoyage dans Supabase
 - [ ] Si le bucket vidéo existe : supprimer d'abord les MP4 dans **Storage > weekly-videos**, puis exécuter `16-retirer-videos.sql` dans Supabase
 - [ ] Exécuter `17-messages-abonnement-mutuel.sql` dans **Supabase > SQL Editor > Run** après `10-lancement.sql` et `13-suppressions.sql`
