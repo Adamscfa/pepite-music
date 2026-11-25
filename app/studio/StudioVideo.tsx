@@ -449,6 +449,7 @@ export default function StudioVideo({
   const [duelQuestion, setDuelQuestion] = useState(defaultDuelQuestion);
   const [duelVote, setDuelVote] = useState(defaultDuelVote);
   const [ready, setReady] = useState(false);
+  const [duration, setDuration] = useState(0);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("Chargement des pochettes…");
   const [result, setResult] = useState<{ url: string; file: File } | null>(null);
@@ -469,6 +470,20 @@ export default function StudioVideo({
       const list = await Promise.all(items.map(load));
       if (cancelled) return;
       loaded.current = list;
+      const segments =
+        mode === "duel"
+          ? duelTimeline(
+              list,
+              kind,
+              site,
+              tags,
+              locale,
+              defaultDuelCategory,
+              defaultDuelQuestion,
+              defaultDuelVote,
+            )
+          : noteTimeline(list, kind, defaultHook, site, tags, locale);
+      setDuration(total(segments));
       setReady(true);
       const missing = list.filter((l) => !l.img).length;
       setStatus(missing ? `${missing} pochette(s) indisponible(s) : une case vide les remplace.` : "");
@@ -477,7 +492,18 @@ export default function StudioVideo({
       cancelled = true;
       playing.current++;
     };
-  }, [items]);
+  }, [
+    defaultDuelCategory,
+    defaultDuelQuestion,
+    defaultDuelVote,
+    defaultHook,
+    items,
+    kind,
+    locale,
+    mode,
+    site,
+    tags,
+  ]);
 
   // Image fixe d'aperçu quand rien ne joue (et quand l'accroche change).
   useEffect(() => {
@@ -576,9 +602,7 @@ export default function StudioVideo({
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const length = ready
-    ? Math.round(mode === "duel" ? 2.4 + Math.floor(items.length / 2) * 4.2 + 3.6 : 3 + items.length * 2.8 + 3.6)
-    : 0;
+  const length = ready ? Math.round(duration) : 0;
   const currentCaption =
     mode === "duel"
       ? caption.replace(defaultDuelQuestion, duelQuestion).replace(defaultDuelVote, duelVote)
