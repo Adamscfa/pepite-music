@@ -68,6 +68,7 @@ export default function AuthForm({
 
       {mode === "in" ? (
         <form action={inAction} className="box">
+          <input type="hidden" name="locale" value={locale} />
           <label className="field">
             {tx("email")}
             <input name="email" type="email" required autoComplete="email" />
@@ -88,6 +89,7 @@ export default function AuthForm({
         </form>
       ) : (
         <form action={upAction} className="box">
+          <input type="hidden" name="locale" value={locale} />
           <label className="field">
             {tx("username")}
             <input

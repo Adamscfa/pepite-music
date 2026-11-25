@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { quickRate } from "@/app/album/actions";
 import { sharpImage } from "@/lib/images";
+import { type Locale, t } from "@/lib/i18n";
 
 // Pochette + 5 étoiles : un toucher suffit pour noter.
 export default function QuickRate({
@@ -10,12 +11,14 @@ export default function QuickRate({
   title,
   artist,
   cover,
+  locale,
   onRated,
 }: {
   id: number;
   title: string;
   artist: string;
   cover: string;
+  locale: Locale;
   onRated: (id: number) => void;
 }) {
   const [rating, setRating] = useState(0);
@@ -25,16 +28,16 @@ export default function QuickRate({
 
   return (
     <div className={rating ? "quick-rate rated" : "quick-rate"}>
-      <img {...sharpImage(cover, "(max-width: 760px) 50vw, 200px")} alt={`Pochette de ${title}`} className="cover l" loading="lazy" />
+      <img {...sharpImage(cover, "(max-width: 760px) 50vw, 200px")} alt={t(locale, "albumCoverFor").replace("{title}", title)} className="cover l" loading="lazy" />
       <span className="album-name">{title}</span>
       <small>{artist}</small>
-      <div className="picker small-picker" onMouseLeave={() => setHover(0)} aria-label={`Noter ${title}`}>
+      <div className="picker small-picker" onMouseLeave={() => setHover(0)} aria-label={t(locale, "rateAlbumFor").replace("{title}", title)}>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
             type="button"
             className={n <= (hover || rating) ? "on" : undefined}
-            aria-label={`${n} étoile${n > 1 ? "s" : ""}`}
+            aria-label={`${n} ${t(locale, n === 1 ? "starSingular" : "starPlural")}`}
             aria-pressed={rating === n}
             disabled={pending}
             onMouseEnter={() => setHover(n)}
@@ -52,7 +55,7 @@ export default function QuickRate({
           </button>
         ))}
       </div>
-      {failed && <small className="error">Pas enregistré, réessaie.</small>}
+      {failed && <small className="error">{t(locale, "ratingSaveFailed")}</small>}
     </div>
   );
 }

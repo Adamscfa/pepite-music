@@ -86,7 +86,7 @@ export default async function Header() {
         </div>
 
         <div className="side-bottom">
-          <AppPanel variant="side" loggedIn={Boolean(me)} />
+          <AppPanel variant="side" loggedIn={Boolean(me)} locale={locale} />
           <LanguageSelector locale={locale} />
           <ThemeToggle initial={theme} withLabel locale={locale} />
           {me && (
@@ -126,7 +126,7 @@ export default async function Header() {
                 <Badge n={unread.notifications} />
               </Link>
               <details className="me-menu">
-                <summary aria-label="Mon compte">
+                <summary aria-label={tx("myAccount")}>
                   <Avatar user={me} />
                   <Icon name="chevron" size={16} />
                 </summary>

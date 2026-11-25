@@ -2,8 +2,9 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { createList, type FormState } from "@/app/social-actions";
+import { type Locale, t } from "@/lib/i18n";
 
-export default function NewList() {
+export default function NewList({ locale }: { locale: Locale }) {
   const [state, action, pending] = useActionState<FormState, FormData>(createList, {});
   const form = useRef<HTMLFormElement>(null);
 
@@ -13,21 +14,25 @@ export default function NewList() {
 
   return (
     <details className="edit" style={{ marginTop: 0, marginBottom: 14 }}>
-      <summary>+ Nouvelle liste</summary>
+      <summary>{t(locale, "newList")}</summary>
       <form action={action} ref={form} className="box" style={{ marginTop: 10, maxWidth: 480 }}>
         <label className="field">
-          Titre
-          <input name="title" required maxLength={80} placeholder="Mes albums de l'été" />
+          {t(locale, "listTitle")}
+          <input name="title" required maxLength={80} placeholder={t(locale, "listTitlePlaceholder")} />
         </label>
         <label className="field">
-          Description
-          <textarea name="description" maxLength={300} rows={2} placeholder="Facultatif" />
+          {t(locale, "listDescription")}
+          <textarea name="description" maxLength={300} rows={2} placeholder={t(locale, "optional")} />
         </label>
         <button className="btn" disabled={pending}>
-          {pending ? "Création…" : "Créer la liste"}
+          {pending ? t(locale, "creatingList") : t(locale, "createList")}
         </button>
         {state.error && <p className="error">{state.error}</p>}
-        {state.done && !pending && <p className="success">Liste créée. Ajoute des albums depuis leur page.</p>}
+        {state.done && !pending && (
+          <p className="success">
+            {t(locale, "listCreated")} {t(locale, "listCreatedInstruction")}
+          </p>
+        )}
       </form>
     </details>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { removePushSubscription, savePushSubscription } from "@/app/push-actions";
+import { type Locale, t } from "@/lib/i18n";
 import Icon from "./Icon";
 
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
@@ -30,10 +31,12 @@ export default function AppPanel({
   variant,
   loggedIn,
   showWhenUnavailable = false,
+  locale,
 }: {
   variant: "side" | "card";
   loggedIn: boolean;
   showWhenUnavailable?: boolean;
+  locale: Locale;
 }) {
   const [install, setInstall] = useState<InstallEvent | null>(null);
   const [installed, setInstalled] = useState(false);
@@ -120,22 +123,22 @@ export default function AppPanel({
       onClick={push === "on" ? disablePush : enablePush}
       title={
         push === "denied"
-          ? "Les notifications sont bloquées : autorise-les dans les réglages du navigateur pour ce site."
+          ? t(locale, "notificationsBlockedHelp")
           : push === "ios-install"
-            ? "Sur iPhone, installe d'abord Pépite sur l'écran d'accueil."
+            ? t(locale, "installOnIphoneFirst")
             : undefined
       }
     >
       <Icon name="bell" size={18} />
       {push === "on"
-        ? "Notifications activées"
+        ? t(locale, "notificationsOn")
         : push === "denied"
-          ? "Notifications bloquées"
+          ? t(locale, "notificationsBlocked")
           : push === "ios-install"
-            ? "Notifications : installe l'appli"
+            ? t(locale, "installForNotifications")
             : push === "busy"
-              ? "Un instant…"
-              : "Activer les notifications"}
+              ? t(locale, "oneMoment")
+              : t(locale, "enableNotifications")}
     </button>
   );
 
@@ -153,14 +156,13 @@ export default function AppPanel({
         } else setShowIosHelp(!showIosHelp);
       }}
     >
-      <Icon name="download" size={18} /> Installer l&apos;appli
+      <Icon name="download" size={18} /> {t(locale, "installApp")}
     </button>
   );
 
   const iosHelp = showIosHelp && (
     <p className={variant === "side" ? "side-app-help" : "small"}>
-      Sur iPhone : touche le bouton <b>Partager</b> (le carré avec une flèche) en bas de Safari, puis{" "}
-      <b>Sur l&apos;écran d&apos;accueil</b>.
+      {t(locale, "iphoneInstallHelp")}
     </p>
   );
 
@@ -175,16 +177,13 @@ export default function AppPanel({
   }
   return (
     <section className="box app-card">
-      <h2 className="section-title">Pépite sur ton téléphone</h2>
-      <p className="small">
-        Installe Pépite comme une appli, avec son icône sur l&apos;écran d&apos;accueil, et reçois une notification
-        quand on t&apos;écrit, qu&apos;on aime tes avis ou qu&apos;on te répond.
-      </p>
+      <h2 className="section-title">{t(locale, "appOnPhoneTitle")}</h2>
+      <p className="small">{t(locale, "appOnPhoneDescription")}</p>
       {showWhenUnavailable && !canInstall && (
         <p className="small">
           {installed
-            ? "Pépite est déjà installée sur cet appareil."
-            : "Sur Android, ouvre cette page dans Chrome puis le menu ⋮ pour choisir « Installer l'appli » ou « Ajouter à l'écran d'accueil ». Sur iPhone, ouvre Pépite dans Safari et utilise le bouton Partager."}
+            ? t(locale, "alreadyInstalled")
+            : `${t(locale, "installHelpAndroid")} ${t(locale, "openSafariOnIphone")}`}
         </p>
       )}
       <div className="row" style={{ justifyContent: "flex-start" }}>
