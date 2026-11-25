@@ -5,7 +5,9 @@ import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { areFriends, EMOJIS, getCurrentProfile, getProfileByUsername, weekStart } from "@/lib/data";
 import { getAlbum } from "@/lib/deezer";
+import { t } from "@/lib/i18n";
 import { pushTo } from "@/lib/push";
+import { getLocale } from "@/lib/server-locale";
 import { createClient } from "@/lib/supabase/server";
 
 export type FormState = { error?: string; done?: boolean };
@@ -92,12 +94,12 @@ export async function reportReview(_prev: FormState, formData: FormData): Promis
 // ---- Commentaires ----
 
 export async function addComment(_prev: FormState, formData: FormData): Promise<FormState> {
-  const me = await getCurrentProfile();
-  if (!me) return { error: LOGIN };
+  const [me, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
+  if (!me) return { error: t(locale, "loginRequired") };
   const reviewId = Number(formData.get("review_id"));
   const body = String(formData.get("body") ?? "").trim();
-  if (!body) return { error: "Écris quelque chose avant d'envoyer." };
-  if (body.length > 500) return { error: "Ton commentaire est trop long (500 caractères max)." };
+  if (!body) return { error: t(locale, "commentEmpty") };
+  if (body.length > 500) return { error: t(locale, "commentTooLong") };
   const parentId = Number(formData.get("parent_id")) || null;
   const supabase = await createClient();
   // parent_id n'est envoyé que pour une réponse : sans le fichier 05, les commentaires simples marchent toujours.
@@ -105,9 +107,9 @@ export async function addComment(_prev: FormState, formData: FormData): Promise<
     .from("review_comments")
     .insert({ review_id: reviewId, user_id: me.id, body, ...(parentId ? { parent_id: parentId } : {}) });
   if (error) {
-    if (tooFast(error)) return { error: TOO_FAST };
-    if (parentId) return { error: "Les réponses ne sont pas encore activées (fichier 05 à exécuter dans Supabase)." };
-    return { error: FAILED };
+    if (tooFast(error)) return { error: t(locale, "commentTooFast") };
+    if (parentId) return { error: t(locale, "commentRepliesDisabled") };
+    return { error: t(locale, "commentFailed") };
   }
   // Prévenir l'auteur de l'avis, celui à qui on répond, et les @pseudos mentionnés.
   notifyLater(supabase, async () => {

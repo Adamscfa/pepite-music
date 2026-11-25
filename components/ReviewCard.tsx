@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getCurrentProfile, type Review } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
+import { getLocale } from "@/lib/server-locale";
+import { t } from "@/lib/i18n";
 import Avatar from "./Avatar";
 import CommentForm from "./CommentForm";
 import Cover from "./Cover";
@@ -23,7 +25,7 @@ export default async function ReviewCard({
   canLike: boolean;
   withComments?: boolean;
 }) {
-  const me = await getCurrentProfile();
+  const [me, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
   const album = `/album/${review.album_id}`;
   const target = review.track_id ? `/titre/${review.track_id}` : album;
   const title = review.track_title ?? review.album_title;
@@ -39,7 +41,8 @@ export default async function ReviewCard({
               {review.profile.display_name} <DemoBadge show={review.profile.is_demo} />
             </b>
             <small>
-              {timeAgo(review.updated_at)} · {review.track_id ? "a noté un titre" : "a noté un album"}
+              {timeAgo(review.updated_at, locale)} ·{" "}
+              {t(locale, review.track_id ? "reviewedTrack" : "reviewedAlbum")}
             </small>
           </span>
         </Link>
@@ -51,7 +54,7 @@ export default async function ReviewCard({
           <Cover src={review.cover_url} size="l" />
         </Link>
         <div className="post-text">
-          <span className="kind">{review.track_id ? "Titre" : "Album"}</span>
+          <span className="kind">{t(locale, review.track_id ? "trackLabel" : "albumLabel")}</span>
           <Link href={target} className="link">
             <h3>{title}</h3>
           </Link>
@@ -79,11 +82,12 @@ export default async function ReviewCard({
         <div className="post-comments">
           <div className="post-comments-head">
             <Link href={`${page}#commentaires`} className="link-under">
-              <Icon name="comment" size={17} /> Commentaires ({review.comments})
+              <Icon name="comment" size={17} />{" "}
+              {t(locale, "commentsHeading").replace("{count}", String(review.comments))}
             </Link>
             {review.comments > review.preview.length && (
               <Link href={`${page}#commentaires`} className="more-link">
-                Tout voir →
+                {t(locale, "seeAllComments")} →
               </Link>
             )}
           </div>
@@ -96,13 +100,13 @@ export default async function ReviewCard({
                     <b>{c.profile.display_name}</b>
                   </Link>
                   <DemoBadge show={c.profile.is_demo} />
-                  <span>{timeAgo(c.created_at)}</span>
+                  <span>{timeAgo(c.created_at, locale)}</span>
                 </div>
                 <p className="comment-body">
                   <MentionText text={c.body} />
                 </p>
                 <Link href={`${page}#c-${c.id}`} className="text-btn">
-                  Répondre
+                  {t(locale, "replyLabel")}
                 </Link>
               </div>
             </div>

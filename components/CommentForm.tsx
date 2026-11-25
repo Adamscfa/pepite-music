@@ -3,15 +3,17 @@
 import { useActionState, useEffect, useRef } from "react";
 import { addComment, type FormState } from "@/app/social-actions";
 import type { Author } from "@/lib/data";
+import { t } from "@/lib/i18n";
 import Avatar from "./Avatar";
 import Icon from "./Icon";
+import { useLocale } from "./LocaleProvider";
 
 // Champ « Écrire un commentaire… » avec le bouton d'envoi, pour un avis ou en réponse à un commentaire.
 export default function CommentForm({
   reviewId,
   parentId,
   me,
-  placeholder = "Écrire un commentaire…",
+  placeholder,
   autoFocus = false,
   onDone,
 }: {
@@ -22,6 +24,7 @@ export default function CommentForm({
   autoFocus?: boolean;
   onDone?: () => void;
 }) {
+  const locale = useLocale();
   const [state, action, pending] = useActionState<FormState, FormData>(addComment, {});
   const form = useRef<HTMLFormElement>(null);
   const done = useRef(onDone);
@@ -47,12 +50,12 @@ export default function CommentForm({
           name="body"
           required
           maxLength={500}
-          placeholder={placeholder}
-          aria-label={parentId ? "Ta réponse" : "Ton commentaire"}
+          placeholder={placeholder ?? t(locale, "commentPlaceholder")}
+          aria-label={t(locale, parentId ? "replyAriaLabel" : "commentAriaLabel")}
           autoComplete="off"
           autoFocus={autoFocus}
         />
-        <button className="send" disabled={pending} aria-label="Envoyer">
+        <button className="send" disabled={pending} aria-label={t(locale, pending ? "sending" : "sendComment")}>
           <Icon name="send" size={18} />
         </button>
       </div>

@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import Icon from "./Icon";
+import { t } from "@/lib/i18n";
+import { useLocale } from "./LocaleProvider";
 
 // Partage via le menu du téléphone, ou copie le lien sur ordinateur.
 // path : adresse à partager (par défaut, la page en cours). compact : version icône pour les avis.
 export default function ShareButton({ title, path, compact = false }: { title: string; path?: string; compact?: boolean }) {
+  const locale = useLocale();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -23,7 +26,9 @@ export default function ShareButton({ title, path, compact = false }: { title: s
       }}
     >
       {compact && <Icon name="share" size={19} />}
-      <span className={compact ? "action-label" : undefined}>{copied ? "Lien copié ✓" : "Partager"}</span>
+      <span className={compact ? "action-label" : undefined}>
+        {copied ? t(locale, "linkCopiedLabel") : t(locale, "shareButtonLabel")}
+      </span>
     </button>
   );
 }

@@ -1,7 +1,8 @@
-const rtf = new Intl.RelativeTimeFormat("fr", { numeric: "auto" });
+import { t, type Locale } from "./i18n";
 
 // "il y a 12 minutes", "hier", "il y a 3 jours"...
-export function timeAgo(iso: string): string {
+export function timeAgo(iso: string, locale: Locale = "fr"): string {
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
   const steps: [Intl.RelativeTimeFormatUnit, number][] = [
     ["year", 31536000],
@@ -14,7 +15,7 @@ export function timeAgo(iso: string): string {
   for (const [unit, size] of steps) {
     if (Math.abs(seconds) >= size) return rtf.format(Math.round(seconds / size), unit);
   }
-  return "à l'instant";
+  return t(locale, "justNow");
 }
 
 // 4.333 -> "4,3"
