@@ -93,17 +93,19 @@ export async function updateProfile(_prev: ProfileState, formData: FormData): Pr
 // Supprime le compte et tout ce que le membre a publié (fichier 10 nécessaire).
 // Il faut retaper son pseudo pour confirmer.
 export async function deleteAccount(_prev: ProfileState, formData: FormData): Promise<ProfileState> {
+  const localeValue = String(formData.get("locale") ?? "");
+  const locale = isLocale(localeValue) ? localeValue : "fr";
   const me = await getCurrentProfile();
-  if (!me) return { error: "Connecte-toi d'abord." };
+  if (!me) return { error: t(locale, "loginRequired") };
   if (String(formData.get("confirm") ?? "").trim().toLowerCase() !== me.username) {
-    return { error: "Tape exactement ton pseudo pour confirmer." };
+    return { error: t(locale, "confirmUsernameError") };
   }
   const supabase = await createClient();
   // Les photos de profil d'abord (elles ne partent pas toutes seules).
   const { data: files } = await supabase.storage.from("avatars").list(me.id);
   if (files?.length) await supabase.storage.from("avatars").remove(files.map((f) => `${me.id}/${f.name}`));
   const { error } = await supabase.rpc("delete_my_account");
-  if (error) return { error: "La suppression a échoué. Réessaie, ou écris-nous depuis la page Contact." };
+  if (error) return { error: t(locale, "deleteAccountFailed") };
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/?compte=supprime");
