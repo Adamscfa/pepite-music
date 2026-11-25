@@ -5,18 +5,15 @@ import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { deleteComment, toggleCommentLike } from "@/app/social-actions";
 import type { Author, Comment } from "@/lib/data";
 import { timeAgo } from "@/lib/format";
+import { t, type Locale } from "@/lib/i18n";
 import Avatar from "./Avatar";
 import CommentForm from "./CommentForm";
 import DemoBadge from "./DemoBadge";
 import MentionText from "./MentionText";
 import Icon from "./Icon";
+import { useLocale } from "./LocaleProvider";
 
 type Sort = "top" | "recent" | "old";
-const SORTS: { id: Sort; label: string }[] = [
-  { id: "top", label: "Top" },
-  { id: "recent", label: "Plus récents" },
-  { id: "old", label: "Plus anciens" },
-];
 
 // Au-delà de ce niveau, les réponses ne sont plus décalées vers la droite (lisible sur téléphone).
 const MAX_INDENT = 3;
@@ -28,6 +25,7 @@ type Ctx = {
   childrenOf: Map<number, Comment[]>;
   replying: number | null;
   setReplying: (id: number | null) => void;
+  locale: Locale;
 };
 
 // Tous les commentaires d'un avis, avec les réponses rangées sous le commentaire auquel elles répondent.
@@ -42,8 +40,14 @@ export default function CommentThread({
   me: Author | null;
   meId: string | null;
 }) {
+  const locale = useLocale();
   const [sort, setSort] = useState<Sort>("top");
   const [replying, setReplying] = useState<number | null>(null);
+  const sorts: { id: Sort; label: string }[] = [
+    { id: "top", label: t(locale, "sortTop") },
+    { id: "recent", label: t(locale, "sortNewest") },
+    { id: "old", label: t(locale, "sortOldest") },
+  ];
 
   const { roots, childrenOf } = useMemo(() => {
     const ids = new Set(comments.map((c) => c.id));
@@ -71,31 +75,31 @@ export default function CommentThread({
     );
   }, [roots, sort, childrenOf]);
 
-  const ctx: Ctx = { reviewId, me, meId, childrenOf, replying, setReplying };
+  const ctx: Ctx = { reviewId, me, meId, childrenOf, replying, setReplying, locale };
 
   return (
     <section className="thread-box" id="commentaires">
       <h2 className="thread-title">
-        <Icon name="comment" size={22} filled /> Commentaires ({comments.length})
+        <Icon name="comment" size={22} filled /> {t(locale, "commentsHeading").replace("{count}", String(comments.length))}
       </h2>
 
       <div className="thread-new">
         {me ? (
-          <CommentForm reviewId={reviewId} me={me} placeholder="Ajouter un commentaire… (@pseudo pour mentionner)" />
+          <CommentForm reviewId={reviewId} me={me} placeholder={t(locale, "addCommentPlaceholder")} />
         ) : (
           <p className="small">
             <Link href="/connexion" className="link-btn">
-              Connecte-toi
+              {t(locale, "signInToComment")}
             </Link>{" "}
-            pour commenter et répondre.
+            {t(locale, "commentLoginSuffix")}
           </p>
         )}
       </div>
 
       {comments.length > 0 ? (
         <>
-          <div className="sort-chips" role="group" aria-label="Trier les commentaires">
-            {SORTS.map((s) => (
+          <div className="sort-chips" role="group" aria-label={t(locale, "sortComments")}>
+            {sorts.map((s) => (
               <button key={s.id} type="button" aria-pressed={sort === s.id} onClick={() => setSort(s.id)}>
                 {s.label}
               </button>
@@ -108,7 +112,9 @@ export default function CommentThread({
           </ul>
         </>
       ) : (
-        <p className="thread-empty">Personne n&apos;a encore commenté. Lance la discussion !</p>
+        <p className="thread-empty">
+          {t(locale, "noCommentsYet")} {t(locale, "startDiscussion")}
+        </p>
       )}
     </section>
   );
@@ -131,13 +137,13 @@ function CommentItem({ comment: c, depth, ctx }: { comment: Comment; depth: numb
             <b>{c.profile.display_name}</b>
           </Link>
           <DemoBadge show={c.profile.is_demo} />
-          <span>{timeAgo(c.created_at)}</span>
+          <span>{timeAgo(c.created_at, ctx.locale)}</span>
         </div>
         <p className="comment-body">
           <MentionText text={c.body} />
         </p>
         <div className="comment-actions">
-          <CommentLike comment={c} canLike={Boolean(ctx.me)} />
+          <CommentLike comment={c} canLike={Boolean(ctx.me)} locale={ctx.locale} />
           {ctx.me && (
             <button
               type="button"
@@ -145,17 +151,17 @@ function CommentItem({ comment: c, depth, ctx }: { comment: Comment; depth: numb
               aria-expanded={ctx.replying === c.id}
               onClick={() => ctx.setReplying(ctx.replying === c.id ? null : c.id)}
             >
-              Répondre
+              {t(ctx.locale, "replyLabel")}
             </button>
           )}
           {ctx.meId === c.user_id && (
             <details className="comment-more">
-              <summary aria-label="Plus d'actions">
+              <summary aria-label={t(ctx.locale, "moreActions")}>
                 <Icon name="dots" size={18} />
               </summary>
               <form action={deleteComment} className="comment-pop">
                 <input type="hidden" name="comment_id" value={c.id} />
-                <button type="submit">Supprimer le commentaire</button>
+                <button type="submit">{t(ctx.locale, "deleteComment")}</button>
               </form>
             </details>
           )}
@@ -167,7 +173,7 @@ function CommentItem({ comment: c, depth, ctx }: { comment: Comment; depth: numb
               reviewId={ctx.reviewId}
               parentId={c.id}
               me={ctx.me}
-              placeholder={`Répondre à ${c.profile.display_name}…`}
+              placeholder={t(ctx.locale, "replyPlaceholder").replace("{name}", c.profile.display_name)}
               autoFocus
               onDone={() => {
                 ctx.setReplying(null);
@@ -181,7 +187,12 @@ function CommentItem({ comment: c, depth, ctx }: { comment: Comment; depth: numb
           <>
             <button type="button" className="toggle-replies" aria-expanded={open} onClick={() => setOpen(!open)}>
               <Icon name="chevron" size={16} />
-              {open ? "Masquer les réponses" : `Voir ${total} réponse${total > 1 ? "s" : ""}`}
+              {open
+                ? t(ctx.locale, "hideReplies")
+                : (total === 1 ? t(ctx.locale, "showOneReply") : t(ctx.locale, "showManyReplies")).replace(
+                    "{count}",
+                    String(total),
+                  )}
             </button>
             {open && (
               <ul className={depth + 1 < MAX_INDENT ? "comments replies" : "comments replies flat"}>
@@ -202,12 +213,12 @@ function countAll(id: number, childrenOf: Map<number, Comment[]>): number {
   return (childrenOf.get(id) ?? []).reduce((n, r) => n + 1 + countAll(r.id, childrenOf), 0);
 }
 
-function CommentLike({ comment, canLike }: { comment: Comment; canLike: boolean }) {
+function CommentLike({ comment, canLike, locale }: { comment: Comment; canLike: boolean; locale: Locale }) {
   const [state, setState] = useOptimistic({ likes: comment.likes, liked: comment.liked });
   const [, startTransition] = useTransition();
   if (!canLike) {
     return (
-      <Link href="/connexion" className="heart-btn" title="Connecte-toi pour aimer">
+      <Link href="/connexion" className="heart-btn" title={t(locale, "loginToLikeComment")}>
         <Icon name="heart" size={17} filled /> {state.likes}
       </Link>
     );
@@ -217,7 +228,7 @@ function CommentLike({ comment, canLike }: { comment: Comment; canLike: boolean 
       type="button"
       className="heart-btn"
       aria-pressed={state.liked}
-      aria-label={state.liked ? "Je n'aime plus ce commentaire" : "J'aime ce commentaire"}
+      aria-label={state.liked ? t(locale, "unlikeComment") : t(locale, "likeComment")}
       onClick={() =>
         startTransition(async () => {
           const next = !state.liked;
