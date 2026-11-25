@@ -38,13 +38,15 @@ async function loadProfile(params: PageProps<"/profil/[username]">["params"]) {
 
 export async function generateMetadata({ params }: PageProps<"/profil/[username]">): Promise<Metadata> {
   const profile = await loadProfile(params);
+  const locale = await getLocale();
   const title = `${profile.display_name} (@${profile.username})`;
-  return { title, description: profile.bio || `Les albums notés par ${profile.display_name} sur Pépite.` };
+  return { title, description: profile.bio || t(locale, "albumsRatedBy").replace("{name}", profile.display_name) };
 }
 
 export default async function ProfilePage({ params }: PageProps<"/profil/[username]">) {
   const profile = await loadProfile(params);
   const [me, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
+  const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   const isMe = me?.id === profile.id;
   // Membre que j'ai bloqué : ses avis sont cachés, on propose de le débloquer.
   const iBlock = !isMe && (await getBlockedIds()).has(profile.id);
@@ -71,7 +73,7 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
               <div className="eyebrow">@{profile.username}</div>
               <Link href={`/profil/${profile.username}/annee`} className="year-link">
                 <MusicYearIcon />
-                <span>Mon année {new Date().getFullYear()} en musique</span>
+                <span>{tx("musicYearMine").replace("{year}", String(new Date().getFullYear()))}</span>
                 <span aria-hidden="true">→</span>
               </Link>
             </div>
@@ -88,11 +90,15 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
             <div className="prof-more">
               {profile.bio && <p>{profile.bio}</p>}
               {profile.is_demo && (
-                <p className="small">Membre de démonstration : ce compte et ses avis sont imaginaires.</p>
+                <p className="small">{tx("demoMemberNotice")}</p>
               )}
               <Link href={`/profil/${profile.username}/annee`} className="year-link">
                 <MusicYearIcon />
-                <span>Son année {new Date().getFullYear()} en musique</span>
+                <span>
+                  {tx("musicYearTheirs")
+                    .replace("{year}", String(new Date().getFullYear()))
+                    .replace("{name}", profile.display_name)}
+                </span>
                 <span aria-hidden="true">→</span>
               </Link>
             </div>
@@ -103,7 +109,7 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
             <form action={toggleBlock}>
               <input type="hidden" name="user_id" value={profile.id} />
               <input type="hidden" name="block" value="0" />
-              <button className="btn ghost">Débloquer</button>
+              <button className="btn ghost">{tx("unblock")}</button>
             </form>
           </div>
         )}
@@ -113,25 +119,25 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
               <input type="hidden" name="user_id" value={profile.id} />
               <input type="hidden" name="follow" value={follow.iFollow ? "0" : "1"} />
               <button className={follow.iFollow ? "btn ghost" : "btn"}>
-                {follow.iFollow ? "Abonné ✓" : followsMe ? "S'abonner en retour" : "S'abonner"}
+                {follow.iFollow ? tx("alreadyFollowing") : followsMe ? tx("followBack") : tx("followAction")}
               </button>
             </form>
             {friends && (
               <Link href={`/messages/${profile.username}`} className="btn ghost">
-                ✉ Message
+                {tx("sendMessage")}
               </Link>
             )}
             <details className="report more-menu">
-              <summary className="icon-round" aria-label="Plus d'actions" title="Plus d'actions">
+              <summary className="icon-round" aria-label={tx("moreActions")} title={tx("moreActions")}>
                 ⋯
               </summary>
               <form action={toggleBlock} className="report-box">
                 <input type="hidden" name="user_id" value={profile.id} />
                 <input type="hidden" name="block" value="1" />
                 <p className="small" style={{ margin: 0 }}>
-                  Tu ne verras plus ses avis ni ses commentaires, et vous ne pourrez plus vous écrire.
+                  {tx("blockDescription")}
                 </p>
-                <button className="btn danger-btn">Bloquer {profile.display_name}</button>
+                <button className="btn danger-btn">{tx("blockMember")}</button>
               </form>
             </details>
           </div>
@@ -140,35 +146,35 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
 
       {iBlock && (
         <p className="notice" style={{ marginTop: 16 }}>
-          Tu as bloqué {profile.display_name} : tu ne vois plus ses avis ni ses commentaires.
+          {tx("blockedProfileNotice").replace("{name}", profile.display_name)}
         </p>
       )}
 
       <div className="stats">
         <div>
           <b>{reviews.length}</b>
-          <span>note{reviews.length > 1 ? "s" : ""}</span>
+          <span>{tx(reviews.length === 1 ? "ratingSingular" : "ratingPlural")}</span>
         </div>
         <div>
           <b>{reviews.length ? formatScore(average) : "–"}</b>
-          <span>note moyenne</span>
+          <span>{tx("averageRating")}</span>
         </div>
         <div>
           <Link
             href={`/profil/${profile.username}/abonnes`}
-            aria-label={`Voir les ${follow.followers} abonnés de ${profile.display_name}`}
+            aria-label={tx("seeFollowers").replace("{count}", String(follow.followers)).replace("{name}", profile.display_name)}
           >
             <b>{follow.followers}</b>
-            <span>abonné{follow.followers > 1 ? "s" : ""}</span>
+            <span>{tx(follow.followers === 1 ? "followerSingular" : "followerPlural")}</span>
           </Link>
         </div>
         <div>
           <Link
             href={`/profil/${profile.username}/abonnements`}
-            aria-label={`Voir les ${follow.following} abonnements de ${profile.display_name}`}
+            aria-label={tx("seeFollowing").replace("{count}", String(follow.following)).replace("{name}", profile.display_name)}
           >
             <b>{follow.following}</b>
-            <span>abonnement{follow.following > 1 ? "s" : ""}</span>
+            <span>{tx("followingCount")}</span>
           </Link>
         </div>
       </div>
@@ -181,12 +187,14 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
             </div>
             <div>
               <h2 className="section-title" style={{ margin: 0 }}>
-                Vos goûts en commun
+                {tx("commonTasteTitle")}
               </h2>
               <p className="small" style={{ margin: "4px 0 0" }}>
-                {taste.shared.length
-                  ? `Calculé sur ${taste.shared.length} album${taste.shared.length > 1 ? "s" : ""} ou titre${taste.shared.length > 1 ? "s" : ""} que vous avez notés tous les deux.`
-                  : `Vous n'avez encore rien noté en commun. Notez les mêmes albums pour voir votre compatibilité !`}
+                {taste.shared.length === 1
+                  ? tx("sharedTasteOne")
+                  : taste.shared.length > 1
+                    ? tx("sharedTasteMany").replace("{count}", String(taste.shared.length))
+                    : tx("noSharedTaste")}
               </p>
             </div>
           </div>
@@ -201,7 +209,7 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
                   letterSpacing: ".08em",
                 }}
               >
-                Écoutés tous les deux
+                {tx("listenedTogether")}
               </h3>
               <div className="shared">
                 {taste.shared.map((x) => (
@@ -217,7 +225,7 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
                     </span>
                     <span className="shared-notes">
                       <span>
-                        <small>Toi</small>
+                        <small>{tx("you")}</small>
                         <Stars value={x.mine} />
                       </span>
                       <span>
@@ -240,19 +248,19 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
       )}
       {isMe && (
         <div style={{ marginTop: 20 }}>
-          <AppPanel variant="card" loggedIn />
+          <AppPanel variant="card" loggedIn locale={locale} />
         </div>
       )}
 
       <section style={{ marginTop: 30 }} id="favoris">
-        <h2 className="section-title">Albums favoris</h2>
+        <h2 className="section-title">{tx("favoriteAlbums")}</h2>
         <div className="favs">
           {[1, 2, 3, 4].map((position) => {
             const fav = favorites.find((f) => f.position === position);
             if (!fav) {
               return (
                 <div key={position} className="fav-empty">
-                  {isMe ? "Ajoute un favori depuis la page d'un album" : ""}
+                  {isMe ? tx("favoriteHint") : ""}
                 </div>
               );
             }
@@ -260,15 +268,15 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
             return (
               <div key={position} className="fav">
                 <Link href={`/album/${fav.album_id}`}>
-                  <Cover src={fav.cover_url} size="l" alt={`Pochette de ${fav.album_title}`} />
+                  <Cover src={fav.cover_url} size="l" alt={tx("albumCoverFor").replace("{title}", fav.album_title)} />
                   <span className="album-name">{fav.album_title}</span>
                   <small>{fav.artist_name}</small>
                 </Link>
                 {isMe && (
                   <form action={removeFavorite}>
                     <input type="hidden" name="position" value={position} />
-                    <button className="link-btn" aria-label={`Retirer ${fav.album_title} des favoris`}>
-                      Retirer
+                    <button className="link-btn" aria-label={tx("removeFavoriteLabel").replace("{title}", fav.album_title)}>
+                      {tx("removeFavorite")}
                     </button>
                   </form>
                 )}
@@ -279,8 +287,8 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
       </section>
 
       <section>
-        <h2 className="section-title">Listes</h2>
-        {isMe && <NewList />}
+        <h2 className="section-title">{tx("lists")}</h2>
+        {isMe && <NewList locale={locale} />}
         {lists.length ? (
           <div className="grid-rated">
             {lists.map((list) => (
@@ -288,12 +296,12 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
             ))}
           </div>
         ) : (
-          <p className="small">{isMe ? "Pas encore de liste." : "Aucune liste pour l'instant."}</p>
+          <p className="small">{isMe ? tx("noListsMine") : tx("noListsTheirs")}</p>
         )}
       </section>
 
       <section id="notes">
-        <h2 className="section-title">{isMe ? "Mes notes récentes" : "Notes récentes"}</h2>
+        <h2 className="section-title">{isMe ? tx("myRecentRatings") : tx("recentRatings")}</h2>
         {reviews.length ? (
           <div className="grid-rated">
             {reviews.map((r) => (
@@ -308,7 +316,7 @@ export default async function ProfilePage({ params }: PageProps<"/profil/[userna
           </div>
         ) : (
           <p className="small">
-            {isMe ? "Tu n'as encore rien noté. Cherche un album en haut de la page !" : "Aucune note pour l'instant."}
+            {isMe ? tx("noRatingsMine") : tx("noRatingsTheirs")}
           </p>
         )}
       </section>

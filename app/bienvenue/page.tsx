@@ -11,42 +11,51 @@ import ClaimInvite from "./ClaimInvite";
 import RateStep from "./RateStep";
 import InstallStep from "./InstallStep";
 import { sharpImage } from "@/lib/images";
+import { getLocale } from "@/lib/server-locale";
+import { t, type Locale } from "@/lib/i18n";
 
-export const metadata: Metadata = { title: "Bienvenue" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: t(await getLocale(), "welcomeEyebrow") };
+}
 
-const STEPS = ["Tes genres", "Tes premières notes", "Des membres à suivre", "Sur ton téléphone"];
+const STEP_KEYS = [
+  "onboardingStepGenres",
+  "onboardingStepRatings",
+  "onboardingStepMembers",
+  "onboardingStepPhone",
+] as const;
 
 // Premier pas après l'inscription : choisir ses genres, noter 3 albums, suivre des membres.
 export default async function WelcomePage({ searchParams }: PageProps<"/bienvenue">) {
-  const me = await getCurrentProfile();
+  const [me, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
   if (!me) redirect("/connexion?mode=inscription");
   const step = Math.min(4, Math.max(1, Number((await searchParams).etape) || 1));
 
   return (
     <div className="onboard">
-      <ClaimInvite />
-      <div className="eyebrow">Bienvenue sur Pépite, {me.display_name} !</div>
+      <ClaimInvite locale={locale} />
+      <div className="eyebrow">{t(locale, "welcomePersonalized").replace("{name}", me.display_name)}</div>
       <ol className="onboard-steps">
-        {STEPS.map((label, i) => (
-          <li key={label} aria-current={step === i + 1 ? "step" : undefined} className={step > i + 1 ? "done" : undefined}>
-            <span>{i + 1}</span> {label}
+        {STEP_KEYS.map((key, i) => (
+          <li key={key} aria-current={step === i + 1 ? "step" : undefined} className={step > i + 1 ? "done" : undefined}>
+            <span>{i + 1}</span> {t(locale, key)}
           </li>
         ))}
       </ol>
-      {step === 1 && <GenresStep chosen={me.favorite_genres ?? []} />}
-      {step === 2 && <AlbumsStep genres={me.favorite_genres ?? []} />}
-      {step === 3 && <MembersStep />}
-      {step === 4 && <InstallStep />}
+      {step === 1 && <GenresStep chosen={me.favorite_genres ?? []} locale={locale} />}
+      {step === 2 && <AlbumsStep genres={me.favorite_genres ?? []} locale={locale} />}
+      {step === 3 && <MembersStep locale={locale} />}
+      {step === 4 && <InstallStep locale={locale} />}
     </div>
   );
 }
 
-async function GenresStep({ chosen }: { chosen: number[] }) {
+async function GenresStep({ chosen, locale }: { chosen: number[]; locale: Locale }) {
   const genres = await getGenres();
   return (
     <form action={saveGenres}>
-      <h1>Qu&apos;est-ce que tu écoutes ?</h1>
-      <p className="small">Choisis de 1 à 5 genres. On s&apos;en sert pour te proposer des albums et des membres.</p>
+      <h1>{t(locale, "genresQuestion")}</h1>
+      <p className="small">{t(locale, "genresInstruction")}</p>
       <div className="genre-pick">
         {genres.map((g) => (
           <label key={g.id} className="genre-card pickable">
@@ -58,15 +67,15 @@ async function GenresStep({ chosen }: { chosen: number[] }) {
       </div>
       <div className="onboard-actions">
         <Link href="/bienvenue?etape=2" className="text-btn">
-          Passer
+          {t(locale, "skip")}
         </Link>
-        <button className="btn">Continuer →</button>
+        <button className="btn">{t(locale, "continue")}</button>
       </div>
     </form>
   );
 }
 
-async function AlbumsStep({ genres }: { genres: number[] }) {
+async function AlbumsStep({ genres, locale }: { genres: number[]; locale: Locale }) {
   // Les albums du moment dans les genres choisis (ou en général, si aucun genre).
   const lists = genres.length ? await Promise.all(genres.map((g) => getChart(g))) : [];
   const seen = new Set<number>();
@@ -88,23 +97,21 @@ async function AlbumsStep({ genres }: { genres: number[] }) {
   }
   return (
     <>
-      <h1>Note tes premiers albums</h1>
-      <p className="small">
-        Touche les étoiles des albums que tu connais (au moins 3). Tu pourras écrire un avis plus tard depuis la page de
-        l&apos;album.
-      </p>
-      <RateStep albums={albums} />
+      <h1>{t(locale, "firstAlbumsTitle")}</h1>
+      <p className="small">{t(locale, "firstAlbumsInstruction")}</p>
+      <RateStep albums={albums} locale={locale} />
     </>
   );
 }
 
-async function MembersStep() {
+async function MembersStep({ locale }: { locale: Locale }) {
   const me = await getCurrentProfile();
   const members = me ? await getSuggestedMembers(me) : [];
+  const tx = (key: Parameters<typeof t>[1]) => t(locale, key);
   return (
     <>
-      <h1>Suis des membres</h1>
-      <p className="small">Leurs avis apparaîtront dans ton fil « Mes abonnements ». Tu peux suivre qui tu veux.</p>
+      <h1>{tx("membersToFollowTitle")}</h1>
+      <p className="small">{tx("membersToFollowInstruction")}</p>
       {members.length ? (
         <div className="suggest">
           {members.map((m) => (
@@ -116,7 +123,10 @@ async function MembersStep() {
                     {m.display_name} <DemoBadge show={m.is_demo} />
                   </b>
                   <small>
-                    {m.count} avis{m.shared ? ` · ${m.shared} genre${m.shared > 1 ? "s" : ""} en commun` : ""}
+                    {m.count} {tx("reviews")}
+                    {m.shared
+                      ? tx(m.shared === 1 ? "sharedGenreLabel" : "sharedGenresLabel").replace("{count}", String(m.shared))
+                      : ""}
                   </small>
                 </span>
               </Link>
@@ -124,17 +134,17 @@ async function MembersStep() {
               <form action={toggleFollow}>
                 <input type="hidden" name="user_id" value={m.id} />
                 <input type="hidden" name="follow" value="1" />
-                <button className="btn">Suivre</button>
+                <button className="btn">{tx("followAction")}</button>
               </form>
             </div>
           ))}
         </div>
       ) : (
-        <p className="empty">Tu suis déjà tout le monde, ou la communauté démarre tout juste !</p>
+        <p className="empty">{tx("noSuggestedMembers")}</p>
       )}
       <div className="onboard-actions">
         <Link href="/bienvenue?etape=4" className="btn big-btn">
-          Continuer →
+          {tx("continue")}
         </Link>
       </div>
     </>

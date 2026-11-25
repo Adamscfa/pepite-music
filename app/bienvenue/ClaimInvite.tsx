@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { claimInvite } from "./invite-actions";
+import { type Locale, t } from "@/lib/i18n";
 
 // Juste après l'inscription : on accepte l'invitation (s'il y en a une) et on le dit.
-export default function ClaimInvite() {
+export default function ClaimInvite({ locale }: { locale: Locale }) {
   const [inviter, setInviter] = useState<string | null>(null);
   const done = useRef(false);
   useEffect(() => {
@@ -15,7 +16,7 @@ export default function ClaimInvite() {
   if (!inviter) return null;
   return (
     <p className="notice invite-ok">
-      🎉 Invitation acceptée : {inviter} et toi êtes maintenant abonnés l&apos;un à l&apos;autre.
+      {t(locale, "invitationAccepted").replace("{inviter}", inviter)}
     </p>
   );
 }
