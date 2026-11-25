@@ -3,7 +3,13 @@ import { Fragment, isValidElement, type ReactElement, type ReactNode } from "rea
 import { getCurrentProfile } from "@/lib/data";
 import { getAlbum, getArtist, getTrack } from "@/lib/deezer";
 import { logoDataUri, siteLabel } from "@/lib/og";
-import { getStudio, THEMES, type StudioKind, type StudioTheme } from "@/lib/studio";
+import {
+  getStudio,
+  isStudioCaptionLocale,
+  THEMES,
+  type StudioKind,
+  type StudioTheme,
+} from "@/lib/studio";
 import { renderStudioPoster } from "@/lib/studio-poster";
 
 // Une image du Studio TikTok (1080 × 1920, format vertical) :
@@ -74,12 +80,14 @@ export async function GET(request: Request) {
         : rawType === "titres" || rawType === "artistes"
           ? rawType
           : "albums";
+    const rawLocale = q.get("langue") ?? "";
     const { items, poster } = await getStudio({
       theme,
       kind: type,
       countryId: Number(q.get("pays")) || -1,
       count: 10,
       seed: Number(q.get("graine")) || 1,
+      ...(isStudioCaptionLocale(rawLocale) ? { locale: rawLocale } : {}),
     });
     if (!items.length) return new Response("Rien à afficher", { status: 404 });
     try {

@@ -4,8 +4,12 @@ import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/data";
 import {
   getStudio,
+  getStudioDuelLabels,
   getStudioVideoCaption,
+  getStudioVideoHook,
+  isStudioCaptionLocale,
   POSTER_COLORS,
+  STUDIO_LOCALES,
   THEMES,
   type StudioKind,
   type StudioTheme,
@@ -36,6 +40,10 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
   const FORMATS = ["carrousel", "affiche", "video-note", "video-duel"] as const;
   const format = FORMATS.find((f) => f === one(p.format)) ?? "carrousel";
   const isVideo = format === "video-note" || format === "video-duel";
+  const rawLocale = one(p.langue);
+  const requestedLocale = isStudioCaptionLocale(rawLocale) ? rawLocale : "";
+  const contentLocale =
+    (format === "affiche" || isVideo) && requestedLocale ? requestedLocale : undefined;
   const color = Object.hasOwn(POSTER_COLORS, one(p.couleur)) ? one(p.couleur) : "";
   const count = format === "affiche" ? 10 : [5, 10].includes(Number(one(p.nombre))) ? Number(one(p.nombre)) : 10;
   const seed = Number(one(p.graine)) || 1;
@@ -46,6 +54,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
     countryId: p.pays === undefined ? undefined : Number(one(p.pays)) || -1,
     count,
     seed,
+    locale: contentLocale,
   });
 
   const k = kind === "titres" ? "titre" : kind === "artistes" ? "artiste" : "album";
@@ -57,6 +66,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
     pays: country ? String(country.id) : "",
     graine: String(seed),
     couleur: color,
+    ...(contentLocale ? { langue: contentLocale } : {}),
   });
   const posterSlides = [
     {
@@ -86,8 +96,15 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
   // Vidéos : les 4 premiers de la liste, et un texte de publication adapté.
   const videoItems = items.slice(0, 4).map((i) => ({ title: i.title, artist: i.artist, cover: i.cover }));
   const tagLine = caption.split("\n").pop() ?? "";
-  const videoCaption = getStudioVideoCaption(format === "video-duel" ? "duel" : "note", captionLocale, tagLine);
-  const defaultHook = kind === "titres" ? "Quel son mérite" : kind === "artistes" ? "Quel artiste mérite" : "Quel album mérite";
+  const duelLabels = getStudioDuelLabels(captionLocale, kind);
+  const videoCaption = getStudioVideoCaption(
+    format === "video-duel" ? "duel" : "note",
+    captionLocale,
+    tagLine,
+    duelLabels.question,
+    duelLabels.vote,
+  );
+  const defaultHook = getStudioVideoHook(captionLocale, kind);
   const remix = new URLSearchParams({
     theme,
     type: kind,
@@ -96,6 +113,7 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
     pays: country ? String(country.id) : "",
     format,
     couleur: color,
+    ...(contentLocale ? { langue: contentLocale } : {}),
   });
 
   return (
@@ -165,6 +183,19 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
             ))}
           </select>
         </label>
+        {(format === "affiche" || isVideo) && (
+          <label>
+            Langue {"(affiche / vidéo)"}
+            <select name="langue" defaultValue={requestedLocale} className="select">
+              <option value="">Automatique selon le pays</option>
+              {STUDIO_LOCALES.map((locale) => (
+                <option key={locale.id} value={locale.id}>
+                  {locale.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <button className="btn">Préparer</button>
       </form>
 
@@ -182,11 +213,15 @@ export default async function StudioPage({ searchParams }: PageProps<"/studio">)
       {items.length ? (
         isVideo ? (
           <StudioVideo
-            key={`${format}-${videoItems.map((i) => i.cover).join()}`}
+            key={`${format}-${captionLocale}-${videoItems.map((i) => i.cover).join()}`}
             mode={format === "video-duel" ? "duel" : "note"}
             items={videoItems}
             kind={kind}
+            locale={captionLocale}
             defaultHook={defaultHook}
+            defaultDuelCategory={duelLabels.category}
+            defaultDuelQuestion={duelLabels.question}
+            defaultDuelVote={duelLabels.vote}
             site={siteLabel}
             tags={tagLine.split(" ").slice(0, 3).join("  ")}
             caption={videoCaption}

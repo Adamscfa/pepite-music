@@ -13,6 +13,7 @@ import { deezerAt } from "@/lib/images";
 export type VideoItem = { title: string; artist: string; cover: string };
 export type VideoMode = "note" | "duel";
 type Kind = "albums" | "titres" | "artistes";
+type VideoLocale = "fr" | "en" | "es";
 
 const W = 1080;
 const H = 1920;
@@ -136,9 +137,10 @@ function cover(ctx: Ctx, img: HTMLImageElement | null, x: number, y: number, siz
   ctx.restore();
 }
 
-function header(ctx: Ctx) {
+function header(ctx: Ctx, locale: VideoLocale) {
+  const tagline = { fr: "Écoute · Note · Partage", en: "Listen · Rate · Share", es: "Escucha · Puntúa · Comparte" }[locale];
   text(ctx, "PÉPITE", W / 2, 135, { size: 54, color: GREEN });
-  text(ctx, "Écoute · Note · Partage", W / 2, 185, { size: 28, weight: 600, color: GREY });
+  text(ctx, tagline, W / 2, 185, { size: 28, weight: 600, color: GREY });
 }
 
 function circle(ctx: Ctx, cx: number, cy: number, r: number, fill: string, label: string, color: string, size: number) {
@@ -170,7 +172,7 @@ function pop(ctx: Ctx, cx: number, cy: number, p: number, draw: () => void) {
 
 const PEPITE_GREEN: RGB = [24, 120, 74];
 
-function outro(site: string, tags: string, line1: string, line2: string): Segment {
+function outro(site: string, tags: string, line1: string, line2: string, locale: VideoLocale): Segment {
   return {
     dur: 3.6,
     draw(ctx, t) {
@@ -186,7 +188,10 @@ function outro(site: string, tags: string, line1: string, line2: string): Segmen
         ctx.roundRect(W / 2 - 380, 1180, 760, 150, 75);
         ctx.fillStyle = GREEN;
         ctx.fill();
-        text(ctx, "Crée ton compte", W / 2, 1275, { size: 58, color: "#0A2A1B" });
+        text(ctx, { fr: "Crée ton compte", en: "Create your account", es: "Crea tu cuenta" }[locale], W / 2, 1275, {
+          size: 58,
+          color: "#0A2A1B",
+        });
       });
       ctx.save();
       ctx.globalAlpha *= step(t, 1.1, 0.5);
@@ -197,18 +202,28 @@ function outro(site: string, tags: string, line1: string, line2: string): Segmen
   };
 }
 
-function noteTimeline(items: Loaded[], kind: Kind, hook: string, site: string, tags: string): Segment[] {
+function noteTimeline(
+  items: Loaded[],
+  kind: Kind,
+  hook: string,
+  site: string,
+  tags: string,
+  locale: VideoLocale,
+): Segment[] {
   const intro: Segment = {
     dur: 3,
     draw(ctx, t) {
       background(ctx, PEPITE_GREEN);
-      header(ctx);
+      header(ctx, locale);
       ctx.save();
       ctx.globalAlpha *= step(t, 0, 0.4);
       const y = text(ctx, hook, W / 2, 830, { size: 80, maxWidth: 900 });
       ctx.restore();
       pop(ctx, W / 2, y + 140, step(t, 0.5, 0.45), () =>
-        text(ctx, "5 ÉTOILES ?", W / 2, y + 175, { size: 118, color: YELLOW }),
+        text(ctx, { fr: "5 ÉTOILES ?", en: "5 STARS?", es: "5 ESTRELLAS?" }[locale], W / 2, y + 175, {
+          size: 118,
+          color: YELLOW,
+        }),
       );
       stars(ctx, y + 380, 104, 5 * clamp((t - 1) / 1.2));
     },
@@ -217,7 +232,7 @@ function noteTimeline(items: Loaded[], kind: Kind, hook: string, site: string, t
     dur: 2.8,
     draw(ctx, t) {
       background(ctx, it.color);
-      header(ctx);
+      header(ctx, locale);
       const p = step(t, 0, 0.45);
       const size = 640 * (0.9 + 0.1 * p);
       ctx.save();
@@ -228,17 +243,37 @@ function noteTimeline(items: Loaded[], kind: Kind, hook: string, site: string, t
       ctx.restore();
       ctx.save();
       ctx.globalAlpha *= step(t, 0.35, 0.3);
-      text(ctx, "Ta note ?", W / 2, y + 110, { size: 46, color: GREEN });
+      text(ctx, { fr: "Ta note ?", en: "Your rating?", es: "¿Tu nota?" }[locale], W / 2, y + 110, {
+        size: 46,
+        color: GREEN,
+      });
       stars(ctx, y + 215, 100, 5 * clamp((t - 0.6) / 1.2));
       ctx.restore();
     },
   });
-  const sub = kind === "albums" ? "Note et critique les albums que tu écoutes" : "Note et critique la musique que tu écoutes";
-  return [intro, ...items.map(album), outro(site, tags, sub, "et découvre ce que la communauté écoute.")];
+  const sub = locale === "en"
+    ? kind === "albums" ? "Rate and review the albums you listen to" : "Rate and review the music you listen to"
+    : locale === "es"
+      ? kind === "albums" ? "Puntúa y reseña los álbumes que escuchas" : "Puntúa y reseña la música que escuchas"
+      : kind === "albums" ? "Note et critique les albums que tu écoutes" : "Note et critique la musique que tu écoutes";
+  const ending = {
+    fr: "et découvre ce que la communauté écoute.",
+    en: "and discover what the community is listening to.",
+    es: "y descubre lo que escucha la comunidad.",
+  }[locale];
+  return [intro, ...items.map(album), outro(site, tags, sub, ending, locale)];
 }
 
-function duelTimeline(items: Loaded[], kind: Kind, site: string, tags: string): Segment[] {
-  const what = kind === "albums" ? "D'ALBUMS" : kind === "titres" ? "DE SONS" : "D'ARTISTES";
+function duelTimeline(
+  items: Loaded[],
+  kind: Kind,
+  site: string,
+  tags: string,
+  locale: VideoLocale,
+  category: string,
+  question: string,
+  votePrompt: string,
+): Segment[] {
   const intro: Segment = {
     dur: 2.4,
     draw(ctx, t) {
@@ -246,11 +281,11 @@ function duelTimeline(items: Loaded[], kind: Kind, site: string, tags: string): 
       pop(ctx, W / 2, 800, step(t, 0, 0.45), () => text(ctx, "DUEL", W / 2, 870, { size: 200, color: YELLOW }));
       ctx.save();
       ctx.globalAlpha *= step(t, 0.3, 0.4);
-      text(ctx, what, W / 2, 1020, { size: 112 });
+      text(ctx, category, W / 2, 1020, { size: 112 });
       ctx.restore();
       ctx.save();
       ctx.globalAlpha *= step(t, 0.7, 0.4);
-      text(ctx, "Tu choisis qui ?", W / 2, 1130, { size: 50, weight: 600, color: GREY });
+      text(ctx, question, W / 2, 1130, { size: 50, weight: 600, color: GREY });
       ctx.restore();
     },
   };
@@ -259,10 +294,13 @@ function duelTimeline(items: Loaded[], kind: Kind, site: string, tags: string): 
     draw(ctx, t) {
       // Lueur : moyenne des couleurs des deux pochettes.
       background(ctx, a.color.map((c, i) => Math.round((c + b.color[i]) / 2)) as RGB);
-      header(ctx);
+      header(ctx, locale);
       ctx.save();
       ctx.globalAlpha *= step(t, 0, 0.3);
-      text(ctx, `ROUND ${n}`, W / 2, 330, { size: 64, color: YELLOW });
+      text(ctx, locale === "fr" ? `MANCHE ${n}` : locale === "es" ? `RONDA ${n}` : `ROUND ${n}`, W / 2, 330, {
+        size: 64,
+        color: YELLOW,
+      });
       ctx.restore();
       const size = 470;
       const top = 500;
@@ -292,19 +330,30 @@ function duelTimeline(items: Loaded[], kind: Kind, site: string, tags: string): 
         ctx.translate(W / 2, 1320);
         ctx.scale(beat, beat);
         ctx.translate(-W / 2, -1320);
-        text(ctx, "Qui gagne ?", W / 2, 1350, { size: 116 });
+        text(ctx, { fr: "Qui gagne ?", en: "Who wins?", es: "¿Quién gana?" }[locale], W / 2, 1350, {
+          size: 116,
+        });
         ctx.restore();
       });
       ctx.save();
       ctx.globalAlpha *= step(t, 1.3, 0.4);
-      text(ctx, "Commente 1 ou 2", W / 2, 1480, { size: 60, color: GREEN });
+      text(ctx, votePrompt, W / 2, 1480, { size: 60, color: GREEN });
       ctx.restore();
     },
   });
   const rounds: Segment[] = [];
   for (let i = 0; i + 1 < items.length; i += 2) rounds.push(round(items[i], items[i + 1], i / 2 + 1));
-  const sub = kind === "albums" ? "Note tes albums préférés" : "Note ta musique préférée";
-  return [intro, ...rounds, outro(site, tags, sub, "et vois ce que la communauté écoute.")];
+  const sub = locale === "en"
+    ? kind === "albums" ? "Rate your favorite albums" : "Rate your favorite music"
+    : locale === "es"
+      ? kind === "albums" ? "Puntúa tus álbumes favoritos" : "Puntúa tu música favorita"
+      : kind === "albums" ? "Note tes albums préférés" : "Note ta musique préférée";
+  const ending = {
+    fr: "et vois ce que la communauté écoute.",
+    en: "and see what the community is listening to.",
+    es: "y mira lo que escucha la comunidad.",
+  }[locale];
+  return [intro, ...rounds, outro(site, tags, sub, ending, locale)];
 }
 
 // Image complète au temps t (en secondes) : la scène en cours, avec un fondu au noir
@@ -373,6 +422,10 @@ export default function StudioVideo({
   items,
   kind,
   defaultHook,
+  defaultDuelCategory,
+  defaultDuelQuestion,
+  defaultDuelVote,
+  locale,
   site,
   tags,
   caption,
@@ -381,6 +434,10 @@ export default function StudioVideo({
   items: VideoItem[];
   kind: Kind;
   defaultHook: string;
+  defaultDuelCategory: string;
+  defaultDuelQuestion: string;
+  defaultDuelVote: string;
+  locale: VideoLocale;
   site: string;
   tags: string;
   caption: string;
@@ -389,6 +446,8 @@ export default function StudioVideo({
   const loaded = useRef<Loaded[] | null>(null);
   const playing = useRef(0);
   const [hook, setHook] = useState(defaultHook);
+  const [duelQuestion, setDuelQuestion] = useState(defaultDuelQuestion);
+  const [duelVote, setDuelVote] = useState(defaultDuelVote);
   const [ready, setReady] = useState(false);
   const [duration, setDuration] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -398,8 +457,8 @@ export default function StudioVideo({
 
   const timeline = () =>
     mode === "duel"
-      ? duelTimeline(loaded.current ?? [], kind, site, tags)
-      : noteTimeline(loaded.current ?? [], kind, hook, site, tags);
+      ? duelTimeline(loaded.current ?? [], kind, site, tags, locale, defaultDuelCategory, duelQuestion, duelVote)
+      : noteTimeline(loaded.current ?? [], kind, hook, site, tags, locale);
   const total = (segments: Segment[]) => segments.reduce((s, x) => s + x.dur, 0);
 
   // Police du site (Plus Jakarta Sans), pochettes, puis première image.
@@ -413,8 +472,17 @@ export default function StudioVideo({
       loaded.current = list;
       const segments =
         mode === "duel"
-          ? duelTimeline(list, kind, site, tags)
-          : noteTimeline(list, kind, defaultHook, site, tags);
+          ? duelTimeline(
+              list,
+              kind,
+              site,
+              tags,
+              locale,
+              defaultDuelCategory,
+              defaultDuelQuestion,
+              defaultDuelVote,
+            )
+          : noteTimeline(list, kind, defaultHook, site, tags, locale);
       setDuration(total(segments));
       setReady(true);
       const missing = list.filter((l) => !l.img).length;
@@ -424,7 +492,18 @@ export default function StudioVideo({
       cancelled = true;
       playing.current++;
     };
-  }, [defaultHook, items, kind, mode, site, tags]);
+  }, [
+    defaultDuelCategory,
+    defaultDuelQuestion,
+    defaultDuelVote,
+    defaultHook,
+    items,
+    kind,
+    locale,
+    mode,
+    site,
+    tags,
+  ]);
 
   // Image fixe d'aperçu quand rien ne joue (et quand l'accroche change).
   useEffect(() => {
@@ -432,7 +511,7 @@ export default function StudioVideo({
     const ctx = canvas.current?.getContext("2d");
     if (ctx) frame(ctx, timeline(), mode === "duel" ? 3.6 : 2.4);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, hook, busy]);
+  }, [ready, hook, duelQuestion, duelVote, locale, busy]);
 
   // Joue la vidéo une fois sur le canvas ; se termine à la fin (ou si on relance).
   function play(): Promise<void> {
@@ -524,6 +603,10 @@ export default function StudioVideo({
   }
 
   const length = ready ? Math.round(duration) : 0;
+  const currentCaption =
+    mode === "duel"
+      ? caption.replace(defaultDuelQuestion, duelQuestion).replace(defaultDuelVote, duelVote)
+      : caption;
 
   return (
     <div className="studio-video">
@@ -534,6 +617,18 @@ export default function StudioVideo({
             Accroche (avant « 5 étoiles ? »)
             <input value={hook} onChange={(e) => setHook(e.target.value)} maxLength={60} disabled={busy} />
           </label>
+        )}
+        {mode === "duel" && (
+          <>
+            <label className="field studio-video-hook">
+              Question du duel
+              <input value={duelQuestion} onChange={(e) => setDuelQuestion(e.target.value)} maxLength={54} disabled={busy} />
+            </label>
+            <label className="field studio-video-hook">
+              Consigne de vote
+              <input value={duelVote} onChange={(e) => setDuelVote(e.target.value)} maxLength={40} disabled={busy} />
+            </label>
+          </>
         )}
         <p className="small">
           Vidéo muette de {length || "…"} secondes, en 1080 × 1920. Ajoute la musique dans TikTok au moment de publier.
@@ -555,7 +650,7 @@ export default function StudioVideo({
         {status && <p className="small">{status}</p>}
         {result && <video src={result.url} controls playsInline className="studio-video-result" />}
         <div className="studio-caption">
-          <textarea readOnly value={caption} rows={6} aria-label="Texte de la publication" />
+          <textarea readOnly value={currentCaption} rows={6} aria-label="Texte de la publication" />
           <button className="btn ghost" onClick={copy}>
             {copied ? "Copié ✓" : "Copier le texte"}
           </button>
